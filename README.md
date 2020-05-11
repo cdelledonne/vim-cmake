@@ -10,7 +10,7 @@ nice visual feedback.
 * Visual experience, shows CMake output in a console-like window
 * Plug-and-play, but configurable
 * Autocompletion for build targets
-* Airline status information
+* Airline status information, including current build type
 * Written in Vimscript (other than one tiny Bash script)
 
 **Requirements**
