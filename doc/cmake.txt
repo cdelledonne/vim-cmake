@@ -41,11 +41,12 @@ Requirements~
 
 Related projects~
 
-- vhdirk/vim-cmake: https://github.com/vhdirk/vim-cmake
-- ilyachur/cmake4vim: https://github.com/ilyachur/cmake4vim
-- jalcine/cmake.vim: https://github.com/jalcine/cmake.vim
-- sigidagi/vim-cmake-project: https://github.com/sigidagi/vim-cmake-project
-- kassio/neoterm: https://github.com/kassio/neoterm
+- https://github.com/vhdirk/vim-cmake
+- https://github.com/ilyachur/cmake4vim
+- https://github.com/jalcine/cmake.vim
+- https://github.com/sigidagi/vim-cmake-project
+- https://github.com/LucHermitte/vim-build-tools-wrapper
+- https://github.com/kassio/neoterm
 
 ==============================================================================
 USAGE							*cmake-usage*

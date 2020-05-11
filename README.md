@@ -24,6 +24,7 @@ nice visual feedback.
 * [ilyachur/cmake4vim][cmake4vim]
 * [jalcine/cmake.vim][cmake.vim]
 * [sigidagi/vim-cmake-project][vim-cmake-project]
+* [LucHermitte/vim-build-tools-wrapper][LucHermitte/vim-build-tools-wrapper]
 * [kassio/neoterm][neoterm]
 
 <!--=========================================================================-->
@@ -143,6 +144,7 @@ Carlo Delle Donne.
 [cmake4vim]: https://github.com/ilyachur/cmake4vim
 [cmake.vim]: https://github.com/jalcine/cmake.vim
 [vim-cmake-project]: https://github.com/sigidagi/vim-cmake-project
+[LucHermitte/vim-build-tools-wrapper]: https://github.com/LucHermitte/vim-build-tools-wrapper
 [neoterm]: https://github.com/kassio/neoterm
 [vim-plug]: https://github.com/junegunn/vim-plug
 [oos]: https://cprieto.com/posts/2016/10/cmake-out-of-source-build.html
