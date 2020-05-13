@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!--=========================================================================-->
 
+## Unreleased
+
+### Changed
+* `:CMakeBuild!` and `:CMakeInstall` now use the native `--clean-first` and
+  `--install` CMake options.
+
+### Removed
+* `:CMakeBuildClean`, as `:CMakeBuild!` should cover most of the use cases, and
+  `:CMakeBuild clean` can still be used.
+
+<!--=========================================================================-->
+
 ## 0.1.0 -- 2020-05-09
 
 First version.

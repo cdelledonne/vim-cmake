@@ -1,5 +1,4 @@
 :CMakeBuild	cmake.txt	/*:CMakeBuild*
-:CMakeBuildClean	cmake.txt	/*:CMakeBuildClean*
 :CMakeClean	cmake.txt	/*:CMakeClean*
 :CMakeClose	cmake.txt	/*:CMakeClose*
 :CMakeGenerate	cmake.txt	/*:CMakeGenerate*

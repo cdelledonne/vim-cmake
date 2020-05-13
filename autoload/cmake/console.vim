@@ -27,9 +27,8 @@ function! s:CreateBuffer() abort
     let s:console_id = cmake#job#TermStart(s:console_script,
             \ function('s:CMakeConsoleCb'))
     nnoremap <buffer> <silent> cg :call cmake#generate#Run(0, 0)<CR>
-    nnoremap <buffer> <silent> cb :call cmake#build#Run(0, 0)<CR>
-    nnoremap <buffer> <silent> cc :call cmake#build#Run(0, 0, 'clean')<CR>
-    nnoremap <buffer> <silent> ci :call cmake#build#Run(0, 0, 'install')<CR>
+    nnoremap <buffer> <silent> cb :call cmake#build#Run(0, 0, 0)<CR>
+    nnoremap <buffer> <silent> ci :call cmake#build#RunInstall(0, 0)<CR>
     nnoremap <buffer> <silent> cq :call cmake#console#Close()<CR>
     nnoremap <buffer> <silent> <C-C> :call cmake#command#Stop()<CR>
     setlocal nonumber

@@ -95,28 +95,24 @@ Building and installing a project~
 :CMakeBuild[!] [opts] [target] [-- [nativeopts]]
 			Build a project using the generated build system.  If
 			[!] is supplied, the existing build files are cleaned
-			(like `make clean`) before building the project.
-			[opts] are passed directly to CMake.  [target] is the
-			target to build instead of the default target.
-			[nativeopts] are passed directly to the native tool.
+			(using CMake's `--clean-first` option) before building
+			the project.  [opts] are passed directly to CMake.
+			[target] is the target to build instead of the default
+			target.  [nativeopts] are passed directly to the
+			native tool.
 
 For instance, to build the target `mytarget` using a maximum of 4 processes
 and passing the `VERBOSE=1` option to the native tool, run
 >
-	:CMakeBuild --jobs 4 mytarget -- VERBOSE=1
+	:CMakeBuild --parallel 4 mytarget -- VERBOSE=1
 <
 Vim-CMake provides autocompletion for build targets.  Just press <TAB> at any
 point after `:CMakeBuild` in the command line to trigger autocompletion, e.g.
 >
-	:CMakeBuild --jobs 4 <TAB>
+	:CMakeBuild --parallel 4 <TAB>
 <
-							*:CMakeBuildClean*
-:CMakeBuildClean	Clean build files.  This command is equivalent to
-			building the `clean` target.
-
 							*:CMakeInstall*
-:CMakeInstall		Install a project.  This command is equivalent to
-			building the `install` target.
+:CMakeInstall		Install a project.
 
 ------------------------------------------------------------------------------
 							*cmake-console*
@@ -143,8 +139,6 @@ Global <Plug> mappings~
 
 <Plug>(CMakeBuild)	Equivalent to `:CMakeBuild`.
 
-<Plug>(CMakeBuildClean)	Equivalent to `:CMakeBuildClean`.
-
 <Plug>(CMakeBuildTarget)
 			Equivalent to `:CMakeBuild`, but leaves the cursor in
 			the command line.
@@ -159,7 +153,6 @@ Example usage of the <Plug> mappings:
 >
 	nmap <leader>cg <Plug>(CMakeGenerate)
 	nmap <leader>cb <Plug>(CMakeBuild)
-	nmap <leader>cc <Plug>(CMakeBuildClean)
 	nmap <leader>ci <Plug>(CMakeInstall)
 	nmap <leader>cq <Plug>(CMakeClose)
 <
@@ -170,8 +163,6 @@ CMake console window key mappings~
 cg			Run `:CMakeGenerate`.
 
 cb			Run `:CMakeBuild`.
-
-cc			Run `:CMakeBuildClean`.
 
 ci			Run `:CMakeInstall`.
 
