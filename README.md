@@ -3,6 +3,11 @@
 Vim-CMake is a plugin for building CMake projects inside of Vim/Neovim, with a
 nice visual feedback.
 
+![lint](https://img.shields.io/circleci/build/github/cdelledonne/vim-cmake?label=lint&logo=circleci)
+![language](https://img.shields.io/github/languages/top/cdelledonne/vim-cmake)
+![version](https://img.shields.io/github/v/tag/cdelledonne/vim-cmake?label=version&sort=semver)
+![license](https://img.shields.io/github/license/cdelledonne/vim-cmake)
+
 ![screencast][screencast]
 
 **Features**
