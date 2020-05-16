@@ -65,15 +65,14 @@ commands and mappings run `:help cmake`.  A quick overview follows.
 
 ### Commands and `<Plug>` mappings
 
-| Command                   | `<Plug>` mapping    | Description                                |
-|:--------------------------|:--------------------|:-------------------------------------------|
-| `:CMakeGenerate[!]`       | `(CMakeGenerate)`   | Generate build system                      |
-| `:CMakeClean`             | `(CMakeClean)`      | Remove build system and build files        |
-| `:CMakeBuild[!] [target]` | `(CMakeBuild)`      | Build a project                            |
-| `:CMakeBuildClean`        | `(CMakeBuildClean)` | Remove build files (like `make clean`)     |
-| `:CMakeInstall`           | `(CMakeInstall)`    | Install build output (like `make install`) |
-| `:CMakeOpen`              | `(CMakeOpen)`       | Open CMake console window                  |
-| `:CMakeClose`             | `(CMakeClose)`      | Close CMake console window                 |
+| Command                   | `<Plug>` mapping  | Description                         |
+|:--------------------------|:------------------|:------------------------------------|
+| `:CMakeGenerate[!]`       | `(CMakeGenerate)` | Generate build system               |
+| `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files |
+| `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                     |
+| `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                |
+| `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window           |
+| `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window          |
 
 ### Additional `<Plug>` mappings
 
@@ -87,7 +86,6 @@ commands and mappings run `:help cmake`.  A quick overview follows.
 |:------------|:---------------------------|
 | `cg`        | Run `:CMakeGenerate`       |
 | `cb`        | Run `:CMakeBuild`          |
-| `cc`        | Run `:CMakeBuildClean`     |
 | `ci`        | Run `:CMakeInstall`        |
 | `cq`        | Close CMake console window |
 | `<C-C>`     | Stop current command       |

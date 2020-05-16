@@ -84,4 +84,3 @@ function! cmake#statusline#GetCmdInfo(active) abort
         return ' '
     endif
 endfunction
-

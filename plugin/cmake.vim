@@ -57,8 +57,7 @@ command -nargs=? CMakeClean call cmake#Clean()
 command -nargs=? -bang -complete=custom,cmake#build#GetTargets CMakeBuild
         \ call cmake#Build(0, 0, <bang>0, <f-args>)
 
-command CMakeBuildClean call cmake#Build(0, 0, 0, 'clean')
-command CMakeInstall call cmake#Build(0, 0, 0, 'install')
+command CMakeInstall call cmake#Install(0, 0)
 
 command CMakeOpen call cmake#console#Open(0)
 command CMakeClose call cmake#console#Close()
@@ -71,8 +70,7 @@ nnoremap <silent> <Plug>(CMakeGenerate) :call cmake#Generate(0, 0, 0)<CR>
 nnoremap <silent> <Plug>(CMakeClean) :call cmake#Clean()<CR>
 
 nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0, 0, 0)<CR>
-nnoremap <silent> <Plug>(CMakeBuildClean) :call cmake#Build(0, 0, 0, 'clean')<CR>
-nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Build(0, 0, 0, 'install')<CR>
+nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Install(0, 0)<CR>
 nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
 
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#console#Open(0)<CR>

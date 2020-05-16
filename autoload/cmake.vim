@@ -54,14 +54,21 @@ endfunction
 " - [options]  optional parameter to specify target and other options
 "
 function! cmake#Build(bg, wait, clean, ...) abort
-    if a:clean
-        call cmake#build#Run(1, 1, 'clean')
-    endif
     if a:0 > 0
-        call cmake#build#Run(a:bg, a:wait, a:1)
+        call cmake#build#Run(a:bg, a:wait, a:clean, a:1)
     else
-        call cmake#build#Run(a:bg, a:wait)
+        call cmake#build#Run(a:bg, a:wait, a:clean)
     endif
+endfunction
+
+" API function for cmake#build#RunInstall().
+"
+" Params:
+" - bg         whether to run the command in the background
+" - wait       whether to wait for completion (only for bg == 1)
+"
+function! cmake#Install(bg, wait) abort
+    call cmake#build#RunInstall(a:bg, a:wait)
 endfunction
 
 " API function for cmake#console#Open().

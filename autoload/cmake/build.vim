@@ -73,9 +73,10 @@ endfunction
 " Params:
 " - bg         whether to run the command in the background
 " - wait       whether to wait for completion (only for bg == 1)
+" - clean      whether to clean before building
 " - [options]  optional string containing target and other options
 "
-function! cmake#build#Run(bg, wait, ...) abort
+function! cmake#build#Run(bg, wait, clean, ...) abort
     let l:command = [g:cmake_command, '--build', s:build_dir]
     let l:options = {}
     " Parse additional options.
@@ -85,6 +86,9 @@ function! cmake#build#Run(bg, wait, ...) abort
     " Add CMake build options to the command.
     let l:command += g:cmake_build_options
     let l:command += get(l:options, 'cmake_build_options', [])
+    if a:clean
+        let l:command += ['--clean-first']
+    endif
     " Add target to the command, if any was provided.
     let l:command += get(l:options, 'target', [])
     " Add native build tool options to the command.
@@ -96,6 +100,18 @@ function! cmake#build#Run(bg, wait, ...) abort
     endif
     " Run build command.
     call cmake#statusline#SetCmdInfo('Building...')
+    call cmake#command#Run(l:command, a:bg, a:wait)
+endfunction
+
+" Install a project.
+"
+" Params:
+" - bg         whether to run the command in the background
+" - wait       whether to wait for completion (only for bg == 1)
+"
+function! cmake#build#RunInstall(bg, wait) abort
+    let l:command = [g:cmake_command, '--install', s:build_dir]
+    call cmake#statusline#SetCmdInfo('Installing...')
     call cmake#command#Run(l:command, a:bg, a:wait)
 endfunction
 
