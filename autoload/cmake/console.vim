@@ -36,6 +36,9 @@ function! s:CreateBuffer() abort
     setlocal signcolumn=auto
     setlocal nobuflisted
     setlocal filetype=vimcmake
+    setlocal statusline=[CMake]
+    setlocal statusline+=\ %{cmake#statusline#GetBuildInfo(0)}
+    setlocal statusline+=\ %{cmake#statusline#GetCmdInfo(1)}
     return bufnr('%')
 endfunction
 
@@ -71,7 +74,7 @@ function! s:CMakeConsoleCb(data) abort
         else
             let s:exit_term_mode = 1
         endif
-        execute 'AirlineRefresh'
+        call cmake#statusline#Refresh()
         if g:cmake_jump_on_completion
             if winnr() != bufwinnr(s:console_buffer)
                 let s:previous_window = winnr()

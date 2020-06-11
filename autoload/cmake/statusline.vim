@@ -23,7 +23,9 @@ endfunction
 function! cmake#statusline#AirlineInactive(...) abort
     if getbufvar(a:2.bufnr, '&filetype') is# 'vimcmake'
         call setwinvar(a:2.winnr, 'airline_section_c',
-                \ '[CMake] %{cmake#statusline#GetCmdInfo(0)}')
+                \ '[CMake]' .
+                \ ' %{cmake#statusline#GetBuildInfo(0)}' .
+                \ ' %{cmake#statusline#GetCmdInfo(1)}')
     endif
 endfunction
 
@@ -82,5 +84,15 @@ function! cmake#statusline#GetCmdInfo(active) abort
         endif
     else
         return ' '
+    endif
+endfunction
+
+" Force a refresh of the statusline/airline.
+"
+function! cmake#statusline#Refresh() abort
+    if exists('g:loaded_airline') && g:loaded_airline
+        execute 'AirlineRefresh'
+    else
+        execute 'redrawstatus!'
     endif
 endfunction
