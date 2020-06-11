@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!--=========================================================================-->
 
-## 0.1.0 $ndash; 2020-05-09
+## 0.1.0 &ndash; 2020-05-09
 
 First version.
 
