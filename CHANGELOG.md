@@ -9,9 +9,14 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.1.1 &ndash; 2020-06-11
+
 ### Changed
 * `:CMakeBuild!` and `:CMakeInstall` now use the native `--clean-first` and
   `--install` CMake options.
+* Fix error when vim-airline not loaded and polish statusline/Airline output
 
 ### Removed
 * `:CMakeBuildClean`, as `:CMakeBuild!` should cover most of the use cases, and
@@ -19,7 +24,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!--=========================================================================-->
 
-## 0.1.0 -- 2020-05-09
+## 0.1.0 $ndash; 2020-05-09
 
 First version.
 
