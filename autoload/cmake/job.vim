@@ -61,7 +61,7 @@ function! cmake#job#TermStart(command, stdout_cb) abort
     endif
     " Set up autocmd to stop terminal job before exiting Vim/Neovim.
     augroup cmake
-        autocmd ExitPre * call cmake#job#TermStop()
+        autocmd VimLeavePre * call cmake#job#TermStop()
     augroup END
     return l:term
 endfunction
