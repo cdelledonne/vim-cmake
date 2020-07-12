@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.2.0 &ndash; 2020-07-12
+
 ### Added
 * `:CMakeSwitch` command, and `<Plug>(CMakeSwitch)` mapping, to switch between
   build configurations.
