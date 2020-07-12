@@ -3,8 +3,15 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
+let s:plugin_version = '0.2.0'
+
 " Get project root and try to reduce path to be relative to CWD.
 let g:cmake#source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
+
+" Print news of new Vim-CMake versions.
+call cmake#plugnews#Print(s:plugin_version, {
+        \ '0.2.0': 'Vim-CMake has a new feature, run `:help cmake-switch`',
+        \ })
 
 if exists('g:loaded_airline') && g:loaded_airline
     call airline#add_statusline_func('cmake#statusline#Airline')
