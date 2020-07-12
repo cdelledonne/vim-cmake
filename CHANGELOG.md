@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 * `:CMakeSwitch` command, and `<Plug>(CMakeSwitch)` mapping, to switch between
   build configurations.
 * `g:cmake_default_config`, the default build configuration on start-up.
+* Print Vim-CMake updates when new version is pulled.
 
 ### Changed
 * `:CMakeGenerate` can be called with build configuration as a direct option,
