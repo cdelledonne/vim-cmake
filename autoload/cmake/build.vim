@@ -4,7 +4,6 @@
 " ==============================================================================
 
 let s:cmake_targets = []
-let s:build_dir = g:cmake_default_build_dir
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Internal functions and callbacks
@@ -77,7 +76,7 @@ endfunction
 " - [options]  optional string containing target and other options
 "
 function! cmake#build#Run(bg, wait, clean, ...) abort
-    let l:command = [g:cmake_command, '--build', s:build_dir]
+    let l:command = [g:cmake_command, '--build', cmake#switch#GetCurrent()]
     let l:options = {}
     " Parse additional options.
     if a:0 > 0 && len(a:1) > 0
@@ -110,21 +109,9 @@ endfunction
 " - wait       whether to wait for completion (only for bg == 1)
 "
 function! cmake#build#RunInstall(bg, wait) abort
-    let l:command = [g:cmake_command, '--install', s:build_dir]
+    let l:command = [g:cmake_command, '--install', cmake#switch#GetCurrent()]
     call cmake#statusline#SetCmdInfo('Installing...')
     call cmake#command#Run(l:command, a:bg, a:wait)
-endfunction
-
-" Set build directory.
-"
-function! cmake#build#SetBuildDir(dir) abort
-    let s:build_dir = a:dir
-endfunction
-
-" Get build directory.
-"
-function! cmake#build#GetBuildDir() abort
-    return s:build_dir
 endfunction
 
 " Get list of available CMake targets. Used for autocompletion of commands.
@@ -146,7 +133,7 @@ endfunction
 function! cmake#build#UpdateTargets() abort
     let s:cmake_targets = []
     let l:command = [g:cmake_command,
-            \ '--build', s:build_dir,
+            \ '--build', cmake#switch#GetCurrent(),
             \ '--target', 'help'
             \ ]
     call cmake#command#Run(l:command, 1, 1, function('s:GetTargetsCb'))

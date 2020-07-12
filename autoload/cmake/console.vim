@@ -26,10 +26,10 @@ function! s:CreateBuffer() abort
     execute 'enew'
     let s:console_id = cmake#job#TermStart(s:console_script,
             \ function('s:CMakeConsoleCb'))
-    nnoremap <buffer> <silent> cg :call cmake#generate#Run(0, 0)<CR>
-    nnoremap <buffer> <silent> cb :call cmake#build#Run(0, 0, 0)<CR>
-    nnoremap <buffer> <silent> ci :call cmake#build#RunInstall(0, 0)<CR>
-    nnoremap <buffer> <silent> cq :call cmake#console#Close()<CR>
+    nnoremap <buffer> <silent> cg :CMakeGenerate<CR>
+    nnoremap <buffer> <silent> cb :CMakeBuild<CR>
+    nnoremap <buffer> <silent> ci :CMakeInstall<CR>
+    nnoremap <buffer> <silent> cq :CMakeClose<CR>
     nnoremap <buffer> <silent> <C-C> :call cmake#command#Stop()<CR>
     setlocal nonumber
     setlocal norelativenumber
@@ -75,6 +75,7 @@ function! s:CMakeConsoleCb(data) abort
             let s:exit_term_mode = 1
         endif
         call cmake#statusline#Refresh()
+        call cmake#switch#SearchForExistingConfigs()
         if g:cmake_jump_on_completion
             if winnr() != bufwinnr(s:console_buffer)
                 let s:previous_window = winnr()

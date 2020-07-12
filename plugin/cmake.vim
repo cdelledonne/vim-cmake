@@ -24,7 +24,7 @@ if !has('nvim') && !has('terminal')
 endif
 
 let s:config_vars = {
-        \ 'g:cmake_default_build_dir'     : 'build',
+        \ 'g:cmake_default_config'        : 'Debug',
         \ 'g:cmake_build_options'         : [],
         \ 'g:cmake_native_build_options'  : [],
         \ 'g:cmake_console_size'          : 15,
@@ -54,13 +54,16 @@ endfor
 command -nargs=? -bang CMakeGenerate call cmake#Generate(0, 0, <bang>0, <f-args>)
 command -nargs=? CMakeClean call cmake#Clean()
 
+command -nargs=1 -complete=custom,cmake#switch#GetExistingConfigs CMakeSwitch
+        \ call cmake#Switch(<f-args>)
+
 command -nargs=? -bang -complete=custom,cmake#build#GetTargets CMakeBuild
         \ call cmake#Build(0, 0, <bang>0, <f-args>)
 
 command CMakeInstall call cmake#Install(0, 0)
 
-command CMakeOpen call cmake#console#Open(0)
-command CMakeClose call cmake#console#Close()
+command CMakeOpen call cmake#Open(0)
+command CMakeClose call cmake#Close()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Mappings
@@ -72,6 +75,8 @@ nnoremap <silent> <Plug>(CMakeClean) :call cmake#Clean()<CR>
 nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0, 0, 0)<CR>
 nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Install(0, 0)<CR>
 nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
+
+nnoremap <Plug>(CMakeSwitch) :CMakeSwitch<Space>
 
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#console#Open(0)<CR>
 nnoremap <silent> <Plug>(CMakeClose) :call cmake#console#Close()<CR>
