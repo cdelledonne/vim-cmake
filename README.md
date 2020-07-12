@@ -14,8 +14,9 @@ nice visual feedback.
 
 * Visual experience, shows CMake output in a console-like window
 * Plug-and-play, but configurable
-* Autocompletion for build targets
-* Airline/statusline status information, including current build type
+* Slick management of build configurations
+* Autocompletion for build targets and build configurations
+* Airline/statusline status information, including current build configuration
 * Written in Vimscript (other than one tiny Bash script)
 
 **Requirements**
@@ -56,23 +57,27 @@ vim -u NONE -c "helptags vim-cmake/doc | q"
 ## Usage
 
 Run `:CMakeGenerate` from the top-level CMake source directory to generate a
-build system for the project.  Then, run `:CMakeBuild` to build the project. The
-built files will end up in the binary directory ([out-of-source build][oos]).
+build system for the project.  Then, run `:CMakeBuild` to build the project.
+The built files will end up in the binary directory ([out-of-source
+build][oos]).  To switch between build configurations, run `:CMakeSwitch
+<config>`.
 
-With Vim-CMake, you can easily manage build types (Debug, Release, etc.), build
-specific targets and control build options.  For a detailed explanation of
-commands and mappings run `:help cmake`.  A quick overview follows.
+With Vim-CMake, you can easily manage build configurations (Debug, Release,
+etc.), build specific targets and control build options.  For a detailed
+explanation of commands and mappings run `:help cmake`.  A quick overview
+follows.
 
 ### Commands and `<Plug>` mappings
 
-| Command                   | `<Plug>` mapping  | Description                         |
-|:--------------------------|:------------------|:------------------------------------|
-| `:CMakeGenerate[!]`       | `(CMakeGenerate)` | Generate build system               |
-| `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files |
-| `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                     |
-| `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                |
-| `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window           |
-| `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window          |
+| Command                   | `<Plug>` mapping  | Description                           |
+|:--------------------------|:------------------|:--------------------------------------|
+| `:CMakeGenerate[!]`       | `(CMakeGenerate)` | Generate build system                 |
+| `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files   |
+| `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                       |
+| `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                  |
+| `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
+| `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
+| `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window            |
 
 ### Additional `<Plug>` mappings
 
@@ -101,7 +106,7 @@ follows.
 | Options                         | Default            |
 |:--------------------------------|:-------------------|
 | `g:cmake_command`               | `'cmake'`          |
-| `g:cmake_default_build_dir`     | `'build'`          |
+| `g:cmake_default_config`        | `'Debug'`          |
 | `g:cmake_build_options`         | `[]`               |
 | `g:cmake_native_build_options`  | `[]`               |
 | `g:cmake_console_size`          | `15`               |

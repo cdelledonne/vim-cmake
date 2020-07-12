@@ -4,7 +4,6 @@
 " ==============================================================================
 
 let s:statusline_cmd_info = ''
-let s:statusline_build_info = ''
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
@@ -29,15 +28,6 @@ function! cmake#statusline#AirlineInactive(...) abort
     endif
 endfunction
 
-" Set build info string for statusline/airline.
-"
-" Params:
-" - build_info  string for statusline build info
-"
-function! cmake#statusline#SetBuildInfo(build_info) abort
-    let s:statusline_build_info = a:build_info
-endfunction
-
 " Set command info string for statusline/airline.
 "
 " Params:
@@ -56,14 +46,10 @@ endfunction
 " string containing statusline build info
 "
 function! cmake#statusline#GetBuildInfo(active) abort
-    if len(s:statusline_build_info)
-        if a:active
-            return s:statusline_build_info
-        else
-            return '[' . s:statusline_build_info . ']'
-        endif
+    if a:active
+        return cmake#switch#GetCurrent()
     else
-        return ''
+        return '[' . cmake#switch#GetCurrent() . ']'
     endif
 endfunction
 

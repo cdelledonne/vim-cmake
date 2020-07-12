@@ -18,9 +18,6 @@ endfunction
 let s:command = [g:cmake_command, '--version']
 call cmake#command#Run(s:command, 1, 1, function('s:GetCMakeVersionCb'))
 
-" Get project root and try to reduce path to be relative to CWD.
-let s:cmake_source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -28,22 +25,20 @@ let s:cmake_source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
 " Generate a buildsystem for the project using CMake.
 "
 " Params:
-" - bg         whether to run the command in the background
-" - wait       whether to wait for completion (only for bg == 1)
-" - [options]  optional parameter to specify CMake options
+" - bg       whether to run the command in the background
+" - wait     whether to wait for completion (only for bg == 1)
+" - options  list of CMake options
 "
-function! cmake#generate#Run(bg, wait, ...) abort
+function! cmake#generate#Run(bg, wait, options) abort
     let l:command = [g:cmake_command]
-    let l:build_dir = cmake#build#GetBuildDir()
-    if a:0 > 0
-        " Add CMake build options to the command.
-        let l:command += [a:1]
-    endif
+    let l:build_dir = cmake#switch#GetCurrent()
+    " Add CMake build options to the command.
+    let l:command += a:options
     " Construct command based on CMake version.
     if s:cmake_version < 313
-        let l:command += ['-H' . s:cmake_source_dir, '-B' . l:build_dir]
+        let l:command += ['-H' . g:cmake#source_dir, '-B' . l:build_dir]
     else
-        let l:command += ['-S', s:cmake_source_dir, '-B', l:build_dir]
+        let l:command += ['-S', g:cmake#source_dir, '-B', l:build_dir]
     endif
     call cmake#statusline#SetCmdInfo('Generating buildsystem...')
     call cmake#command#Run(l:command, a:bg, a:wait)
@@ -51,7 +46,7 @@ function! cmake#generate#Run(bg, wait, ...) abort
         " Link compile commands.
         let l:command = ['ln', '-sf',
                 \ l:build_dir . '/compile_commands.json',
-                \ s:cmake_source_dir
+                \ g:cmake#source_dir
                 \ ]
         call cmake#command#Run(l:command, 1, 1)
     endif
@@ -60,26 +55,34 @@ endfunction
 " Clean buildsystem (CMake files).
 "
 function! cmake#generate#Clean() abort
-    let l:build_dir = cmake#build#GetBuildDir()
+    let l:build_dir = cmake#switch#GetCurrent()
     if isdirectory(l:build_dir)
         let l:command = ['rm', '-rf', l:build_dir . '/*']
         call cmake#command#Run(l:command, 1, 1)
     endif
 endfunction
 
-" Get CMAKE_BUILD_TYPE value from command-line arguments.
+" Get CMake build configuration value from command-line arguments.
 "
 " Params:
-" - args  command-line arguments string
+" - arglist  list of command-line arguments
 "
 " Returns:
-" value of CMAKE_BUILD_TYPE
+" list, whose first value is the build configuration, and the second value is a
+" flag that is set when the build configuration appears in the arguments as
+" '-DCMAKE_BUILD_TYPE=<config>'
 "
-function! cmake#generate#GetBuildType(args) abort
-    let l:build_type_arg = matchstr(split(a:args), '\m\CCMAKE_BUILD_TYPE')
-    if len(l:build_type_arg)
-        return split(l:build_type_arg, '=')[1]
-    else
-        return ''
+function! cmake#generate#GetBuildType(arglist) abort
+    if len(a:arglist)
+        if match(a:arglist[0], '\m\C^\w') >= 0
+            return [a:arglist[0], 0]
+        else
+            let l:build_type_arg = matchstr(a:arglist, '\m\CCMAKE_BUILD_TYPE')
+            if len(l:build_type_arg)
+                return [split(l:build_type_arg, '=')[1], 1]
+            else
+                return ['', 0]
+            endif
+        endif
     endif
 endfunction

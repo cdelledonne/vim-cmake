@@ -1,7 +1,10 @@
 " ==============================================================================
 " Location:    autoload/cmake.vim
-" Description: API functions for Vim-CMake
+" Description: API functions and global data for Vim-CMake
 " ==============================================================================
+
+" Get project root and try to reduce path to be relative to CWD.
+let g:cmake#source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
 
 if exists('g:loaded_airline') && g:loaded_airline
     call airline#add_statusline_func('cmake#statusline#Airline')
@@ -18,31 +21,63 @@ endif
 " - bg         whether to run the command in the background
 " - wait       whether to wait for completion (only for bg == 1)
 " - clean      whether to clean before generating
-" - [options]  optional parameter to specify CMake options
+" - [options]  optional parameter to specify build configuration and additional
+"              CMake options
 "
 function! cmake#Generate(bg, wait, clean, ...) abort
+    let l:arglist = []
+    let l:cmake_build_type_set = 0
+    " Get CMake build type from command-line arguments, if present.
     if a:0 > 0
-        " Get CMake build type from command-line arguments.
-        let l:build_type = cmake#generate#GetBuildType(a:1)
-        call cmake#statusline#SetBuildInfo(l:build_type)
-        " Select build directory based on build type.
+        let l:arglist = split(a:1)
+        let [l:build_type, l:cmake_build_type_set] =
+                \ cmake#generate#GetBuildType(l:arglist)
         if len(l:build_type)
-            call cmake#build#SetBuildDir(l:build_type)
+            call cmake#switch#SetCurrent(l:build_type)
+            " Remove build config substring from command-line options if it was
+            " passed in the form `:CMakeGenerate <config>`
+            if !l:cmake_build_type_set
+                call remove(l:arglist, 0)
+            endif
         endif
     endif
+    " Clean project buildsystem, if requested.
     if a:clean
         call cmake#generate#Clean()
     endif
-    if a:0 > 0
-        call cmake#generate#Run(a:bg, a:wait, a:1)
-    else
-        call cmake#generate#Run(a:bg, a:wait)
+    " Add CMake options to the command.
+    let l:opts = []
+    if len(l:arglist)
+        let l:opts = l:arglist
     endif
+    " Add -DCMAKE_BUILD_TYPE to the CMake options, unless passed by the user.
+    if !l:cmake_build_type_set
+        let l:opts += ['-DCMAKE_BUILD_TYPE=' . cmake#switch#GetCurrent()]
+    endif
+    " Call command.
+    call cmake#generate#Run(a:bg, a:wait, l:opts)
 endfunction
 
 " API function for cmake#generate#Clean().
+"
 function! cmake#Clean() abort
     call cmake#generate#Clean()
+endfunction
+
+" API function for cmake#switch#SetCurrent().
+"
+" Params:
+" - config  build configuration
+"
+function! cmake#Switch(...) abort
+    " Check that config folder exists.
+    let l:configs = split(cmake#switch#GetExistingConfigs('', '', 0))
+    if index(l:configs, a:1) == -1
+        call cmake#util#Log('W', 'Build configuration "' . a:1 .
+                \ '" not found, run `:CMakeGenerate ' . a:1 . '`')
+        return
+    endif
+    call cmake#switch#SetCurrent(a:1)
 endfunction
 
 " API function for cmake#build#Run().

@@ -9,6 +9,18 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* `:CMakeSwitch` command, and `<Plug>(CMakeSwitch)` mapping, to switch between
+  build configurations.
+* `g:cmake_default_config`, the default build configuration on start-up.
+
+### Changed
+* `:CMakeGenerate` can be called with build configuration as a direct option,
+  e.g., `:CMakeGenerate Release`.
+
+### Removed
+* `g:cmake_default_build_dir`.
+
 <!--=========================================================================-->
 
 ## 0.1.1 &ndash; 2020-06-11

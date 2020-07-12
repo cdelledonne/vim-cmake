@@ -12,7 +12,8 @@ CONTENTS						*cmake-contents*
 3. Commands ........................................... |cmake-commands|
    3.1 Generating a project build system .............. |cmake-generate|
    3.2 Building and installing a project .............. |cmake-build|
-   3.3 Opening and closing the CMake console .......... |cmake-console|
+   3.3 Switch between build configurations............. |cmake-switch|
+   3.4 Opening and closing the CMake console .......... |cmake-console|
 4. Mappings ........................................... |cmake-mappings|
    4.1 Global <Plug> mappings ......................... |cmake-plug-mappings|
    4.2 CMake console window key mappings .............. |cmake-key-mappings|
@@ -30,8 +31,9 @@ Features~
 
 - Visual experience, shows CMake output in a console-like window
 - Plug-and-play, but configurable
-- Autocompletion for build targets
-- Airline/statusline status information, including current build type
+- Slick management of build configurations
+- Autocompletion for build targets and build configurations
+- Airline/statusline status information, including current build configuration
 - Written in Vimscript (other than one tiny Bash script)
 
 Requirements~
@@ -53,11 +55,12 @@ USAGE							*cmake-usage*
 
 Run |:CMakeGenerate| from the top-level CMake source directory to generate a
 build system for the project.  Then, run |:CMakeBuild| to build the project.
-The built files will end up in the binary directory (out-of-source build).
+The built files will end up in the binary directory (out-of-source build).  To
+switch between build configurations, run |:CMakeSwitch| {config}.
 
-With Vim-CMake, you can easily manage build types (Debug, Release, etc.),
-build specific targets and control build options.  Read on for a detailed
-explanation of commands, mappings and configuration options.
+With Vim-CMake, you can easily manage build configurations (Debug, Release,
+etc.), build specific targets and control build options.  Read on for a
+detailed explanation of commands, mappings and configuration options.
 
 ==============================================================================
 COMMANDS						*cmake-commands*
@@ -68,35 +71,42 @@ Vim-CMake defines a small set of CMake-related commands.
 							*cmake-generate*
 Generating a project build system~
 							*:CMakeGenerate*
-:CMakeGenerate[!] [opts]
+:CMakeGenerate[!] [config] [opts]
 			Generate project build system for a CMake project.  If
 			[!] is supplied, the existing build system is removed
-			before generating a new.  [opts] are passed directly
-			to CMake.
+			before generating a new one.  [config] specifies the
+			build configuration to generate.  [opts] are passed
+			directly to CMake.
 
-By default, the build system is generated into `g:cmake_build_dir` (see
-|cmake-configuration|), unless an explicit build type is passed with [opts].
-For instance, to generate a build system for "Debug", and place the generated
-files into a binary directory of the same name (relative to the top-level
-CMake source directory), run
+By default, the build system is generated for the build configuration
+specified by `g:cmake_default_config` (see |cmake-configuration|).  For
+instance, if the default build configuration is "Debug", `cmake` will be
+passed `-DCMAKE_BUILD_TYPE=Debug`, and the build system will be generated in
+`./Debug`.  To generate a build system for another configuration, e.g.,
+"Release", run
 >
-	:CMakeGenerate -DCMAKE_BUILD_TYPE=Debug
+	:CMakeGenerate Release
 <
-Subsequent calls to `:CMake` commands will use the last binary directory set
-with the `-DCMAKE_BUILD_TYPE` option.
+or, equivalently
+>
+	:CMakeGenerate -DCMAKE_BUILD_TYPE=Release
+<
+Use |:CMakeSwitch| to switch between build configurations.
 
 							*:CMakeClean*
-:CMakeClean		Remove project build system.
+:CMakeClean		Remove project build system relative to the current
+			build configuration.
 
 ------------------------------------------------------------------------------
 							*cmake-build*
 Building and installing a project~
 							*:CMakeBuild*
 :CMakeBuild[!] [opts] [target] [-- [nativeopts]]
-			Build a project using the generated build system.  If
-			[!] is supplied, the existing build files are cleaned
-			(using CMake's `--clean-first` option) before building
-			the project.  [opts] are passed directly to CMake.
+			Build a project using the generated build system
+			from the current build configuration.  If [!] is
+			supplied, the existing build files are cleaned (using
+			CMake's `--clean-first` option) before building the
+			project.  [opts] are passed directly to CMake.
 			[target] is the target to build instead of the default
 			target.  [nativeopts] are passed directly to the
 			native tool.
@@ -112,7 +122,28 @@ point after `:CMakeBuild` in the command line to trigger autocompletion, e.g.
 	:CMakeBuild --parallel 4 <TAB>
 <
 							*:CMakeInstall*
-:CMakeInstall		Install a project.
+:CMakeInstall		Install a project from the current build
+			configuration.
+
+------------------------------------------------------------------------------
+							*cmake-switch*
+Switching between build configurations~
+							*:CMakeSwitch*
+:CMakeSwitch {config}   Switch to build configuration {config}.  The build
+			configuration must exist, that is, there has to be a
+			project build system (for instance generated with
+			|:CMakeGenerate|) in the directory {config}.
+
+For instance, to switch to an existing configuration called "Release", run
+>
+	:CMakeSwitch Release
+<
+The default build configuration on start-up is specified by
+`g:cmake_default_config` (see |cmake-configuration|).  Use |:CMakeGenerate| to
+generate a build configuration.
+
+Vim-CMake provides autocompletion for existing build configurations.  Press
+<TAB> after `:CMakeSwitch` in the command line to trigger autocompletion.
 
 ------------------------------------------------------------------------------
 							*cmake-console*
@@ -140,10 +171,13 @@ Global <Plug> mappings~
 <Plug>(CMakeBuild)	Equivalent to `:CMakeBuild`.
 
 <Plug>(CMakeBuildTarget)
-			Equivalent to `:CMakeBuild`, but leaves the cursor in
-			the command line.
+			Inserts `:CMakeBuild` in the command line, and leaves
+			the cursor there.
 
 <Plug>(CMakeInstall)	Equivalent to `:CMakeInstall`.
+
+<Plug>(CMakeSwitch)	Inserts `:CMakeSwitch` in the command line, and leaves
+			the cursor there.
 
 <Plug>(CMakeOpen)	Equivalent to `:CMakeOpen`.
 
@@ -154,6 +188,7 @@ Example usage of the <Plug> mappings:
 	nmap <leader>cg <Plug>(CMakeGenerate)
 	nmap <leader>cb <Plug>(CMakeBuild)
 	nmap <leader>ci <Plug>(CMakeInstall)
+	nmap <leader>cs <Plug>(CMakeSwitch)
 	nmap <leader>cq <Plug>(CMakeClose)
 <
 ------------------------------------------------------------------------------
@@ -177,12 +212,10 @@ Vim-CMake has sensible defaults, but aims to be configurable.  A list of
 configuration options, with default values, follows.
 
 g:cmake_command (default: `'cmake'`)
-			Name (or full path) of CMake executable.
+			Name (or full path) of the CMake executable.
 
-g:cmake_default_build_dir (default: `'build'`)
-			Default binary directory where the build system is
-			generated, when no explicit build type is passed to
-			|:CMakeGenerate|.
+g:cmake_default_config (default: `'Debug'`)
+			Default build configuration on start-up.
 
 g:cmake_build_options (default: `[]`)
 			List of options to pass to CMake by default when

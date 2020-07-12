@@ -18,6 +18,8 @@ function! cmake#util#Log(level, message) abort
         echohl Error
     elseif a:level is# 'W'
         echohl WarningMsg
+    else
+        echohl MoreMsg
     endif
     echomsg '[Vim-CMake] ' . a:message
     echohl None
