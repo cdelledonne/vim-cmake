@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.2.1 &ndash; 2020-07-15
+
 ### Changed
 * Pass absolute path to `findfile()` when searching for existing build
   configurations.

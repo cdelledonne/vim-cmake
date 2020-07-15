@@ -3,7 +3,7 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:plugin_version = '0.2.0'
+let s:plugin_version = '0.2.1'
 
 " Get project root and try to reduce path to be relative to CWD.
 let g:cmake#source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
