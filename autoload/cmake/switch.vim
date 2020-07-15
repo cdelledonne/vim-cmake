@@ -14,10 +14,11 @@ let s:existing_configs = []
 " Generate list of existing configurations directories (with a buildsystem).
 "
 function! cmake#switch#SearchForExistingConfigs() abort
-    let s:cache_dirs = findfile(
-            \ 'CMakeCache.txt', g:cmake#source_dir . '/**1', -1)
-    call map(s:cache_dirs, {_, val -> fnamemodify(val, ':h')})
-    let s:existing_configs = s:cache_dirs
+    let l:source_dir_full_path = fnamemodify(g:cmake#source_dir, ':p')
+    let l:cache_dirs = findfile(
+            \ 'CMakeCache.txt', l:source_dir_full_path . '/**1', -1)
+    call map(l:cache_dirs, {_, val -> fnamemodify(val, ':h')})
+    let s:existing_configs = l:cache_dirs
 endfunction
 
 " Get list of existing configurations directories (with a buildsystem).
