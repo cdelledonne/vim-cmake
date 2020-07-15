@@ -38,7 +38,7 @@ function! s:CreateBuffer() abort
     setlocal filetype=vimcmake
     setlocal statusline=[CMake]
     setlocal statusline+=\ %{cmake#statusline#GetBuildInfo(0)}
-    setlocal statusline+=\ %{cmake#statusline#GetCmdInfo(1)}
+    setlocal statusline+=\ %{cmake#statusline#GetCmdInfo()}
     return bufnr('%')
 endfunction
 

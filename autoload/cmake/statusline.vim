@@ -13,7 +13,7 @@ function! cmake#statusline#Airline(...) abort
     if &filetype is# 'vimcmake'
         let w:airline_section_a = 'CMake'
         let w:airline_section_b = '%{cmake#statusline#GetBuildInfo(1)}'
-        let w:airline_section_c = '%{cmake#statusline#GetCmdInfo(1)}'
+        let w:airline_section_c = '%{cmake#statusline#GetCmdInfo()}'
         let w:airline_section_x = ''
         let w:airline_section_y = ''
     endif
@@ -24,7 +24,7 @@ function! cmake#statusline#AirlineInactive(...) abort
         call setwinvar(a:2.winnr, 'airline_section_c',
                 \ '[CMake]' .
                 \ ' %{cmake#statusline#GetBuildInfo(0)}' .
-                \ ' %{cmake#statusline#GetCmdInfo(1)}')
+                \ ' %{cmake#statusline#GetCmdInfo()}')
     endif
 endfunction
 
@@ -55,19 +55,12 @@ endfunction
 
 " Get command info string for statusline/airline.
 "
-" Params:
-" - active  whether called for the statusline of an active window
-"
 " Returns:
 " string containing statusline command info (command currently running)
 "
-function! cmake#statusline#GetCmdInfo(active) abort
+function! cmake#statusline#GetCmdInfo() abort
     if len(s:statusline_cmd_info)
-        if a:active
-            return s:statusline_cmd_info
-        else
-            return '[' . s:statusline_cmd_info . ']'
-        endif
+        return s:statusline_cmd_info
     else
         return ' '
     endif
