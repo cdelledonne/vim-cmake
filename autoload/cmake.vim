@@ -13,11 +13,6 @@ call cmake#plugnews#Print(s:plugin_version, {
         \ '0.2.0': 'Vim-CMake has a new feature, run `:help cmake-switch`',
         \ })
 
-if exists('g:loaded_airline') && g:loaded_airline
-    call airline#add_statusline_func('cmake#statusline#Airline')
-    call airline#add_inactive_statusline_func('cmake#statusline#AirlineInactive')
-endif
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " API functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

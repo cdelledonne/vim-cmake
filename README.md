@@ -127,19 +127,6 @@ write a feature request, post an issue or submit a pull request.
 
 <!--=========================================================================-->
 
-## Known issues
-
-#### Airline status information not working
-
-So far, I haven't been able to bypass Airline's terminal extension in an elegant
-way.  As a temporary workaround, set the following in your `.vimrc` (or
-`init.vim`) to disable the extension altogether:
-```vim
-let g:airline#extensions#term#enabled = 0
-```
-
-<!--=========================================================================-->
-
 ## License
 
 Vim-CMake is licensed under the [MIT license][license].  Copyright (c) 2020

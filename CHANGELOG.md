@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* Support for Airline is now provided in the vim-airline plugin, and disabling
+  Airline's terminal extension is not needed anymore.
+
 <!--=========================================================================-->
 
 ## 0.2.1 &ndash; 2020-07-15

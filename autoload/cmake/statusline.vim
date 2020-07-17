@@ -9,25 +9,6 @@ let s:statusline_cmd_info = ''
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-function! cmake#statusline#Airline(...) abort
-    if &filetype is# 'vimcmake'
-        let w:airline_section_a = 'CMake'
-        let w:airline_section_b = '%{cmake#statusline#GetBuildInfo(1)}'
-        let w:airline_section_c = '%{cmake#statusline#GetCmdInfo()}'
-        let w:airline_section_x = ''
-        let w:airline_section_y = ''
-    endif
-endfunction
-
-function! cmake#statusline#AirlineInactive(...) abort
-    if getbufvar(a:2.bufnr, '&filetype') is# 'vimcmake'
-        call setwinvar(a:2.winnr, 'airline_section_c',
-                \ '[CMake]' .
-                \ ' %{cmake#statusline#GetBuildInfo(0)}' .
-                \ ' %{cmake#statusline#GetCmdInfo()}')
-    endif
-endfunction
-
 " Set command info string for statusline/airline.
 "
 " Params:
@@ -70,7 +51,7 @@ endfunction
 "
 function! cmake#statusline#Refresh() abort
     if exists('g:loaded_airline') && g:loaded_airline
-        execute 'AirlineRefresh'
+        execute 'AirlineRefresh!'
     else
         execute 'redrawstatus!'
     endif
