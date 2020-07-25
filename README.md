@@ -134,7 +134,7 @@ Carlo Delle Donne.
 
 <!--=========================================================================-->
 
-[screencast]: https://user-images.githubusercontent.com/24732205/81405504-12555600-9138-11ea-8fca-c93ceb64dca3.gif
+[screencast]: https://user-images.githubusercontent.com/24732205/88468329-18aad100-cee2-11ea-94f4-f2ac59a2e6b9.gif
 [vim-cmake]: https://github.com/vhdirk/vim-cmake
 [cmake4vim]: https://github.com/ilyachur/cmake4vim
 [cmake.vim]: https://github.com/jalcine/cmake.vim
