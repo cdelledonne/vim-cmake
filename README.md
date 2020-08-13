@@ -95,6 +95,16 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `cq`        | Close CMake console window |
 | `<C-C>`     | Stop current command       |
 
+### Events
+
+Vim-CMake provides a set of custom events to trigger further actions.
+Run `:help cmake` for an extensive documentation of all configuration options and examples
+
+| Event                           | Description                               |
+|:--------------------------------|:------------------------------------------|
+| `User CMakeBuildSucceeded`      | Triggered after a successful `:CMakeBuild`|
+| `User CMakeBuildFailed`         | Triggered after a failed `:CMakeBuild`    |
+ 
 ### Quickfix list
 
 After each build (e.g. run with `:CMakeBuild`), Vim-CMake populates a quickfix

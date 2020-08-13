@@ -17,10 +17,11 @@ CONTENTS						*cmake-contents*
 4. Mappings ........................................... |cmake-mappings|
    4.1 Global <Plug> mappings ......................... |cmake-plug-mappings|
    4.2 CMake console window key mappings .............. |cmake-key-mappings|
-5. Quickfix list ...................................... |cmake-quickfix|
-6. Configuration ...................................... |cmake-configuration|
-7. Contributing ....................................... |cmake-contributing|
-8. License ............................................ |cmake-license|
+5. Events ............................................. |cmake-events|
+6. Quickfix list ...................................... |cmake-quickfix|
+7. Configuration ...................................... |cmake-configuration|
+8. Contributing ....................................... |cmake-contributing|
+9. License ............................................ |cmake-license|
 
 ==============================================================================
 INTRO							*cmake-intro*
@@ -209,6 +210,28 @@ cq			Close the CMake console window.
 
 <C-C>			Stop the current command.
 
+==============================================================================
+EVENTS							*cmake-events*
+
+To customize the behaviour after a `:CMakeBuild` command has finished, Vim-CMake
+defines some user events.
+
+`CMakeBuildFailed`	Triggered after a build has failed
+`CMakeBuildSucceeded`	Triggered after a build has succeeded
+
+Example usage of `CMakeBuildFailed` to jump to the first error
+>
+	let g:jump_on_error = 0 " We do not want to focus the console
+	augroup vim-cmake-group
+	autocmd User CMakeBuildFailed :cfirst
+	augroup END
+<
+Example usage of `CMakeBuildSucceeded` to close the Vim-CMake console
+>
+	augroup vim-cmake-group
+	autocmd! User CMakeBuildSucceeded CMakeClose
+	augroup END
+<
 ==============================================================================
 QUICKFIX LIST						*cmake-quickfix*
 
