@@ -59,9 +59,17 @@ function! cmake#job#TermStart(command, stdout_cb) abort
         let l:chan_id = job_getchannel(term_getjob(l:term))
         let s:job_callbacks[l:chan_id] = a:stdout_cb
     endif
-    " Set up autocmd to stop terminal job before exiting Vim/Neovim.
+    " Set up autocmd to stop terminal job before exiting Vim/Neovim. Older
+    " versions of Vim/Neovim do not have 'ExitPre', in which case we use
+    " 'VimLeavePre'. Though, calling TermStop() on 'VimLeavePre' in Vim seems
+    " to be to late and results in an error (E947), in which case one should
+    " quit with e.g. :qa!.
     augroup cmake
-        autocmd VimLeavePre * call cmake#job#TermStop()
+        if exists('##ExitPre')
+            autocmd ExitPre * call cmake#job#TermStop()
+        else
+            autocmd VimLeavePre * call cmake#job#TermStop()
+        endif
     augroup END
     return l:term
 endfunction
