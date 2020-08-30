@@ -98,7 +98,7 @@ function! cmake#build#Run(bg, wait, clean, ...) abort
         let l:command += get(l:options, 'native_build_options', [])
     endif
     " Run build command.
-    call cmake#statusline#SetCmdInfo('Building...')
+    call cmake#console#SetCmdId('build')
     call cmake#command#Run(l:command, a:bg, a:wait)
 endfunction
 
@@ -110,7 +110,7 @@ endfunction
 "
 function! cmake#build#RunInstall(bg, wait) abort
     let l:command = [g:cmake_command, '--install', cmake#switch#GetCurrent()]
-    call cmake#statusline#SetCmdInfo('Installing...')
+    call cmake#console#SetCmdId('install')
     call cmake#command#Run(l:command, a:bg, a:wait)
 endfunction
 

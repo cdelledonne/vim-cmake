@@ -40,7 +40,7 @@ function! cmake#generate#Run(bg, wait, options) abort
     else
         let l:command += ['-S', g:cmake#source_dir, '-B', l:build_dir]
     endif
-    call cmake#statusline#SetCmdInfo('Generating buildsystem...')
+    call cmake#console#SetCmdId('generate')
     call cmake#command#Run(l:command, a:bg, a:wait)
     if g:cmake_link_compile_commands
         " Link compile commands.
