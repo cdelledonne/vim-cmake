@@ -50,10 +50,6 @@ function! cmake#plugnews#Print(current_version, news) abort
         " Try to read previous version number from file.
         let l:line = readfile(s:data_file, 'b')
     catch /.*/
-        " Print latest update.
-        " FIXME: this one should be removed.
-        let l:last = l:all_version_numbers[-1]
-        call cmake#util#Log('I', a:news[s:NumberToVersion(l:last)])
         " Store current version number.
         try
             call mkdir(s:data_dir, 'p')
