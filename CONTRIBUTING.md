@@ -15,8 +15,9 @@ tackle (can be one of your own), then open a pull request following [these
 guidelines][pr-guidelines].  Make sure to **test your changes thoroughly** and,
 if needed,
 * update the documentation in `doc/cmake.txt`
-* run `vim -u NONE -c "helptags doc | q"`
+* generate help tags with `vim -u NONE -c "helptags doc | q"`
 * update the README
+* update the "Unreleased" section in the CHANGELOG
 
 <!--=========================================================================-->
 
