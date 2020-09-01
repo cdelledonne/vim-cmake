@@ -8,6 +8,10 @@ let s:console_id = -1
 let s:console_script = join([expand('<sfile>:h:h:h'), 'scripts', 'console.sh'], '/')
 let s:previous_window = -1
 let s:exit_term_mode = 0
+let s:cmd_id = ''
+
+let s:cmd_done = 1
+let s:last_cmd_output = []
 
 augroup cmake
     autocmd WinEnter * call cmake#console#Enter()
@@ -59,14 +63,41 @@ function! s:ExitTermMode() abort
     endif
 endfunction
 
-" Callback for non-background commands (cmake#generate#Run() and cmake#build#Run()).
+" Save console output to list, filtering all the non-printable characters and
+" ASCII color codes.
+"
+" Params:
+" - string  line(s) from command output
+"
+function! s:SaveCmdOutput(string) abort
+    " Remove ASCII color codes from string.
+    let l:s = substitute(a:string, '\m\C\%x1B\[[0-9;]*[a-zA-Z]', '', 'g')
+    " Remove trailing CR and whitespace.
+    let l:s = substitute(l:s, '\m\C\r\s$', '', 'g')
+    " Split string into list entries.
+    let l:l = split(l:s, '\r\s')
+    let s:last_cmd_output += l:l
+endfunction
+
+" Callback for non-background commands (cmake#generate#Run() and
+" cmake#build#Run()).
 "
 function! s:CMakeConsoleCb(data) abort
-    " Look for ETX (end of text) character from console.sh (dirty trick to
-    " mark end of command).
+    if s:cmd_done
+        let s:cmd_done = 0
+        let s:last_cmd_output = []
+    endif
+    call s:SaveCmdOutput(a:data)
+    " Look for ETX (end of text) character from console.sh (dirty trick to mark
+    " end of command).
     if match(a:data, "\x03") >= 0
-        call cmake#statusline#SetCmdInfo('')
+        let l:cmd_id = s:cmd_id
+        let s:cmd_done = 1
+        call cmake#console#SetCmdId('')
         call cmake#build#UpdateTargets()
+        if l:cmd_id ==# 'build'
+            call cmake#quickfix#Generate()
+        endif
         " Exit terminal mode if inside the CMake console window (useful for
         " Vim). Otherwise the terminal mode is exited after WinEnter event.
         if winnr() == bufwinnr(s:console_buffer)
@@ -163,4 +194,31 @@ endfunction
 "
 function! cmake#console#GetID() abort
     return s:console_id
+endfunction
+
+" Return output of the last command as a list of strings.
+"
+function! cmake#console#GetLastCmdOutput() abort
+    return s:last_cmd_output
+endfunction
+
+" Set ID of command that is currently executing.
+"
+" Params:
+" - id  command ID, can be 'generate', 'build', 'install', or ''
+"
+function! cmake#console#SetCmdId(id) abort
+    if a:id ==# 'generate'
+        let s:cmd_id = a:id
+        call cmake#statusline#SetCmdInfo('Generating buildsystem...')
+    elseif a:id ==# 'build'
+        let s:cmd_id = a:id
+        call cmake#statusline#SetCmdInfo('Building...')
+    elseif a:id ==# 'install'
+        let s:cmd_id = a:id
+        call cmake#statusline#SetCmdInfo('Installing...')
+    else
+        let s:cmd_id = ''
+        call cmake#statusline#SetCmdInfo('')
+    endif
 endfunction

@@ -13,10 +13,11 @@ nice visual feedback.
 **Features**
 
 * Visual experience, shows CMake output in a console-like window
-* Plug-and-play, but configurable
 * Slick management of build configurations
 * Autocompletion for build targets and build configurations
+* Quickfix list population after each build
 * Airline/statusline status information, including current build configuration
+* Plug-and-play, but configurable
 * Written in Vimscript (other than one tiny Bash script)
 
 **Requirements**
@@ -63,9 +64,9 @@ build][oos]).  To switch between build configurations, run `:CMakeSwitch
 <config>`.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
-etc.), build specific targets and control build options.  For a detailed
-explanation of commands and mappings run `:help cmake`.  A quick overview
-follows.
+etc.), build specific targets and control build options, and fix errors using
+Vim's quickfix feature.  For a detailed explanation of commands, mappings and
+functionalities run `:help cmake`.  A quick overview follows.
 
 ### Commands and `<Plug>` mappings
 
@@ -94,6 +95,14 @@ follows.
 | `ci`        | Run `:CMakeInstall`        |
 | `cq`        | Close CMake console window |
 | `<C-C>`     | Stop current command       |
+
+### Quickfix list
+
+After each build (e.g. run with `:CMakeBuild`), Vim-CMake populates a quickfix
+list to speedup the edit-compile-run cycle, similarly to when running `:make` in
+Vim/Neovim.  Upon an unsuccessful build, just use the standard quickfix commands
+to open the list of errors (e.g. `:copen`) and jump between errors (e.g.
+`:cfirst`, `:cnext`).
 
 <!--=========================================================================-->
 

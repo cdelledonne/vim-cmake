@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* Quickfix list population after each build.
+
 <!--=========================================================================-->
 
 ## 0.2.2 &ndash; 2020-07-18

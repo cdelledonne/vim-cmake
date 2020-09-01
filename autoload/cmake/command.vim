@@ -42,10 +42,10 @@ function! cmake#command#Run(command, bg, wait, ...) abort
 endfunction
 
 " Stop command currently running in the CMake console.
+"
 function! cmake#command#Stop() abort
     try
         call cmake#job#TermSend("\x03")
     catch /.*/
     endtry
 endfunction
-
