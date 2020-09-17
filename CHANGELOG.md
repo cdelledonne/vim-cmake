@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* Fixed parsing command output in Vim to populate the quickfix list.
+
 <!--=========================================================================-->
 
 ## 0.3.0 &ndash; 2020-09-01

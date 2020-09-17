@@ -72,10 +72,8 @@ endfunction
 function! s:SaveCmdOutput(string) abort
     " Remove ASCII color codes from string.
     let l:s = substitute(a:string, '\m\C\%x1B\[[0-9;]*[a-zA-Z]', '', 'g')
-    " Remove trailing CR and whitespace.
-    let l:s = substitute(l:s, '\m\C\r\s$', '', 'g')
     " Split string into list entries.
-    let l:l = split(l:s, '\r\s')
+    let l:l = split(l:s, '\r.')
     let s:last_cmd_output += l:l
 endfunction
 
