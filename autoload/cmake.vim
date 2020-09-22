@@ -21,11 +21,14 @@ call cmake#plugnews#Print(s:plugin_version, {
 " API function for cmake#generate#Run().
 "
 " Params:
-" - bg         whether to run the command in the background
-" - wait       whether to wait for completion (only for bg == 1)
-" - clean      whether to clean before generating
-" - [options]  optional parameter to specify build configuration and additional
-"              CMake options
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         whether to wait for completion (only for bg == 1)
+"     clean : Number
+"         whether to clean before generating
+"     a:1 : String
+"         (optional) build configuration and additional CMake options
 "
 function! cmake#Generate(bg, wait, clean, ...) abort
     let l:arglist = []
@@ -70,7 +73,8 @@ endfunction
 " API function for cmake#switch#SetCurrent().
 "
 " Params:
-" - config  build configuration
+"     a:1 : String
+"         build configuration
 "
 function! cmake#Switch(...) abort
     " Check that config folder exists.
@@ -86,10 +90,14 @@ endfunction
 " API function for cmake#build#Run().
 "
 " Params:
-" - bg         whether to run the command in the background
-" - wait       whether to wait for completion (only for bg == 1)
-" - clean      whether to clean before building
-" - [options]  optional parameter to specify target and other options
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         whether to wait for completion (only for bg == 1)
+"     clean : Number
+"         whether to clean before building
+"     a:1 : String
+"         (optional) target and other build options
 "
 function! cmake#Build(bg, wait, clean, ...) abort
     if a:0 > 0
@@ -102,8 +110,10 @@ endfunction
 " API function for cmake#build#RunInstall().
 "
 " Params:
-" - bg         whether to run the command in the background
-" - wait       whether to wait for completion (only for bg == 1)
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         whether to wait for completion (only for bg == 1)
 "
 function! cmake#Install(bg, wait) abort
     call cmake#build#RunInstall(a:bg, a:wait)
@@ -111,11 +121,8 @@ endfunction
 
 " API function for cmake#console#Open().
 "
-" Params:
-" - clear  if set, a new buffer is created and the old one is deleted
-"
-function! cmake#Open(clear) abort
-    call cmake#console#Open(a:clear)
+function! cmake#Open() abort
+    call cmake#console#Open(0)
 endfunction
 
 " API function for cmake#console#Close().

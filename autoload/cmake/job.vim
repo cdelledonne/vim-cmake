@@ -35,11 +35,14 @@ endfunction
 " Start CMake console terminal.
 "
 " Params:
-" - command    command to run in the terminal
-" - stdout_cb  stdout callback (must take one argument, the stdout string)
+"     command : String
+"         command to run in the terminal
+"     stdout_cb : Funcref
+"         stdout callback (must take one argument, the stdout string)
 "
 " Returns:
-" terminal id
+"     Number
+"         terminal id
 "
 function! cmake#job#TermStart(command, stdout_cb) abort
     if has('nvim')
@@ -77,7 +80,8 @@ endfunction
 " Send input to terminal buffer.
 "
 " Params:
-" - input  input string to send to terminal's stdin
+"     input : String
+"         input string to send to terminal's stdin
 "
 function! cmake#job#TermSend(input) abort
     if has('nvim')
@@ -111,11 +115,14 @@ endfunction
 " Start arbitrary background job.
 "
 " Params:
-" - command    command to run
-" - stdout_cb  stdout callback (must take one argument, the stdout string)
+"     command : String
+"         command to run
+"     stdout_cb : Funcref
+"         stdout callback (must take one argument, the stdout string)
 "
 " Returns:
-" job id
+"     Number
+"         job id
 "
 function! cmake#job#JobStart(command, stdout_cb) abort
     if has('nvim')
@@ -141,7 +148,8 @@ endfunction
 " Wait for completion of a job.
 "
 " Params:
-" - job_id  job id
+"     job_id : Number
+"         job id
 "
 function! cmake#job#JobWait(job_id) abort
     if has('nvim')

@@ -10,11 +10,14 @@
 " Run arbitrary command in a non-interactive terminal or in the background.
 "
 " Params:
-" - command   the command to be run, can be a list of command and arguments
-" - bg        whether to run the command in the background
-" - wait      for background commands, whether to wait for completion
-" - [stdout]  optional paramater to set stdout callback, ignored for
-"             non-background commands
+"     command : List
+"         the command to be run, can be a list of command and arguments
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         for background commands, whether to wait for completion
+"     a:1 : Funcref
+"         (optional) stdout callback, ignored for non-background commands
 "
 function! cmake#command#Run(command, bg, wait, ...) abort
     " Note: Vim requires Funcref variable names to start with a capital.

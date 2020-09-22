@@ -62,7 +62,7 @@ command -nargs=? -bang -complete=custom,cmake#build#GetTargets CMakeBuild
 
 command CMakeInstall call cmake#Install(0, 0)
 
-command CMakeOpen call cmake#Open(0)
+command CMakeOpen call cmake#Open()
 command CMakeClose call cmake#Close()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

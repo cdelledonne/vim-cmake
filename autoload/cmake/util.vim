@@ -10,8 +10,10 @@
 " Echo a message with color depending on log level.
 "
 " Params:
-" - level    can be 'E' (error), 'W' (warning) or 'I' (info)
-" - message  message to echo
+"     level : String
+"         can be 'E' (error), 'W' (warning) or 'I' (info)
+"     message : String
+"         message to echo
 "
 function! cmake#util#Log(level, message) abort
     if a:level is# 'E'
@@ -28,7 +30,8 @@ endfunction
 " Find project root by looking for g:cmake_root_markers upwards.
 "
 " Returns:
-" path to the root of the project
+"     String
+"         path to the root of the project
 "
 function! cmake#util#FindProjectRoot() abort
     let l:root = getcwd()

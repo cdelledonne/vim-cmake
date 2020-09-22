@@ -25,9 +25,12 @@ call cmake#command#Run(s:command, 1, 1, function('s:GetCMakeVersionCb'))
 " Generate a buildsystem for the project using CMake.
 "
 " Params:
-" - bg       whether to run the command in the background
-" - wait     whether to wait for completion (only for bg == 1)
-" - options  list of CMake options
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         whether to wait for completion (only for bg == 1)
+"     options : List
+"         list of CMake options
 "
 function! cmake#generate#Run(bg, wait, options) abort
     let l:command = [g:cmake_command]
@@ -65,12 +68,14 @@ endfunction
 " Get CMake build configuration value from command-line arguments.
 "
 " Params:
-" - arglist  list of command-line arguments
+"     arglist : List
+"         list of command-line arguments
 "
 " Returns:
-" list, whose first value is the build configuration, and the second value is a
-" flag that is set when the build configuration appears in the arguments as
-" '-DCMAKE_BUILD_TYPE=<config>'
+"     List
+"         list, whose first value is the build configuration, and the second
+"         value is a flag that is set when the build configuration appears in
+"         the arguments as '-DCMAKE_BUILD_TYPE=<config>'
 "
 function! cmake#generate#GetBuildType(arglist) abort
     if len(a:arglist)

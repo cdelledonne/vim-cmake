@@ -12,19 +12,20 @@ let s:cmake_targets = []
 " Get dictionary of build arguments from command-line string.
 "
 " Params:
-" - argstring  string containing command-line arguments, like target and
-"              additional CMake build options
+"     argstring : String
+"         command-line arguments, like target and additional build options
 "
 " Returns:
-" dictionary containing CMake build options, target and native options
+"     Dictionary
+"         CMake build options, target and native options
 "
 " Example:
-" argstring = --jobs 4 all -- VERBOSE=1
-" return = {
-"         \ 'cmake_build_options': ['--jobs', '4'],
-"         \ 'target': ['--target', 'all'],
-"         \ 'native_build_options': ['VERBOSE=1']
-"         \ }
+"     argstring = --jobs 4 all -- VERBOSE=1
+"     return = {
+"             \ 'cmake_build_options': ['--jobs', '4'],
+"             \ 'target': ['--target', 'all'],
+"             \ 'native_build_options': ['VERBOSE=1']
+"             \ }
 "
 function! s:GetBuildArgs(argstring) abort
     let l:argdict = {}
@@ -70,10 +71,14 @@ endfunction
 " Build a project using the generated buildsystem.
 "
 " Params:
-" - bg         whether to run the command in the background
-" - wait       whether to wait for completion (only for bg == 1)
-" - clean      whether to clean before building
-" - [options]  optional string containing target and other options
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         whether to wait for completion (only for bg == 1)
+"     clean : Number
+"         whether to clean before building
+"     a:1 : String
+"         optional string containing target and other options
 "
 function! cmake#build#Run(bg, wait, clean, ...) abort
     let l:command = [g:cmake_command, '--build', cmake#switch#GetCurrent()]
@@ -105,8 +110,10 @@ endfunction
 " Install a project.
 "
 " Params:
-" - bg         whether to run the command in the background
-" - wait       whether to wait for completion (only for bg == 1)
+"     bg : Number
+"         whether to run the command in the background
+"     wait : Number
+"         whether to wait for completion (only for bg == 1)
 "
 function! cmake#build#RunInstall(bg, wait) abort
     let l:command = [g:cmake_command, '--install', cmake#switch#GetCurrent()]
@@ -117,12 +124,16 @@ endfunction
 " Get list of available CMake targets. Used for autocompletion of commands.
 "
 " Params:
-" - arg_lead    the leading portion of the argument currently being completed
-" - cmd_line    the entire command line
-" - cursor_pos  the cursor position in it (byte index)
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
 "
 " Returns:
-" string of available targets, one per line
+"     String
+"         available targets, one per line
 "
 function! cmake#build#GetTargets(arg_lead, cmd_line, cursor_pos) abort
     return join(s:cmake_targets, "\n")

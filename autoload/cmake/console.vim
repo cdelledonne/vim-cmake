@@ -24,7 +24,8 @@ augroup END
 " Create Vim-CMake buffer and apply local settings.
 "
 " Returns:
-" number of the created buffer
+"     Number
+"         number of the created buffer
 "
 function! s:CreateBuffer() abort
     execute 'enew'
@@ -49,7 +50,8 @@ endfunction
 " Create Vim-CMake window.
 "
 " Returns:
-" number of the created window
+"     Number
+"         number of the created window
 "
 function! s:CreateWindow() abort
     execute join([g:cmake_console_position, g:cmake_console_size . 'split'])
@@ -67,7 +69,8 @@ endfunction
 " ASCII color codes.
 "
 " Params:
-" - string  line(s) from command output
+"     string : String
+"         line(s) from command output
 "
 function! s:SaveCmdOutput(string) abort
     " Remove ASCII color codes from string.
@@ -128,7 +131,8 @@ endfunction
 " Open Vim-CMake console window.
 "
 " Params:
-" - clear  if set, a new buffer is created and the old one is deleted
+"     clear : Number
+"         if set, a new buffer is created and the old one is deleted
 "
 function! cmake#console#Open(clear) abort
     let l:current_window = winnr()
@@ -203,7 +207,8 @@ endfunction
 " Set ID of command that is currently executing.
 "
 " Params:
-" - id  command ID, can be 'generate', 'build', 'install', or ''
+"     id : String
+"         command ID, can be 'generate', 'build', 'install', or ''
 "
 function! cmake#console#SetCmdId(id) abort
     if a:id ==# 'generate'

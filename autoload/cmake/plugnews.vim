@@ -35,11 +35,12 @@ endfunction
 " Print news of newer Vim-CMake versions.
 "
 " Params:
-" - current_version  string identifying the current version of the plugin (in
-"                    the format <major>.<minor>.<patch>)
-" - news             dictionary of news, where a key identifies a version (in
-"                    the format <major>.<minor>.<patch>), and a value is a
-"                    string containing the news to print for a version
+"     current_version : String
+"         current version of the plugin (in the format <major>.<minor>.<patch>)
+"     news : Dictionary
+"         dictionary of news, where a key identifies a version (in the format
+"         <major>.<minor>.<patch>), and a value is a string containing the news
+"         to print for a version
 "
 function! cmake#plugnews#Print(current_version, news) abort
     " Make a list of all version numbers, transform to integers, and sort.

@@ -12,7 +12,8 @@ let s:statusline_cmd_info = ''
 " Set command info string for statusline/airline.
 "
 " Params:
-" - cmd_info  string for statusline command info
+"     cmd_info : String
+"         statusline command info
 "
 function! cmake#statusline#SetCmdInfo(cmd_info) abort
     let s:statusline_cmd_info = a:cmd_info
@@ -21,10 +22,12 @@ endfunction
 " Get build info string for statusline/airline.
 "
 " Params:
-" - active  whether called for the statusline of an active window
+"     active : Number
+"         whether called for the statusline of an active window
 "
 " Returns:
-" string containing statusline build info
+"     String
+"         statusline build info
 "
 function! cmake#statusline#GetBuildInfo(active) abort
     if a:active
@@ -37,7 +40,8 @@ endfunction
 " Get command info string for statusline/airline.
 "
 " Returns:
-" string containing statusline command info (command currently running)
+"     String
+"         statusline command info (command currently running)
 "
 function! cmake#statusline#GetCmdInfo() abort
     if len(s:statusline_cmd_info)

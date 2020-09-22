@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Changed
 * Fixed parsing command output in Vim to populate the quickfix list.
+* Updated source code documentation format
 
 <!--=========================================================================-->
 

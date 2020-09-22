@@ -23,8 +23,17 @@ endfunction
 
 " Get list of existing configurations directories (with a buildsystem).
 "
+" Params:
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
+"
 " Returns:
-" stringified list of existing configuration directories
+"     String
+"         stringified list of existing configuration directories
 "
 function! cmake#switch#GetExistingConfigs(arg_lead, cmd_line, cursor_pos) abort
     if empty(s:existing_configs)
@@ -36,7 +45,8 @@ endfunction
 " Set current build configuration.
 "
 " Params:
-" - config  build configuration
+"     config : String
+"         build configuration
 "
 function! cmake#switch#SetCurrent(config) abort
     " Set config.
@@ -54,7 +64,8 @@ endfunction
 " Get current build configuration.
 "
 " Returns:
-" current build configuration
+"     String
+"         current build configuration
 "
 function! cmake#switch#GetCurrent() abort
     return s:config
