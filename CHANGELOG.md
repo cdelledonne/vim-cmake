@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* `g:cmake_generate_options`, list of options to pass to CMake by default when
+  running `:CMakeGenerate`
+
 ### Changed
 * Fixed parsing command output in Vim to populate the quickfix list.
 * Updated source code documentation format

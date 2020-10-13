@@ -35,8 +35,9 @@ call cmake#command#Run(s:command, 1, 1, function('s:GetCMakeVersionCb'))
 function! cmake#generate#Run(bg, wait, options) abort
     let l:command = [g:cmake_command]
     let l:build_dir = cmake#switch#GetCurrent()
-    " Add CMake build options to the command.
+    " Add CMake generate options to the command.
     let l:command += a:options
+    let l:command += g:cmake_generate_options
     " Construct command based on CMake version.
     if s:cmake_version < 313
         let l:command += ['-H' . g:cmake#source_dir, '-B' . l:build_dir]

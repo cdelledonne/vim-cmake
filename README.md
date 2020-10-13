@@ -50,7 +50,6 @@ or Vim's native package manager:
 mkdir -p ~/.vim/pack/plug/start
 cd ~/.vim/pack/plug/start
 git clone https://github.com/cdelledonne/vim-cmake.git
-vim -u NONE -c "helptags vim-cmake/doc | q"
 ```
 
 <!--=========================================================================-->
@@ -116,6 +115,7 @@ follows.
 |:--------------------------------|:-------------------|
 | `g:cmake_command`               | `'cmake'`          |
 | `g:cmake_default_config`        | `'Debug'`          |
+| `g:cmake_generate_options`      | `[]`               |
 | `g:cmake_build_options`         | `[]`               |
 | `g:cmake_native_build_options`  | `[]`               |
 | `g:cmake_console_size`          | `15`               |
