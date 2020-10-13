@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.4.0 &ndash; 2020-10-13
+
 ### Added
 * `g:cmake_generate_options`, list of options to pass to CMake by default when
   running `:CMakeGenerate`
