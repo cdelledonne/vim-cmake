@@ -9,17 +9,21 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* Fixed bug that wouldn't make the console script run when Vim-CMake is
+  installed in a directory that contains spaces.
+
 <!--=========================================================================-->
 
 ## 0.4.0 &ndash; 2020-10-13
 
 ### Added
 * `g:cmake_generate_options`, list of options to pass to CMake by default when
-  running `:CMakeGenerate`
+  running `:CMakeGenerate`.
 
 ### Changed
 * Fixed parsing command output in Vim to populate the quickfix list.
-* Updated source code documentation format
+* Updated source code documentation format.
 
 <!--=========================================================================-->
 
@@ -68,7 +72,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 ### Changed
 * `:CMakeBuild!` and `:CMakeInstall` now use the native `--clean-first` and
   `--install` CMake options.
-* Fix error when vim-airline not loaded and polish statusline/Airline output
+* Fix error when vim-airline not loaded and polish statusline/Airline output.
 
 ### Removed
 * `:CMakeBuildClean`, as `:CMakeBuild!` should cover most of the use cases, and
