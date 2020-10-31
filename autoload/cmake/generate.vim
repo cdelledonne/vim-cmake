@@ -34,15 +34,16 @@ call cmake#command#Run(s:command, 1, 1, function('s:GetCMakeVersionCb'))
 "
 function! cmake#generate#Run(bg, wait, options) abort
     let l:command = [g:cmake_command]
-    let l:build_dir = cmake#switch#GetCurrent()
+    let l:source_dir = fnameescape(cmake#GetSourceDir())
+    let l:build_dir = fnameescape(cmake#switch#GetPathToCurrent())
     " Add CMake generate options to the command.
     let l:command += a:options
     let l:command += g:cmake_generate_options
     " Construct command based on CMake version.
     if s:cmake_version < 313
-        let l:command += ['-H' . g:cmake#source_dir, '-B' . l:build_dir]
+        let l:command += ['-H' . l:source_dir, '-B' . l:build_dir]
     else
-        let l:command += ['-S', g:cmake#source_dir, '-B', l:build_dir]
+        let l:command += ['-S', l:source_dir, '-B', l:build_dir]
     endif
     call cmake#console#SetCmdId('generate')
     call cmake#command#Run(l:command, a:bg, a:wait)
@@ -50,7 +51,7 @@ function! cmake#generate#Run(bg, wait, options) abort
         " Link compile commands.
         let l:command = ['ln', '-sf',
                 \ l:build_dir . '/compile_commands.json',
-                \ g:cmake#source_dir
+                \ l:source_dir
                 \ ]
         call cmake#command#Run(l:command, 1, 1)
     endif
@@ -59,7 +60,7 @@ endfunction
 " Clean buildsystem (CMake files).
 "
 function! cmake#generate#Clean() abort
-    let l:build_dir = cmake#switch#GetCurrent()
+    let l:build_dir = fnameescape(cmake#switch#GetPathToCurrent())
     if isdirectory(l:build_dir)
         let l:command = ['rm', '-rf', l:build_dir . '/*']
         call cmake#command#Run(l:command, 1, 1)
