@@ -13,10 +13,6 @@ let s:cmd_id = ''
 let s:cmd_done = 1
 let s:last_cmd_output = []
 
-augroup cmake
-    autocmd WinEnter * call cmake#console#Enter()
-augroup END
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Internal functions and callbacks
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -44,6 +40,9 @@ function! s:CreateBuffer() abort
     setlocal statusline=[CMake]
     setlocal statusline+=\ %{cmake#statusline#GetBuildInfo(0)}
     setlocal statusline+=\ %{cmake#statusline#GetCmdInfo()}
+    augroup cmake
+        autocmd WinEnter <buffer> call cmake#console#Enter()
+    augroup END
     return bufnr('%')
 endfunction
 

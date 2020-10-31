@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 ### Changed
 * Fixed bug that wouldn't make the console script run when Vim-CMake is
   installed in a directory that contains spaces.
+* Make the `WinEnter` autocmd in console.vim buffer-local.
 
 <!--=========================================================================-->
 
