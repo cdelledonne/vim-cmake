@@ -23,7 +23,7 @@ nice visual feedback.
 **Requirements**
 
 * Vim with `+terminal`, or Neovim
-* Linux or macOS (Windows not supported/tested yet)
+* Linux, or macOS, or Windows (on Windows Terminal)
 
 **Related projects**
 
