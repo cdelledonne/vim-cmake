@@ -31,13 +31,14 @@ endfunction
 "
 " Returns:
 "     String
-"         path to the root of the project
+"         (unescaped) path to the root of the project
 "
 function! cmake#util#FindProjectRoot() abort
     let l:root = getcwd()
+    let l:escaped_cwd = fnameescape(getcwd())
     for l:marker in g:cmake_root_markers
         " Search CWD upward for l:marker, assuming it is a file.
-        let l:marker_path = findfile(l:marker, getcwd() . ';' . $HOME)
+        let l:marker_path = findfile(l:marker, l:escaped_cwd . ';' . $HOME)
         if len(l:marker_path)
             " If found, get absolute path and strip l:marker from it.
             let l:root = fnamemodify(l:marker_path, printf(
@@ -45,7 +46,7 @@ function! cmake#util#FindProjectRoot() abort
             break
         endif
         " Search CWD upward for l:marker, assuming it is a directory.
-        let l:marker_path = finddir(l:marker, getcwd() . ';' . $HOME)
+        let l:marker_path = finddir(l:marker, l:escaped_cwd . ';' . $HOME)
         if len(l:marker_path)
             " If found, get absolute path and strip l:marker from it.
             let l:root = fnamemodify(l:marker_path, printf(

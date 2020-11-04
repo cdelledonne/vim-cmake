@@ -5,8 +5,9 @@
 
 let s:plugin_version = '0.4.0'
 
-" Get project root and try to reduce path to be relative to CWD.
-let g:cmake#source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
+" Get project root and try to reduce path to be relative to CWD. The path is
+" not escaped, thus it must be first escaped to be used as a command argument.
+let s:source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
 
 " Print news of new Vim-CMake versions.
 call cmake#plugnews#Print(s:plugin_version, {
@@ -130,4 +131,18 @@ endfunction
 "
 function! cmake#Close() abort
     call cmake#console#Close()
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Other public functions
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Get path to CMake source directory of current project, possibly reduced
+" relatively to CWD.
+"
+" Returns:
+"     String
+"         (unescaped) path to CMake source directory
+function! cmake#GetSourceDir() abort
+    return s:source_dir
 endfunction

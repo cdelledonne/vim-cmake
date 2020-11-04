@@ -5,7 +5,8 @@
 
 let s:console_buffer = -1
 let s:console_id = -1
-let s:console_script = '"' . join([expand('<sfile>:h:h:h'), 'scripts', 'console.sh'], '/') . '"'
+let s:console_script = fnameescape(
+        \ join([expand('<sfile>:h:h:h'), 'scripts', 'console.sh'], '/'))
 let s:previous_window = -1
 let s:exit_term_mode = 0
 let s:cmd_id = ''

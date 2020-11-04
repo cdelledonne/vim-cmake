@@ -14,10 +14,11 @@ let s:existing_configs = []
 " Generate list of existing configurations directories (with a buildsystem).
 "
 function! cmake#switch#SearchForExistingConfigs() abort
-    let l:source_dir_full_path = fnamemodify(g:cmake#source_dir, ':p')
+    let l:escaped_source_dir_full_path = fnameescape(
+            \ fnamemodify(cmake#GetSourceDir(), ':p'))
     let l:cache_dirs = findfile(
-            \ 'CMakeCache.txt', l:source_dir_full_path . '/**1', -1)
-    call map(l:cache_dirs, {_, val -> fnamemodify(val, ':h')})
+            \ 'CMakeCache.txt', l:escaped_source_dir_full_path . '/**1', -1)
+    call map(l:cache_dirs, {_, val -> fnamemodify(val, ':h:t')})
     let s:existing_configs = l:cache_dirs
 endfunction
 
@@ -55,7 +56,7 @@ function! cmake#switch#SetCurrent(config) abort
     if g:cmake_link_compile_commands
         let l:command = ['ln', '-sf',
                 \ s:config . '/compile_commands.json',
-                \ g:cmake#source_dir
+                \ cmake#GetSourceDir()
                 \ ]
         call cmake#command#Run(l:command, 1, 1)
     endif
@@ -69,4 +70,16 @@ endfunction
 "
 function! cmake#switch#GetCurrent() abort
     return s:config
+endfunction
+
+" Get path to current build configuration, possibly reduced relatively to CWD.
+"
+" Returns:
+"     String
+"         (unescaped) path to current build configuration
+"
+function! cmake#switch#GetPathToCurrent() abort
+    return fnamemodify(
+            \ join([cmake#GetSourceDir(), cmake#switch#GetCurrent()], '/'),
+            \ ':.')
 endfunction
