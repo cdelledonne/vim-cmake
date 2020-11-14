@@ -39,6 +39,10 @@ function! cmake#generate#Run(bg, wait, options) abort
     " Add CMake generate options to the command.
     let l:command += a:options
     let l:command += g:cmake_generate_options
+    " Export compile commands if requested.
+    if g:cmake_link_compile_commands
+        let l:command += ['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON']
+    endif
     " Construct command based on CMake version.
     if s:cmake_version < 313
         let l:command += ['-H' . l:source_dir, '-B' . l:build_dir]
