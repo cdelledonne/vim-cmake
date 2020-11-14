@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+
+* `g:cmake_build_directory`, path to the build directory.
+
 ### Changed
 * Fixed bug that wouldn't make the console script run when Vim-CMake is
   installed in a directory that contains spaces.

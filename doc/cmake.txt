@@ -232,6 +232,11 @@ g:cmake_command (default: `'cmake'`)
 g:cmake_default_config (default: `'Debug'`)
 			Default build configuration on start-up.
 
+g:cmake_build_directory (default: '.')
+			Path to the build directory used by CMake. It is
+			relative to the source directory. Each configuration
+			will create a sub-folder inside of it.
+
 g:cmake_generate_options (default: `[]`)
 			List of options to pass to CMake by default when
 			running |:CMakeGenerate|.

@@ -14,10 +14,10 @@ let s:existing_configs = []
 " Generate list of existing configurations directories (with a buildsystem).
 "
 function! cmake#switch#SearchForExistingConfigs() abort
-    let l:escaped_source_dir_full_path = fnameescape(
-            \ fnamemodify(cmake#GetSourceDir(), ':p'))
+    let l:escaped_build_dir_full_path = fnameescape(
+            \ fnamemodify(cmake#switch#GetBuildDir(), ':p'))
     let l:cache_dirs = findfile(
-            \ 'CMakeCache.txt', l:escaped_source_dir_full_path . '/**1', -1)
+            \ 'CMakeCache.txt', l:escaped_build_dir_full_path . '/**1', -1)
     call map(l:cache_dirs, {_, val -> fnamemodify(val, ':h:t')})
     let s:existing_configs = l:cache_dirs
 endfunction
@@ -55,7 +55,7 @@ function! cmake#switch#SetCurrent(config) abort
     " Link compile commands, if requested.
     if g:cmake_link_compile_commands
         let l:command = ['ln', '-sf',
-                \ s:config . '/compile_commands.json',
+                \ cmake#switch#GetPathToCurrent() . '/compile_commands.json',
                 \ cmake#GetSourceDir()
                 \ ]
         call cmake#command#Run(l:command, 1, 1)
@@ -72,6 +72,23 @@ function! cmake#switch#GetCurrent() abort
     return s:config
 endfunction
 
+" Get path to parent build configuration, possibly reduced relatively to CWD.
+"
+" Returns:
+"     String
+"         (unescaped) path to parent build configuration
+"
+function! cmake#switch#GetBuildDir() abort
+    let l:source_dir = cmake#GetSourceDir()
+
+    " It seems impossible to resolve a relative path otherwise.
+    exec 'lcd ' . l:source_dir
+    let l:build_dir = expand(g:cmake_build_directory, ':p')
+    lcd -
+
+    return l:build_dir
+endfunction
+
 " Get path to current build configuration, possibly reduced relatively to CWD.
 "
 " Returns:
@@ -79,7 +96,8 @@ endfunction
 "         (unescaped) path to current build configuration
 "
 function! cmake#switch#GetPathToCurrent() abort
+    " Append configuration name to the build directory.
     return fnamemodify(
-            \ join([cmake#GetSourceDir(), cmake#switch#GetCurrent()], '/'),
+            \ join([cmake#switch#GetBuildDir(), cmake#switch#GetCurrent()], '/'),
             \ ':.')
 endfunction
