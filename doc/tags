@@ -12,6 +12,7 @@ cmake-configuration	cmake.txt	/*cmake-configuration*
 cmake-console	cmake.txt	/*cmake-console*
 cmake-contents	cmake.txt	/*cmake-contents*
 cmake-contributing	cmake.txt	/*cmake-contributing*
+cmake-events	cmake.txt	/*cmake-events*
 cmake-generate	cmake.txt	/*cmake-generate*
 cmake-intro	cmake.txt	/*cmake-intro*
 cmake-key-mappings	cmake.txt	/*cmake-key-mappings*

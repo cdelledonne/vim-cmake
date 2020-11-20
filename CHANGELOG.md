@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 * Make the `WinEnter` autocmd in console.vim buffer-local.
 * Set correct source and build directories even when invoking Vim-CMake commands
   from subdirectory of root (source) directory.
+* Implemented user autocommands CMakeBuildFailed and CMakeBuildSuceeded to
+  customize behaviour after :CMakeBuild
 
 <!--=========================================================================-->
 
