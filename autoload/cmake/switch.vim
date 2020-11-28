@@ -80,6 +80,6 @@ endfunction
 "
 function! cmake#switch#GetPathToCurrent() abort
     return fnamemodify(
-            \ join([cmake#GetSourceDir(), cmake#switch#GetCurrent()], '/'),
+            \ join([cmake#GetSourceDir(), '..', cmake#switch#GetCurrent()], '/'),
             \ ':.')
 endfunction
