@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 * Implemented user autocommands CMakeBuildFailed and CMakeBuildSuceeded to
   customize behaviour after :CMakeBuild
 * Internal implementation of `:CMakeGenerate` made more structured.
+* Automatically set the configuration option `CMAKE_EXPORT_COMPILE_COMMANDS` to
+  `ON` when `g:cmake_link_compile_commands` is set to `1`.
 
 <!--=========================================================================-->
 

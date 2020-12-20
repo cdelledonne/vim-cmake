@@ -112,6 +112,14 @@ function! s:GetGenerateArgs(argstring) abort
     if !l:cmake_build_type_set
         let l:arglist += ['-DCMAKE_BUILD_TYPE=' . cmake#switch#GetCurrent()]
     endif
+    " Export compile commands if requested.
+    if g:cmake_link_compile_commands
+        let l:cmake_export_compile_commands = s:FindVariable(l:arglist,
+                \ 'CMAKE_EXPORT_COMPILE_COMMANDS')
+        if !len(l:cmake_export_compile_commands)
+            let l:arglist += ['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON']
+        endif
+    endif
     return l:arglist
 endfunction
 
