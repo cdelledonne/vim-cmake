@@ -288,7 +288,11 @@ g:cmake_jump_on_error (default: `1`)
 
 g:cmake_link_compile_commands (default: `0`)
 			Whether to create a symlink in the CMake source
-			directory to the `compile_commands.json` file.
+			directory to the `compile_commands.json` file.  If
+			this is enabled, the CMake configuration options
+			`CMAKE_EXPORT_COMPILE_COMMANDS` will be set to `ON`
+			(unless explicitly set to something else in the
+			command-line arguments to `:CMakeGenerate`).
 
 g:cmake_root_markers (default: `['.git', '.svn']`)
 			List of file/directory names used to locate the
