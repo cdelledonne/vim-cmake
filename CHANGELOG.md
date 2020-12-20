@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
   from subdirectory of root (source) directory.
 * Implemented user autocommands CMakeBuildFailed and CMakeBuildSuceeded to
   customize behaviour after :CMakeBuild
+* Internal implementation of `:CMakeGenerate` made more structured.
 
 <!--=========================================================================-->
 

@@ -33,37 +33,11 @@ call cmake#plugnews#Print(s:plugin_version, {
 "         (optional) build configuration and additional CMake options
 "
 function! cmake#Generate(bg, wait, clean, ...) abort
-    let l:arglist = []
-    let l:cmake_build_type_set = 0
-    " Get CMake build type from command-line arguments, if present.
     if a:0 > 0
-        let l:arglist = split(a:1)
-        let [l:build_type, l:cmake_build_type_set] =
-                \ cmake#generate#GetBuildType(l:arglist)
-        if len(l:build_type)
-            call cmake#switch#SetCurrent(l:build_type)
-            " Remove build config substring from command-line options if it was
-            " passed in the form `:CMakeGenerate <config>`
-            if !l:cmake_build_type_set
-                call remove(l:arglist, 0)
-            endif
-        endif
+        call cmake#generate#Run(a:bg, a:wait, a:clean, a:1)
+    else
+        call cmake#generate#Run(a:bg, a:wait, a:clean)
     endif
-    " Clean project buildsystem, if requested.
-    if a:clean
-        call cmake#generate#Clean()
-    endif
-    " Add CMake options to the command.
-    let l:opts = []
-    if len(l:arglist)
-        let l:opts = l:arglist
-    endif
-    " Add -DCMAKE_BUILD_TYPE to the CMake options, unless passed by the user.
-    if !l:cmake_build_type_set
-        let l:opts += ['-DCMAKE_BUILD_TYPE=' . cmake#switch#GetCurrent()]
-    endif
-    " Call command.
-    call cmake#generate#Run(a:bg, a:wait, l:opts)
 endfunction
 
 " API function for cmake#generate#Clean().
