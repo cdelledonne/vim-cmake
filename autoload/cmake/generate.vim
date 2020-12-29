@@ -81,6 +81,8 @@ function! s:GetBuildType(arglist) abort
                 return ['', 0]
             endif
         endif
+    else
+        return ['', 0]
     endif
 endfunction
 
