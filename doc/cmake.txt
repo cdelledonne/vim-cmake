@@ -221,7 +221,7 @@ defines some user events.
 
 Example usage of `CMakeBuildFailed` to jump to the first error
 >
-	let g:jump_on_error = 0 " We do not want to focus the console
+	let g:cmake_jump_on_error = 0 " We do not want to focus the console
 	augroup vim-cmake-group
 	autocmd User CMakeBuildFailed :cfirst
 	augroup END
