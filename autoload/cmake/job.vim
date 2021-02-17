@@ -7,15 +7,27 @@
 let s:job_callbacks = {}
 
 function! s:NeovimStdoutCallback(job_id, data, event) abort
-    if has_key(s:job_callbacks, a:job_id) &&
-            \(s:job_callbacks[a:job_id] isnot# v:null)
+    " Sometimes this callback is invoked even before setting the higher-layer
+    " callback reference (in TermStart() or JobStart()), thus we should wait
+    " for the dictionary of job callbacks to be populated with the relevant
+    " higher-layer callback reference.
+    while !has_key(s:job_callbacks, a:job_id)
+        sleep 10m
+    endwhile
+    if (s:job_callbacks[a:job_id] isnot# v:null)
         call s:job_callbacks[a:job_id](join(a:data))
     endif
 endfunction
 
 function! s:VimStdoutCallback(channel, message) abort
-    if has_key(s:job_callbacks, a:channel) &&
-            \(s:job_callbacks[a:channel] isnot# v:null)
+    " Sometimes this callback is invoked even before setting the higher-layer
+    " callback reference (in TermStart() or JobStart()), thus we should wait
+    " for the dictionary of job callbacks to be populated with the relevant
+    " higher-layer callback reference.
+    while !has_key(s:job_callbacks, a:channel)
+        sleep 10m
+    endwhile
+    if (s:job_callbacks[a:channel] isnot# v:null)
         call s:job_callbacks[a:channel](a:message)
     endif
 endfunction
