@@ -11,23 +11,26 @@ function! s:NeovimStdoutCallback(job_id, data, event) abort
     " callback reference (in TermStart() or JobStart()), thus we should wait
     " for the dictionary of job callbacks to be populated with the relevant
     " higher-layer callback reference.
-    while !has_key(s:job_callbacks, a:job_id)
-        sleep 10m
-    endwhile
-    if (s:job_callbacks[a:job_id] isnot# v:null)
+    " while !has_key(s:job_callbacks, a:job_id)
+        " sleep 10m
+    " endwhile
+    if has_key(s:job_callbacks, a:job_id) &&
+            \(s:job_callbacks[a:job_id] isnot# v:null)
         call s:job_callbacks[a:job_id](join(a:data))
     endif
 endfunction
 
 function! s:VimStdoutCallback(channel, message) abort
+    call cmake#util#Log('I', '[OUTCB] channel: ' . a:channel)
     " Sometimes this callback is invoked even before setting the higher-layer
     " callback reference (in TermStart() or JobStart()), thus we should wait
     " for the dictionary of job callbacks to be populated with the relevant
     " higher-layer callback reference.
-    while !has_key(s:job_callbacks, a:channel)
-        sleep 10m
-    endwhile
-    if (s:job_callbacks[a:channel] isnot# v:null)
+    " while !has_key(s:job_callbacks, a:channel)
+        " sleep 10m
+    " endwhile
+    if has_key(s:job_callbacks, a:channel) &&
+            \(s:job_callbacks[a:channel] isnot# v:null)
         call s:job_callbacks[a:channel](a:message)
     endif
 endfunction
@@ -39,6 +42,7 @@ function! s:NeovimExitCallback(job_id, data, event) abort
 endfunction
 
 function! s:VimExitCallback(channel, message) abort
+    call cmake#util#Log('I', '[EXTCB] channel: ' . a:channel)
     if has_key(s:job_callbacks, a:channel)
         call remove(s:job_callbacks, a:channel)
     endif
@@ -153,6 +157,7 @@ function! cmake#job#JobStart(command, stdout_cb) abort
         " Vim's callbacks are passed the job's channel.
         let l:chan_id = job_getchannel(l:job)
         let s:job_callbacks[l:chan_id] = a:stdout_cb
+        call cmake#util#Log('I', '[JBSTR] channel: ' . l:chan_id)
     endif
     return l:job
 endfunction
