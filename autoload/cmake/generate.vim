@@ -3,9 +3,10 @@
 " Description: Functions for generating the buildsystem
 " ==============================================================================
 
-function! s:GetCMakeVersionCb(data) abort
-    if match(a:data, '\m\C^cmake version') == 0
-        let l:version_str = split(split(a:data)[2], '\.')
+function! s:GetCMakeVersionCb(...) abort
+    let l:data = cmake#job#GetCallbackData(a:000)
+    if match(l:data, '\m\C^cmake version') == 0
+        let l:version_str = split(split(l:data)[2], '\.')
         let l:major = str2nr(l:version_str[0])
         let l:minor = str2nr(l:version_str[1])
         let s:cmake_version = l:major * 100 + l:minor
