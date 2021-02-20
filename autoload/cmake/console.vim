@@ -83,15 +83,16 @@ endfunction
 " Callback for non-background commands (cmake#generate#Run() and
 " cmake#build#Run()).
 "
-function! s:CMakeConsoleCb(data) abort
+function! s:CMakeConsoleCb(...) abort
+    let l:data = cmake#job#GetCallbackData(a:000)
     if s:cmd_done
         let s:cmd_done = 0
         let s:last_cmd_output = []
     endif
-    call s:SaveCmdOutput(a:data)
+    call s:SaveCmdOutput(l:data)
     " Look for ETX (end of text) character from console.sh (dirty trick to mark
     " end of command).
-    if match(a:data, "\x03") >= 0
+    if match(l:data, "\x03") >= 0
         let l:cmd_id = s:cmd_id
         let s:cmd_done = 1
         call cmake#console#SetCmdId('')
@@ -114,7 +115,7 @@ function! s:CMakeConsoleCb(data) abort
             endif
             execute bufwinnr(s:console_buffer) . 'wincmd w'
         endif
-        if match(a:data, '\m\CErrors have occurred') >= 0
+        if match(l:data, '\m\CErrors have occurred') >= 0
             if g:cmake_jump_on_error
                 if winnr() != bufwinnr(s:console_buffer)
                     let s:previous_window = winnr()

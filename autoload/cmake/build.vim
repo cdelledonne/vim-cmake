@@ -57,9 +57,10 @@ endfunction
 
 " Callback for cmake#build#GetTargets().
 "
-function! s:GetTargetsCb(data) abort
-    if match(a:data, '\m\C\.\.\.\s') == 0
-        let l:target = split(a:data)[1]
+function! s:GetTargetsCb(...) abort
+    let l:data = cmake#job#GetCallbackData(a:000)
+    if match(l:data, '\m\C\.\.\.\s') == 0
+        let l:target = split(l:data)[1]
         let s:cmake_targets += [l:target]
     endif
 endfunction

@@ -3,35 +3,6 @@
 " Description: Job and terminal abstraction layer for Vim and Neovim
 " ==============================================================================
 
-" Dictionary of ('job': 'stdout_cb') pairs.
-let s:job_callbacks = {}
-
-function! s:NeovimStdoutCallback(job_id, data, event) abort
-    if has_key(s:job_callbacks, a:job_id) &&
-            \(s:job_callbacks[a:job_id] isnot# v:null)
-        call s:job_callbacks[a:job_id](join(a:data))
-    endif
-endfunction
-
-function! s:VimStdoutCallback(channel, message) abort
-    if has_key(s:job_callbacks, a:channel) &&
-            \(s:job_callbacks[a:channel] isnot# v:null)
-        call s:job_callbacks[a:channel](a:message)
-    endif
-endfunction
-
-function! s:NeovimExitCallback(job_id, data, event) abort
-    if has_key(s:job_callbacks, a:job_id)
-        call remove(s:job_callbacks, a:job_id)
-    endif
-endfunction
-
-function! s:VimExitCallback(channel, message) abort
-    if has_key(s:job_callbacks, a:channel)
-        call remove(s:job_callbacks, a:channel)
-    endif
-endfunction
-
 " Start CMake console terminal.
 "
 " Params:
@@ -45,22 +16,18 @@ endfunction
 "         terminal id
 "
 function! cmake#job#TermStart(command, stdout_cb) abort
+    let l:options = {}
     if has('nvim')
-        let l:term = termopen(a:command, {
-                \ 'on_stdout': function('s:NeovimStdoutCallback'),
-                \ 'on_exit': function('s:NeovimExitCallback'),
-                \ })
-        " Neovim's callbacks are passed the job's ID.
-        let s:job_callbacks[l:term] = a:stdout_cb
+        if a:stdout_cb isnot# v:null
+            let l:options['on_stdout'] = a:stdout_cb
+        endif
+        let l:term = termopen(a:command, l:options)
     else
-        let l:term = term_start(a:command, {
-                \ 'out_cb': function('s:VimStdoutCallback'),
-                \ 'exit_cb': function('s:VimExitCallback'),
-                \ 'curwin': 1,
-                \ })
-        " Vim's callbacks are passed the job's channel.
-        let l:chan_id = job_getchannel(term_getjob(l:term))
-        let s:job_callbacks[l:chan_id] = a:stdout_cb
+        let l:options['curwin'] = 1
+        if a:stdout_cb isnot# v:null
+            let l:options['out_cb'] = a:stdout_cb
+        endif
+        let l:term = term_start(a:command, l:options)
     endif
     " Set up autocmd to stop terminal job before exiting Vim/Neovim. Older
     " versions of Vim/Neovim do not have 'ExitPre', in which case we use
@@ -118,29 +85,27 @@ endfunction
 "     command : String
 "         command to run
 "     stdout_cb : Funcref
-"         stdout callback (must take one argument, the stdout string)
+"         stdout callback, which should take a variable number of arguments,
+"         and from which cmake#job#GetCallbackData(a:000) can be called to
+"         retrieve the stdout string
 "
 " Returns:
-"     Number
-"         job id
+"     Number (Neovim) or String (Vim)
+"         job id (Neovim) or job handle (Vim)
 "
 function! cmake#job#JobStart(command, stdout_cb) abort
+    let l:options = {}
     if has('nvim')
-        let l:job = jobstart(a:command, {
-                \ 'on_stdout': function('s:NeovimStdoutCallback'),
-                \ 'on_exit': function('s:NeovimExitCallback'),
-                \ })
-        " Neovim's callbacks are passed the job's ID.
-        let s:job_callbacks[l:job] = a:stdout_cb
+        if a:stdout_cb isnot# v:null
+            let l:options['on_stdout'] = a:stdout_cb
+        endif
+        let l:job = jobstart(a:command, l:options)
     else
-        let l:job = job_start(
-                \ join([&shell, &shellcmdflag, '"' . a:command . '"']), {
-                \ 'out_cb': function('s:VimStdoutCallback'),
-                \ 'exit_cb': function('s:VimExitCallback'),
-                \ })
-        " Vim's callbacks are passed the job's channel.
-        let l:chan_id = job_getchannel(l:job)
-        let s:job_callbacks[l:chan_id] = a:stdout_cb
+        if a:stdout_cb isnot# v:null
+            let l:options['out_cb'] = a:stdout_cb
+        endif
+        let l:vim_command = join([&shell, &shellcmdflag, '"' . a:command . '"'])
+        let l:job = job_start(l:vim_command, l:options)
     endif
     return l:job
 endfunction
@@ -158,5 +123,24 @@ function! cmake#job#JobWait(job_id) abort
         while job_status(a:job_id) ==# 'run'
             execute 'sleep 5m'
         endwhile
+    endif
+endfunction
+
+" Get stdout data from a job callback.
+"
+" Params:
+"     cb_arglist : List
+"         variable-size list of arguments as passed to the callback, which
+"         will differ between Neovim and Vim
+"
+" Returns:
+"     String
+"         stdout data (string)
+"
+function! cmake#job#GetCallbackData(cb_arglist) abort
+    if has('nvim')
+        return join(a:cb_arglist[1])
+    else
+        return a:cb_arglist[1]
     endif
 endfunction
