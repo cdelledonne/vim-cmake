@@ -3,7 +3,7 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:plugin_version = '0.4.0'
+let s:plugin_version = '0.5.0'
 
 " Get project root and try to reduce path to be relative to CWD. The path is
 " not escaped, thus it must be first escaped to be used as a command argument.
@@ -14,6 +14,7 @@ call cmake#plugnews#Print(s:plugin_version, {
         \ '0.2.0': 'Vim-CMake has a new feature, run `:help cmake-switch`',
         \ '0.3.0': 'Vim-CMake has a new feature, run `:help cmake-quickfix`',
         \ '0.4.0': 'Vim-CMake has a new config option `g:cmake_generate_options`',
+        \ '0.5.0': 'Vim-CMake has a new feature, run `:help cmake-events`',
         \ })
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

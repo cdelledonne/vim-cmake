@@ -9,14 +9,20 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.5.0 &ndash; 2021-02-22
+
+### Added
+* Implemented user autocommands `CMakeBuildFailed` and `CMakeBuildSuceeded` to
+  customize behaviour after `:CMakeBuild`
+
 ### Changed
 * Fixed bug that wouldn't make the console script run when Vim-CMake is
   installed in a directory that contains spaces.
 * Make the `WinEnter` autocmd in console.vim buffer-local.
 * Set correct source and build directories even when invoking Vim-CMake commands
   from subdirectory of root (source) directory.
-* Implemented user autocommands CMakeBuildFailed and CMakeBuildSuceeded to
-  customize behaviour after :CMakeBuild
 * Internal implementation of `:CMakeGenerate` made more structured.
 * Automatically set the configuration option `CMAKE_EXPORT_COMPILE_COMMANDS` to
   `ON` when `g:cmake_link_compile_commands` is set to `1`.
