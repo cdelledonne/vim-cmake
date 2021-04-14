@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.6.0 &ndash; 2021-04-14
+
 ### Added
 * `g:cmake_build_dir_location`, location of the build directory, relative to the
   project root.

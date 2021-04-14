@@ -70,7 +70,9 @@ function! cmake#plugnews#Print(current_version, news) abort
     " Print updates for newer versions.
     for l:number in l:all_version_numbers
         if l:number > l:previous_version_number
-            call cmake#util#Log('I', a:news[s:NumberToVersion(l:number)])
+            for l:news_item in a:news[s:NumberToVersion(l:number)]
+                call cmake#util#Log('I', l:news_item)
+            endfor
         endif
     endfor
 endfunction

@@ -3,14 +3,18 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:plugin_version = '0.5.0'
+let s:plugin_version = '0.6.0'
 
 " Print news of new Vim-CMake versions.
 call cmake#plugnews#Print(s:plugin_version, {
-        \ '0.2.0': 'Vim-CMake has a new feature, run `:help cmake-switch`',
-        \ '0.3.0': 'Vim-CMake has a new feature, run `:help cmake-quickfix`',
-        \ '0.4.0': 'Vim-CMake has a new config option `g:cmake_generate_options`',
-        \ '0.5.0': 'Vim-CMake has a new feature, run `:help cmake-events`',
+        \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
+        \ '0.3.0': ['Vim-CMake has a new feature, run `:help cmake-quickfix`'],
+        \ '0.4.0': ['Vim-CMake has a new config option `g:cmake_generate_options`'],
+        \ '0.5.0': ['Vim-CMake has a new feature, run `:help cmake-events`'],
+        \ '0.6.0': [
+                \ 'Vim-CMake has a new config option `g:cmake_build_dir_location`',
+                \ 'Vim-CMake has improved :CMakeGenerate, run `:help cmake-generate`'
+        \ ],
         \ })
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
