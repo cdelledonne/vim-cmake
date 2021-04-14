@@ -35,9 +35,9 @@ call cmake#command#Run(s:command, 1, 1, function('s:GetCMakeVersionCb'))
 " Example:
 "     to find the variable 'CMAKE_BUILD_TYPE', which would be passed by the user
 "     as '-D CMAKE_BUILD_TYPE=<value>', call
-"             s:FindCacheVariable(arglist, 'CMAKE_BUILD_TYPE')
+"             s:FindCacheVar(arglist, 'CMAKE_BUILD_TYPE')
 "
-function! s:FindCacheVariable(arglist, variable) abort
+function! s:FindCacheVar(arglist, variable) abort
     if len(a:arglist)
         " Search the list of command-line arguments for an entry matching
         " '-D <variable>=<value>' or '-D <variable>:<type>=<value>' or
@@ -77,7 +77,7 @@ function! s:ProcessBuildConfig(arglist) abort
     endif
     " Check if the list of command-line arguments does not contain an explicit
     " value for the 'CMAKE_BUILD_TYPE' cache variable.
-    if s:FindCacheVariable(l:arglist, 'CMAKE_BUILD_TYPE') == ''
+    if s:FindCacheVar(l:arglist, 'CMAKE_BUILD_TYPE') ==# ''
         " If build configuration does not exist yet, set the 'CMAKE_BUILD_TYPE'
         " cache variable.
         let l:configs = split(cmake#switch#GetExistingConfigs('', '', 0))
@@ -140,7 +140,7 @@ function! s:ParseArgs(argstring) abort
     " If compile commands are to be exported, and the
     " 'CMAKE_EXPORT_COMPILE_COMMANDS' cache variable is not set, set it.
     if g:cmake_link_compile_commands
-        if s:FindCacheVariable(l:arglist, 'CMAKE_EXPORT_COMPILE_COMMANDS') == ''
+        if s:FindCacheVar(l:arglist, 'CMAKE_EXPORT_COMPILE_COMMANDS') ==# ''
             let l:arglist += ['-D CMAKE_EXPORT_COMPILE_COMMANDS=ON']
         endif
     endif
