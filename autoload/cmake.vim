@@ -5,10 +5,6 @@
 
 let s:plugin_version = '0.5.0'
 
-" Get project root and try to reduce path to be relative to CWD. The path is
-" not escaped, thus it must be first escaped to be used as a command argument.
-let s:source_dir = fnamemodify(cmake#util#FindProjectRoot(), ':.')
-
 " Print news of new Vim-CMake versions.
 call cmake#plugnews#Print(s:plugin_version, {
         \ '0.2.0': 'Vim-CMake has a new feature, run `:help cmake-switch`',
@@ -47,7 +43,7 @@ function! cmake#Clean() abort
     call cmake#generate#Clean()
 endfunction
 
-" API function for cmake#switch#SetCurrent().
+" API function for cmake#switch#SetCurrentConfigName().
 "
 " Params:
 "     a:1 : String
@@ -61,7 +57,7 @@ function! cmake#Switch(...) abort
                 \ '" not found, run `:CMakeGenerate ' . a:1 . '`')
         return
     endif
-    call cmake#switch#SetCurrent(a:1)
+    call cmake#switch#SetCurrentConfigName(a:1)
 endfunction
 
 " API function for cmake#build#Run().
@@ -117,7 +113,23 @@ endfunction
 "
 " Returns:
 "     String
-"         (unescaped) path to CMake source directory
+"         path to CMake source directory, unescaped (thus it must be first
+"         escaped to be used as a command argument)
+"
 function! cmake#GetSourceDir() abort
-    return s:source_dir
+    return fnamemodify(cmake#util#FindProjectRoot(), ':.')
+endfunction
+
+" Get path to location where the build directory is located, possibly reduced
+" relatively to CWD.
+"
+" Returns:
+"     String
+"         path to build directory location, unescaped (thus it must be first
+"         escaped to be used as a command argument)
+"
+function! cmake#GetBuildDirLocation() abort
+    let l:build_dir_location = join(
+            \ [cmake#GetSourceDir(), g:cmake_build_dir_location], '/')
+    return fnamemodify(l:build_dir_location, ':.')
 endfunction

@@ -9,6 +9,14 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* `g:cmake_build_dir_location`, location of the build directory, relative to the
+  project root.
+
+### Changed
+* Usage of `:CMakeGenerate`, now build configuration directory and
+  `CMAKE_BUILD_TYPE` can be controlled independently.
+
 <!--=========================================================================-->
 
 ## 0.5.0 &ndash; 2021-02-22

@@ -104,7 +104,7 @@ Run `:help cmake` for an extensive documentation of all configuration options an
 |:--------------------------------|:------------------------------------------|
 | `User CMakeBuildSucceeded`      | Triggered after a successful `:CMakeBuild`|
 | `User CMakeBuildFailed`         | Triggered after a failed `:CMakeBuild`    |
- 
+
 ### Quickfix list
 
 After each build (e.g. run with `:CMakeBuild`), Vim-CMake populates a quickfix
@@ -125,6 +125,7 @@ follows.
 |:--------------------------------|:-------------------|
 | `g:cmake_command`               | `'cmake'`          |
 | `g:cmake_default_config`        | `'Debug'`          |
+| `g:cmake_build_dir_location`    | `'.'`              |
 | `g:cmake_generate_options`      | `[]`               |
 | `g:cmake_build_options`         | `[]`               |
 | `g:cmake_native_build_options`  | `[]`               |

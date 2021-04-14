@@ -30,10 +30,11 @@ endfunction
 "         statusline build info
 "
 function! cmake#statusline#GetBuildInfo(active) abort
+    let l:config_name = cmake#switch#GetCurrentConfigName()
     if a:active
-        return cmake#switch#GetCurrent()
+        return l:config_name
     else
-        return '[' . cmake#switch#GetCurrent() . ']'
+        return '[' . l:config_name . ']'
     endif
 endfunction
 

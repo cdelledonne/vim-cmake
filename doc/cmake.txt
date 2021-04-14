@@ -85,15 +85,31 @@ Generating a project build system~
 By default, the build system is generated for the build configuration
 specified by `g:cmake_default_config` (see |cmake-configuration|).  For
 instance, if the default build configuration is "Debug", `cmake` will be
-passed `-DCMAKE_BUILD_TYPE=Debug`, and the build system will be generated in
-`./Debug`.  To generate a build system for another configuration, e.g.,
-"Release", run
+passed `-D CMAKE_BUILD_TYPE=Debug`, and the build system will be generated in
+`Debug/`, relative to `g:cmake_build_dir_location` (see
+|cmake-configuration|).  That will result in the following `cmake` command:
 >
-	:CMakeGenerate Release
+	cmake -D CMAKE_BUILD_TYPE=Debug [...] \
+		-S <project_root> -B <build_dir_location>/Debug
 <
-or, equivalently
+To generate a build system for another configuration, e.g., "Release", run
 >
-	:CMakeGenerate -DCMAKE_BUILD_TYPE=Release
+	:CMakeGenerate Release [...]
+<
+which will result in the following `cmake` command:
+>
+	cmake -D CMAKE_BUILD_TYPE=Release [...] \
+		-S <project_root> -B <build_dir_location>/Release
+<
+To generate a build system for a configuration, while passing a different
+`CMAKE_BUILD_TYPE` to `cmake`, run
+>
+	:CMakeGenerate SomeConfigName -D CMAKE_BUILD_TYPE=Release [...]
+<
+which will result in the following `cmake` command:
+>
+	cmake -D CMAKE_BUILD_TYPE=Release [...] \
+		-S <project_root> -B <build_dir_location>/SomeConfigName
 <
 Use |:CMakeSwitch| to switch between build configurations.
 
@@ -254,6 +270,11 @@ g:cmake_command (default: `'cmake'`)
 
 g:cmake_default_config (default: `'Debug'`)
 			Default build configuration on start-up.
+
+g:cmake_build_dir_location (default: `'.'`)
+			Location of the build directory, relative to the
+			project root.  Each build configuration creates a
+			build directory at this location.
 
 g:cmake_generate_options (default: `[]`)
 			List of options to pass to CMake by default when

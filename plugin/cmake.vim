@@ -25,6 +25,7 @@ endif
 
 let s:config_vars = {
         \ 'g:cmake_default_config'        : 'Debug',
+        \ 'g:cmake_build_dir_location'    : '.',
         \ 'g:cmake_generate_options'      : [],
         \ 'g:cmake_build_options'         : [],
         \ 'g:cmake_native_build_options'  : [],

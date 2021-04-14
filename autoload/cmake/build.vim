@@ -82,7 +82,7 @@ endfunction
 "         optional string containing target and other options
 "
 function! cmake#build#Run(bg, wait, clean, ...) abort
-    let l:build_dir = fnameescape(cmake#switch#GetPathToCurrent())
+    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
     let l:command = [g:cmake_command, '--build', l:build_dir]
     let l:options = {}
     " Parse additional options.
@@ -118,7 +118,7 @@ endfunction
 "         whether to wait for completion (only for bg == 1)
 "
 function! cmake#build#RunInstall(bg, wait) abort
-    let l:build_dir = fnameescape(cmake#switch#GetPathToCurrent())
+    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
     let l:command = [g:cmake_command, '--install', l:build_dir]
     call cmake#console#SetCmdId('install')
     call cmake#command#Run(l:command, a:bg, a:wait)
@@ -146,7 +146,7 @@ endfunction
 "
 function! cmake#build#UpdateTargets() abort
     let s:cmake_targets = []
-    let l:build_dir = fnameescape(cmake#switch#GetPathToCurrent())
+    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
     let l:command = [g:cmake_command,
             \ '--build', l:build_dir,
             \ '--target', 'help'
