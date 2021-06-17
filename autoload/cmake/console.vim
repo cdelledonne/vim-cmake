@@ -41,6 +41,8 @@ function! s:CreateBuffer() abort
     setlocal statusline=[CMake]
     setlocal statusline+=\ %{cmake#statusline#GetBuildInfo(0)}
     setlocal statusline+=\ %{cmake#statusline#GetCmdInfo()}
+    " Avoid error E37 on :CMakeClose in some Vim instances.
+    setlocal bufhidden=hide
     augroup cmake
         autocmd WinEnter <buffer> call cmake#console#Enter()
     augroup END
