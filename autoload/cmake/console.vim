@@ -7,7 +7,6 @@ let s:console_buffer = -1
 let s:console_id = -1
 let s:console_script = fnameescape(
         \ join([expand('<sfile>:h:h:h'), 'scripts', 'console.sh'], '/'))
-let s:previous_window = -1
 let s:exit_term_mode = 0
 let s:cmd_id = ''
 
@@ -44,9 +43,9 @@ function! s:CreateBuffer() abort
     " Avoid error E37 on :CMakeClose in some Vim instances.
     setlocal bufhidden=hide
     augroup cmake
-        autocmd WinEnter <buffer> call cmake#console#Enter()
+        autocmd WinEnter <buffer> call cmake#console#OnEnter()
     augroup END
-    return bufnr('%')
+    return bufnr()
 endfunction
 
 " Create Vim-CMake window.
@@ -104,7 +103,7 @@ function! s:CMakeConsoleCb(...) abort
         endif
         " Exit terminal mode if inside the CMake console window (useful for
         " Vim). Otherwise the terminal mode is exited after WinEnter event.
-        if winnr() == bufwinnr(s:console_buffer)
+        if win_getid() == bufwinid(s:console_buffer)
             call s:ExitTermMode()
         else
             let s:exit_term_mode = 1
@@ -112,17 +111,11 @@ function! s:CMakeConsoleCb(...) abort
         call cmake#statusline#Refresh()
         call cmake#switch#SearchForExistingConfigs()
         if g:cmake_jump_on_completion
-            if winnr() != bufwinnr(s:console_buffer)
-                let s:previous_window = winnr()
-            endif
-            execute bufwinnr(s:console_buffer) . 'wincmd w'
+            call cmake#console#Focus()
         endif
         if match(l:data, '\m\CErrors have occurred') >= 0
             if g:cmake_jump_on_error
-                if winnr() != bufwinnr(s:console_buffer)
-                    let s:previous_window = winnr()
-                endif
-                execute bufwinnr(s:console_buffer) . 'wincmd w'
+                call cmake#console#Focus()
             endif
             if l:cmd_id ==# 'build'
                 doautocmd <nomodeline> User CMakeBuildFailed
@@ -146,9 +139,9 @@ endfunction
 "         if set, a new buffer is created and the old one is deleted
 "
 function! cmake#console#Open(clear) abort
-    let l:current_window = winnr()
-    let l:cmake_window = bufwinnr(s:console_buffer)
-    if l:cmake_window == -1
+    let l:original_win_id = win_getid()
+    let l:cmake_win_id = bufwinid(s:console_buffer)
+    if l:cmake_win_id == -1
         " If a Vim-CMake window does not exist, create it.
         call s:CreateWindow()
         if bufexists(s:console_buffer)
@@ -156,45 +149,53 @@ function! cmake#console#Open(clear) abort
             " delete it if a:clear is set.
             if !a:clear
                 execute 'b ' . s:console_buffer
-                execute l:current_window . 'wincmd w'
+                call win_gotoid(l:original_win_id)
                 return
             else
                 execute 'bd! ' . s:console_buffer
             endif
         endif
-        " Create Vim-CMake buffer if none exist, of if the old one was deleted.
+        " Create Vim-CMake buffer if none exist, or if the old one was deleted.
         let s:console_buffer = s:CreateBuffer()
     else
         " If a Vim-CMake window exists, and a:clear is set, create a new
         " Vim-CMake buffer and delete the old one.
         if a:clear
             let l:old_buffer = s:console_buffer
-            execute bufwinnr(s:console_buffer) . 'wincmd w'
+            call cmake#console#Focus()
             let s:console_buffer = s:CreateBuffer()
             if bufexists(l:old_buffer) && l:old_buffer != s:console_buffer
                 execute 'bd! ' . l:old_buffer
             endif
         endif
     endif
-    execute l:current_window . 'wincmd w'
+    if l:original_win_id != win_getid()
+        call win_gotoid(l:original_win_id)
+    endif
 endfunction
 
 " Close Vim-CMake console window.
 "
 function! cmake#console#Close() abort
     if bufexists(s:console_buffer)
-        let l:cmake_window = bufwinnr(s:console_buffer)
-        if l:cmake_window != -1
-            execute l:cmake_window . 'wincmd q'
+        let l:cmake_win_id = bufwinid(s:console_buffer)
+        if l:cmake_win_id != -1
+            execute win_id2win(l:cmake_win_id) . 'wincmd q'
         endif
     endif
 endfunction
 
-function! cmake#console#Enter() abort
+function! cmake#console#OnEnter() abort
     if winnr() == bufwinnr(s:console_buffer) && s:exit_term_mode
         let s:exit_term_mode = 0
         call s:ExitTermMode()
     endif
+endfunction
+
+" Focus Vim-CMake window.
+"
+function! cmake#console#Focus() abort
+    call win_gotoid(bufwinid(s:console_buffer))
 endfunction
 
 " Return winnr of the CMake console buffer, or -1 if it does not exist.
