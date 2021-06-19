@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!--=========================================================================-->
 
-## Unreleased
+## 0.6.1 &ndash; 2021-06-19
 
 ### Added
 * Set `bufhidden=hide` on the Vim-CMake buffer to avoid error E37 in some Vim

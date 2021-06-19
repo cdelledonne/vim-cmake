@@ -3,7 +3,7 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:plugin_version = '0.6.0'
+let s:plugin_version = '0.6.1'
 
 " Print news of new Vim-CMake versions.
 call cmake#plugnews#Print(s:plugin_version, {
