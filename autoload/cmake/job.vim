@@ -3,6 +3,22 @@
 " Description: Job and terminal abstraction layer for Vim and Neovim
 " ==============================================================================
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Internal functions and callbacks
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Enter terminal mode.
+"
+function! s:EnterTermMode() abort
+    if mode() !=# 't'
+        execute 'normal! i'
+    endif
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Public functions
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Start CMake console terminal.
 "
 " Params:
@@ -31,9 +47,9 @@ function! cmake#job#TermStart(command, stdout_cb) abort
     endif
     " Set up autocmd to stop terminal job before exiting Vim/Neovim. Older
     " versions of Vim/Neovim do not have 'ExitPre', in which case we use
-    " 'VimLeavePre'. Though, calling TermStop() on 'VimLeavePre' in Vim seems
-    " to be to late and results in an error (E947), in which case one should
-    " quit with e.g. :qa!.
+    " 'VimLeavePre'. However, calling TermStop() on 'VimLeavePre' in Vim seems
+    " to be too late and results in E947, in which case one should quit with
+    " e.g. :qa!.
     augroup cmake
         if exists('##ExitPre')
             autocmd ExitPre * call cmake#job#TermStop()
@@ -53,12 +69,14 @@ endfunction
 function! cmake#job#TermSend(input) abort
     if has('nvim')
         call chansend(cmake#console#GetID(), [a:input, ''])
+        " Scroll to the end of the terminal buffer while the command's output is
+        " being appended.
+        let l:buffer_length = nvim_buf_line_count(cmake#console#GetBufferNr())
+        call nvim_win_set_cursor(cmake#console#GetWinID(), [l:buffer_length, 0])
     else
-        " For Vim, must go back into Terminal-Job mode for the command's
-        " output to be appended to the buffer.
-        if mode() !=# 't'
-            execute 'normal! i'
-        endif
+        " For Vim, must go back into Terminal-Job mode for the command's output
+        " to be appended to the buffer.
+        call win_execute(cmake#console#GetWinID(), 'call s:EnterTermMode()', '')
         call term_sendkeys(cmake#console#GetID(), a:input . "\<CR>")
     endif
 endfunction
@@ -85,9 +103,9 @@ endfunction
 "     command : String
 "         command to run
 "     stdout_cb : Funcref
-"         stdout callback, which should take a variable number of arguments,
-"         and from which cmake#job#GetCallbackData(a:000) can be called to
-"         retrieve the stdout string
+"         stdout callback, which should take a variable number of arguments, and
+"         from which cmake#job#GetCallbackData(a:000) can be called to retrieve
+"         the stdout string
 "
 " Returns:
 "     Number (Neovim) or String (Vim)
@@ -130,8 +148,8 @@ endfunction
 "
 " Params:
 "     cb_arglist : List
-"         variable-size list of arguments as passed to the callback, which
-"         will differ between Neovim and Vim
+"         variable-size list of arguments as passed to the callback, which will
+"         differ between Neovim and Vim
 "
 " Returns:
 "     String

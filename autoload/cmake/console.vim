@@ -60,6 +60,8 @@ function! s:CreateWindow() abort
     setlocal winfixwidth
 endfunction
 
+" Exit terminal mode.
+"
 function! s:ExitTermMode() abort
     if mode() ==# 't'
         call feedkeys("\<C-\>\<C-N>", 'n')
@@ -198,10 +200,16 @@ function! cmake#console#Focus() abort
     call win_gotoid(bufwinid(s:console_buffer))
 endfunction
 
-" Return winnr of the CMake console buffer, or -1 if it does not exist.
+" Return window ID of the Vim-CMake console, or -1 if it does not exist.
 "
-function! cmake#console#GetWinnr() abort
-    return bufwinnr(s:console_buffer)
+function! cmake#console#GetWinID() abort
+    return bufwinid(s:console_buffer)
+endfunction
+
+" Return buffer number of the Vim-CMake buffer, or -1 if it does not exist.
+"
+function! cmake#console#GetBufferNr() abort
+    return s:console_buffer
 endfunction
 
 " Return job_id of the CMake console buffer, or -1 if it does not exist.

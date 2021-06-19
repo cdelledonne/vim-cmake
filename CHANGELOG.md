@@ -13,6 +13,11 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 * Set `bufhidden=hide` on the Vim-CMake buffer to avoid error E37 in some Vim
   instances.
 
+### Changed
+* Running a command does not result in jumping into the Vim-CMake window and
+  back in the background, thus reducing the number of unnecessarily triggered
+  events.
+
 <!--=========================================================================-->
 
 ## 0.6.0 &ndash; 2021-04-14

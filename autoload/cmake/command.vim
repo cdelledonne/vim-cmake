@@ -25,15 +25,11 @@ function! cmake#command#Run(command, bg, wait, ...) abort
     if !a:bg
         " Open Vim-CMake console window with a fresh buffer.
         call cmake#console#Open(0)
-        let l:current_window = winnr()
-        execute cmake#console#GetWinnr() . 'wincmd w'
         " Run command (send input to terminal buffer).
         call cmake#job#TermSend(join(a:command))
-        " Scroll to the end of the buffer while the output is being appended.
-        execute 'normal! G'
-        " Go back to previous window if g:cmake_jump is not set.
-        if !g:cmake_jump
-            execute l:current_window . 'wincmd w'
+        " Jump to Vim-CMake window if requested.
+        if g:cmake_jump
+            call cmake#console#Focus()
         endif
     else
         " Run background command and set callback.
