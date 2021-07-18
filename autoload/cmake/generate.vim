@@ -78,12 +78,7 @@ function! s:ProcessBuildConfig(arglist) abort
     " Check if the list of command-line arguments does not contain an explicit
     " value for the 'CMAKE_BUILD_TYPE' cache variable.
     if s:FindCacheVar(l:arglist, 'CMAKE_BUILD_TYPE') ==# ''
-        " If build configuration does not exist yet, set the 'CMAKE_BUILD_TYPE'
-        " cache variable.
-        let l:configs = split(cmake#switch#GetExistingConfigs('', '', 0))
-        if index(l:configs, l:build_config) == -1
-            let l:arglist += ['-D CMAKE_BUILD_TYPE=' . l:build_config]
-        endif
+        let l:arglist += ['-D CMAKE_BUILD_TYPE=' . l:build_config]
     endif
     return l:arglist
 endfunction

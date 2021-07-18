@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!--=========================================================================-->
 
+## Unreleased
+
+### Changed
+* `-DCMAKE_BUILD_TYPE` flag is now always added when running `:CMakeGenerate`
+  
+<!--=========================================================================-->
+
 ## 0.6.1 &ndash; 2021-06-19
 
 ### Added
