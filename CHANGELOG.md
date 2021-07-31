@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 <!--=========================================================================-->
 
 ## Unreleased
+* The hashbang for `bash` in `scripts/console.sh` has been made more portable by 
+  using `/usr/bin/env`.
 
 ### Changed
 * `-DCMAKE_BUILD_TYPE` flag is now always added when running `:CMakeGenerate`
