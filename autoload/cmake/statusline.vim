@@ -5,6 +5,8 @@
 
 let s:statusline_cmd_info = ''
 
+let s:buildsys = cmake#buildsys#Get()
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -30,7 +32,7 @@ endfunction
 "         statusline build info
 "
 function! cmake#statusline#GetBuildInfo(active) abort
-    let l:config_name = cmake#switch#GetCurrentConfigName()
+    let l:config_name = s:buildsys.GetCurrentConfig()
     if a:active
         return l:config_name
     else

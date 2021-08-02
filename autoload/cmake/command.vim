@@ -20,7 +20,7 @@
 "         (optional) stdout callback, ignored for non-background commands
 "
 function! cmake#command#Run(command, bg, wait, ...) abort
-    " Note: Vim requires Funcref variable names to start with a capital.
+    " Note: Funcref variable names must start with a capital.
     let l:StdoutCb = (a:0 > 0) ? a:1 : v:null
     if !a:bg
         " Open Vim-CMake console window with a fresh buffer.

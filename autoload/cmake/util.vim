@@ -7,31 +7,11 @@
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Echo a message with color depending on log level.
-"
-" Params:
-"     level : String
-"         can be 'E' (error), 'W' (warning) or 'I' (info)
-"     message : String
-"         message to echo
-"
-function! cmake#util#Log(level, message) abort
-    if a:level is# 'E'
-        echohl Error
-    elseif a:level is# 'W'
-        echohl WarningMsg
-    else
-        echohl MoreMsg
-    endif
-    echomsg '[Vim-CMake] ' . a:message
-    echohl None
-endfunction
-
 " Find project root by looking for g:cmake_root_markers upwards.
 "
 " Returns:
 "     String
-"         (unescaped) path to the root of the project
+"         escaped path to the root of the project
 "
 function! cmake#util#FindProjectRoot() abort
     let l:root = getcwd()
@@ -54,5 +34,6 @@ function! cmake#util#FindProjectRoot() abort
             break
         endif
     endfor
-    return l:root
+    " Escape file name.
+    return fnameescape(l:root)
 endfunction

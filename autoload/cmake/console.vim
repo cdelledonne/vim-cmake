@@ -12,6 +12,7 @@ let s:cmd_id = ''
 
 let s:cmd_done = 1
 let s:last_cmd_output = []
+let s:callbacks = []
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Internal functions and callbacks
@@ -83,7 +84,7 @@ function! s:SaveCmdOutput(string) abort
     let s:last_cmd_output += l:l
 endfunction
 
-" Callback for non-background commands (cmake#generate#Run() and
+" Callback for non-background commands (buildsys.Generate() and
 " cmake#build#Run()).
 "
 function! s:CMakeConsoleCb(...) abort
@@ -111,7 +112,11 @@ function! s:CMakeConsoleCb(...) abort
             let s:exit_term_mode = 1
         endif
         call cmake#statusline#Refresh()
-        call cmake#switch#SearchForExistingConfigs()
+        " Invoke registered callbacks.
+        " Note: Funcref variable names must start with a capital.
+        for l:Callback in s:callbacks
+            call l:Callback()
+        endfor
         if g:cmake_jump_on_completion
             call cmake#console#Focus()
         endif
@@ -244,4 +249,12 @@ function! cmake#console#SetCmdId(id) abort
         let s:cmd_id = ''
         call cmake#statusline#SetCmdInfo('')
     endif
+endfunction
+
+function! cmake#console#RegisterCallback(callback) abort
+    call add(s:callbacks, a:callback)
+endfunction
+
+function! cmake#console#UnregisterCallback(callback) abort
+    call remove(s:callbacks, a:callback)
 endfunction

@@ -3,6 +3,8 @@
 " Description: Print news of newer Vim-CMake versions
 " ==============================================================================
 
+let s:logger = cmake#logger#Get()
+
 let s:repo_dir = expand('<sfile>:p:h:h:h')
 let s:data_dir = join([s:repo_dir, '.data'], '/')
 let s:data_file = join([s:data_dir, 'previous-version.bin'], '/')
@@ -71,7 +73,7 @@ function! cmake#plugnews#Print(current_version, news) abort
     for l:number in l:all_version_numbers
         if l:number > l:previous_version_number
             for l:news_item in a:news[s:NumberToVersion(l:number)]
-                call cmake#util#Log('I', l:news_item)
+                call s:logger.Info(l:news_item)
             endfor
         endif
     endfor

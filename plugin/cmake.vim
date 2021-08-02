@@ -11,15 +11,17 @@ if exists('g:loaded_cmake') && g:loaded_cmake
 endif
 let g:loaded_cmake = 1
 
+let s:logger = cmake#logger#Get()
+
 let g:cmake_command = get(g:, 'cmake_command', 'cmake')
 
-if !executable(g:cmake_command)
-    call cmake#util#Log('E', 'Binary "' . g:cmake_command . '" not found in PATH')
+if !has('nvim') && !has('terminal')
+    call s:logger.Error('Must run Neovim, or Vim with +terminal')
     finish
 endif
 
-if !has('nvim') && !has('terminal')
-    call cmake#util#Log('E', 'Must run Neovim, or Vim with +terminal')
+if !executable(g:cmake_command)
+    call s:logger.Error("Binary '%s' not found in PATH", g:cmake_command)
     finish
 endif
 
@@ -53,10 +55,10 @@ endfor
 " Commands
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-command -nargs=? -bang CMakeGenerate call cmake#Generate(0, 0, <bang>0, <f-args>)
+command -nargs=? -bang CMakeGenerate call cmake#Generate(<bang>0, <f-args>)
 command -nargs=? CMakeClean call cmake#Clean()
 
-command -nargs=1 -complete=custom,cmake#switch#GetExistingConfigs CMakeSwitch
+command -nargs=1 -complete=custom,cmake#GetConfigs CMakeSwitch
         \ call cmake#Switch(<f-args>)
 
 command -nargs=? -bang -complete=custom,cmake#build#GetTargets CMakeBuild
@@ -71,7 +73,7 @@ command CMakeClose call cmake#Close()
 " Mappings
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-nnoremap <silent> <Plug>(CMakeGenerate) :call cmake#Generate(0, 0, 0)<CR>
+nnoremap <silent> <Plug>(CMakeGenerate) :call cmake#Generate(0)<CR>
 nnoremap <silent> <Plug>(CMakeClean) :call cmake#Clean()<CR>
 
 nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0, 0, 0)<CR>
@@ -80,5 +82,5 @@ nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
 
 nnoremap <Plug>(CMakeSwitch) :CMakeSwitch<Space>
 
-nnoremap <silent> <Plug>(CMakeOpen) :call cmake#console#Open(0)<CR>
-nnoremap <silent> <Plug>(CMakeClose) :call cmake#console#Close()<CR>
+nnoremap <silent> <Plug>(CMakeOpen) :call cmake#Open()<CR>
+nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close()<CR>

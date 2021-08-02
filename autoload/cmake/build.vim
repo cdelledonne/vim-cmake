@@ -5,6 +5,8 @@
 
 let s:cmake_targets = []
 
+let s:buildsys = cmake#buildsys#Get()
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Internal functions and callbacks
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -72,23 +74,17 @@ endfunction
 " Build a project using the generated buildsystem.
 "
 " Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
 "     clean : Number
 "         whether to clean before building
-"     a:1 : String
-"         optional string containing target and other options
+"     argstring : String
+"         build target and other options
 "
-function! cmake#build#Run(bg, wait, clean, ...) abort
-    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
+function! cmake#build#Run(clean, argstring) abort
+    let l:build_dir = s:buildsys.GetPathToCurrentConfig()
     let l:command = [g:cmake_command, '--build', l:build_dir]
     let l:options = {}
     " Parse additional options.
-    if a:0 > 0 && len(a:1) > 0
-        let l:options = s:GetBuildArgs(a:1)
-    endif
+    let l:options = s:GetBuildArgs(a:argstring)
     " Add CMake build options to the command.
     let l:command += g:cmake_build_options
     let l:command += get(l:options, 'cmake_build_options', [])
@@ -106,7 +102,7 @@ function! cmake#build#Run(bg, wait, clean, ...) abort
     endif
     " Run build command.
     call cmake#console#SetCmdId('build')
-    call cmake#command#Run(l:command, a:bg, a:wait)
+    call cmake#command#Run(l:command, 0, 0)
 endfunction
 
 " Install a project.
@@ -118,7 +114,7 @@ endfunction
 "         whether to wait for completion (only for bg == 1)
 "
 function! cmake#build#RunInstall(bg, wait) abort
-    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
+    let l:build_dir = s:buildsys.GetPathToCurrentConfig()
     let l:command = [g:cmake_command, '--install', l:build_dir]
     call cmake#console#SetCmdId('install')
     call cmake#command#Run(l:command, a:bg, a:wait)
@@ -146,7 +142,7 @@ endfunction
 "
 function! cmake#build#UpdateTargets() abort
     let s:cmake_targets = []
-    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
+    let l:build_dir = s:buildsys.GetPathToCurrentConfig()
     let l:command = [g:cmake_command,
             \ '--build', l:build_dir,
             \ '--target', 'help'
