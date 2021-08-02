@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!--=========================================================================-->
 
+## 0.6.2 &ndash; 2021-08-02
+
+### Changed
+* `-DCMAKE_BUILD_TYPE` flag is now always added when running `:CMakeGenerate`
+* The hashbang for `bash` in `scripts/console.sh` has been made more portable by
+  using `/usr/bin/env`.
+
+<!--=========================================================================-->
+
 ## 0.6.1 &ndash; 2021-06-19
 
 ### Added

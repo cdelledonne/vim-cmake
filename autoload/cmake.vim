@@ -4,7 +4,7 @@
 " ==============================================================================
 
 let s:cmake = {}
-let s:cmake.plugin_version = '0.6.1'
+let s:cmake.plugin_version = '0.6.2'
 let s:cmake.project_name = ''
 
 let s:buildsys = cmake#buildsys#Get()
