@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
+## Unreleased
+
+### Changed
+* Fixed searching of root path and build directory location
+
 <!--=========================================================================-->
 
 ## 0.6.2 &ndash; 2021-08-02
