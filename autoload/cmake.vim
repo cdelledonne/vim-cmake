@@ -133,7 +133,13 @@ endfunction
 "         escaped to be used as a command argument)
 "
 function! cmake#GetBuildDirLocation() abort
-    let l:build_dir_location = join(
-            \ [cmake#GetSourceDir(), g:cmake_build_dir_location], '/')
+    if g:cmake_build_dir_location ==# '.' || g:cmake_build_dir_location ==# './'
+        let l:build_dir_location = cmake#GetSourceDir()
+    else
+        let l:build_dir_location = join(
+                \ [cmake#GetSourceDir(), g:cmake_build_dir_location], '/')
+        " Re-escape path name after concatenation.
+        let l:build_dir_location = fnameescape(l:build_dir_location)
+    endif
     return fnamemodify(l:build_dir_location, ':.')
 endfunction
