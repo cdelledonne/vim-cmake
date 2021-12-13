@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Changed
 * Fixed searching of root path and build directory location
+* Detecting CMake version now works also for packages which are not called just
+  `cmake` (for instance, the `cmake3` package in the `epel` repo)
 
 <!--=========================================================================-->
 
