@@ -343,7 +343,7 @@ endfunction
 
 function! s:GetCMakeVersionCb(...) abort
     let l:data = cmake#job#GetCallbackData(a:000)
-    if match(l:data, '\m\C^cmake version') == 0
+    if match(l:data, '\m\C^cmake\S* version') == 0
         let l:version_str = split(split(l:data)[2], '\.')
         let l:major = str2nr(l:version_str[0])
         let l:minor = str2nr(l:version_str[1])
