@@ -11,6 +11,35 @@ if exists('g:loaded_cmake') && g:loaded_cmake
 endif
 let g:loaded_cmake = 1
 
+function StdoutCallback(id, data, event)
+    for l:line in a:data
+        " Handle more properly?
+        let l:parsed_line = substitute(l:line, '\m\C\r', '\r\n', 'g')
+        call chansend(s:chan_id, l:parsed_line)
+    endfor
+endfunction
+
+function ExitCallback(id, data, event)
+    call chansend(s:chan_id, "\r\n")
+    " Command error code
+    echomsg 'Exit: ' . a:data
+endfunction
+
+function SendCmdToJob(cmd)
+    let l:opts = {
+            \ 'on_stdout': function('StdoutCallback'),
+            \ 'on_stderr': function('StdoutCallback'),
+            \ 'on_exit': function('ExitCallback'),
+            \ 'pty': v:true,
+            \ }
+    " From https://gitlab.kitware.com/cmake/cmake/-/issues/17143
+    " call setenv('CLICOLOR_FORCE', '1')
+    let l:job_id = jobstart(a:cmd, l:opts)
+    if !exists('s:chan_id')
+        let s:chan_id = nvim_open_term(bufnr(''), {})
+    endif
+endfunction
+
 let s:logger = cmake#logger#Get()
 
 let g:cmake_command = get(g:, 'cmake_command', 'cmake')
