@@ -8,10 +8,11 @@ let s:cmake.plugin_version = '0.6.2'
 let s:cmake.project_name = ''
 
 let s:buildsys = cmake#buildsys#Get()
-let s:logger = cmake#logger#Get()
+let s:build = cmake#build#Get()
+let s:terminal = cmake#terminal#Get()
 
 " Print news of new Vim-CMake versions.
-call cmake#plugnews#Print(s:cmake.plugin_version, {
+call cmake#util#PrintNews(s:cmake.plugin_version, {
         \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
         \ '0.3.0': ['Vim-CMake has a new feature, run `:help cmake-quickfix`'],
         \ '0.4.0': ['Vim-CMake has a new config option `g:cmake_generate_options`'],
@@ -81,29 +82,49 @@ endfunction
 "         (optional) target and other build options
 "
 function! cmake#Build(clean, ...) abort
-    call cmake#build#Run(a:clean, join(a:000))
+    call s:build.Build(a:clean, join(a:000))
 endfunction
 
 " API function for :CMakeInstall and <Plug>(CMakeInstall).
 "
-" Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
+function! cmake#Install() abort
+    call s:build.Install()
+endfunction
+
+" API function for completion for :CMakeBuild.
 "
-function! cmake#Install(bg, wait) abort
-    call cmake#build#RunInstall(a:bg, a:wait)
+" API function for completion for :CMakeBuild.
+"
+" Params:
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
+"
+" Returns:
+"     String
+"         available targets, one per line
+"
+function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
+    return join(s:buildsys.GetTargets(), "\n")
+endfunction
+
+" API function for :CMakeStop.
+"
+function! cmake#Stop() abort
+    call s:terminal.Stop()
 endfunction
 
 " API function for :CMakeOpen.
 "
 function! cmake#Open() abort
-    call cmake#console#Open(0)
+    call s:terminal.Open(v:false)
 endfunction
 
 " API function for :CMakeClose.
 "
 function! cmake#Close() abort
-    call cmake#console#Close()
+    call s:terminal.Close()
 endfunction

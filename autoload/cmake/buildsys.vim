@@ -5,44 +5,58 @@
 
 let s:buildsys = {}
 let s:buildsys.cmake_version = 0
+let s:buildsys.project_root = ''
 let s:buildsys.current_config = ''
 let s:buildsys.path_to_current_config = ''
 let s:buildsys.configs = []
+let s:buildsys.targets = []
 
 let s:logger = cmake#logger#Get()
+let s:statusline = cmake#statusline#Get()
+let s:system = cmake#system#Get()
+let s:terminal = cmake#terminal#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Private functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Get path to CMake source directory of current project, possibly reduced
-" relatively to CWD.
+" Find project root by looking for g:cmake_root_markers upwards.
 "
 " Returns:
 "     String
-"         path to CMake source directory
+"         escaped path to the root of the project
 "
-function! s:GetSourceDir() abort
-    return fnamemodify(cmake#util#FindProjectRoot(), ':.')
+function! s:FindProjectRoot() abort
+    let l:root = getcwd()
+    let l:escaped_cwd = fnameescape(getcwd())
+    for l:marker in g:cmake_root_markers
+        " Search CWD upward for l:marker, assuming it is a file.
+        let l:marker_path = findfile(l:marker, l:escaped_cwd . ';' . $HOME)
+        if len(l:marker_path)
+            " If found, strip l:marker from it.
+            let l:root = fnamemodify(l:marker_path, ':h')
+            break
+        endif
+        " Search CWD upward for l:marker, assuming it is a directory.
+        let l:marker_path = finddir(l:marker, l:escaped_cwd . ';' . $HOME)
+        if len(l:marker_path)
+            " If found, strip l:marker from it.
+            let l:root = fnamemodify(l:marker_path, ':h')
+            break
+        endif
+    endfor
+    return l:root
 endfunction
 
-" Get path to location where the build directory is located, possibly reduced
-" relatively to CWD.
+" Get absolute path to location where the build directory is located.
 "
 " Returns:
 "     String
 "         path to build directory location
 "
 function! s:GetBuildDirLocation() abort
-    if g:cmake_build_dir_location ==# '.' || g:cmake_build_dir_location ==# './'
-        let l:build_dir_location = s:GetSourceDir()
-    else
-        let l:build_dir_location = join(
-                \ [s:GetSourceDir(), g:cmake_build_dir_location], '/')
-        " Re-escape path name after concatenation.
-        let l:build_dir_location = fnameescape(l:build_dir_location)
-    endif
-    return fnamemodify(l:build_dir_location, ':.')
+    return s:system.Path(
+            \ [s:buildsys.project_root, g:cmake_build_dir_location], v:false)
 endfunction
 
 " Find CMake variable in list of options.
@@ -94,10 +108,7 @@ function! s:ProcessBuildConfig(opts) abort
         let l:config = a:opts[0]
         call s:SetCurrentConfig(l:config)
         call remove(a:opts, 0)
-        " Link compile commands, if requested.
-        if g:cmake_link_compile_commands
-            call s:LinkCompileCommands()
-        endif
+        call s:LinkCompileCommands()
     endif
     " If the list of command-line options does not contain an explicit value for
     " the 'CMAKE_BUILD_TYPE' variable, add it.
@@ -168,7 +179,7 @@ function! s:ProcessArgString(argstring) abort
     " Set source and build directories. Must be done after processing the build
     " configuration so that the current build configuration is up to date before
     " setting the build directory.
-    let l:source_dir = s:GetSourceDir()
+    let l:source_dir = s:system.Path([s:buildsys.project_root], v:true)
     let l:build_dir = s:buildsys.path_to_current_config
     " Return dictionary of options.
     let l:optdict = {}
@@ -181,19 +192,42 @@ endfunction
 " Refresh list of build configuration directories.
 "
 function! s:RefreshConfigs() abort
-    " Location of the build directory. It must be re-escaped because of the
-    " transformation to absolute path.
-    let l:escaped_build_dir_location_full_path =
-            \ fnameescape(fnamemodify(s:GetBuildDirLocation(), ':p'))
     " List of directories inside of which a CMakeCache file is found.
+    " TODO: test that this works in windows
     let l:cache_dirs = findfile(
             \ 'CMakeCache.txt',
-            \ l:escaped_build_dir_location_full_path . '/**1',
+            \ s:GetBuildDirLocation() . '/**1',
             \ -1)
     " Transform paths to just names of directories. These will be the names of
     " existing configuration directories.
     call map(l:cache_dirs, {_, val -> fnamemodify(val, ':h:t')})
     let s:buildsys.configs = l:cache_dirs
+endfunction
+
+" Callback for RefreshTargets().
+"
+function! s:RefreshTargetsCb(...) abort
+    let l:data = s:system.ExtractStdoutCallbackData(a:000)
+    for l:line in l:data
+        if match(l:line, '\m\C\.\.\.\s') == 0
+            let l:target = split(l:line)[1]
+            let s:buildsys.targets += [l:target]
+        endif
+    endfor
+endfunction
+
+" Refresh list of available CMake targets.
+"
+function! s:RefreshTargets() abort
+    let s:buildsys.targets = []
+    let l:build_dir = s:buildsys.path_to_current_config
+    let l:command = [g:cmake_command,
+            \ '--build', l:build_dir,
+            \ '--target', 'help'
+            \ ]
+    call s:system.JobRun(
+            \ l:command, v:true, function('s:RefreshTargetsCb'), v:null, {},
+            \ v:false)
 endfunction
 
 " Check if build configuration directory exists.
@@ -203,8 +237,8 @@ endfunction
 "         configuration to check
 "
 " Returns:
-"     Number
-"         1 if the build configuration exists, 0 otherwise
+"     Boolean
+"         v:true if the build configuration exists, v:false otherwise
 "
 function! s:ConfigExists(config) abort
     return index(s:buildsys.configs, a:config) >= 0
@@ -218,18 +252,27 @@ endfunction
 "
 function! s:SetCurrentConfig(config) abort
     let s:buildsys.current_config = a:config
-    let s:buildsys.path_to_current_config = fnamemodify(
-            \ join([s:GetBuildDirLocation(), a:config], '/'), ':.')
+    let l:path = s:system.Path([s:GetBuildDirLocation(), a:config], v:true)
+    let s:buildsys.path_to_current_config = l:path
+    call s:statusline.SetBuildInfo(s:buildsys.current_config)
 endfunction
 
 " Link compile commands from source directory to build directory.
 "
 function! s:LinkCompileCommands() abort
-    let l:target = join(
-            \ [s:buildsys.path_to_current_config, 'compile_commands.json'], '/')
-    let l:link_dest = s:GetSourceDir()
-    let l:command = ['ln', '-sf', l:target, l:link_dest]
-    call cmake#command#Run(l:command, 1, 1)
+    if !g:cmake_link_compile_commands
+        return
+    endif
+    let l:target = s:system.Path(
+            \ [s:buildsys.path_to_current_config, 'compile_commands.json'],
+            \ v:true
+            \ )
+    let l:link_name = s:system.Path(
+            \ [s:buildsys.project_root, 'compile_commands.json'],
+            \ v:true,
+            \ )
+    " TODO: test if link if overwritten in Windows, otherwise remove old link first
+    call s:system.Link(l:target, l:link_name, v:true)
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -239,7 +282,7 @@ endfunction
 " Generate a buildsystem for the project using CMake.
 "
 " Params:
-"     clean : Number
+"     clean : Boolean
 "         whether to clean before generating
 "     argstring : String
 "         build configuration and additional CMake options
@@ -257,25 +300,27 @@ function! s:buildsys.Generate(clean, argstring) abort
         call add(l:command, '-S ' . l:optdict.source_dir)
         call add(l:command, '-B ' . l:optdict.build_dir)
     endif
-    call cmake#console#SetCmdId('generate')
     " Clean project buildsystem, if requested.
     if a:clean
         call l:self.Clean()
     endif
     " Run generate command.
-    call cmake#command#Run(l:command, 0, 0)
-    " Link compile commands, if requested.
-    if g:cmake_link_compile_commands
-        call s:LinkCompileCommands()
-    endif
+    call s:terminal.Run(
+            \ l:command, 'generate',
+            \ [
+                \ function('s:RefreshConfigs'),
+                \ function('s:RefreshTargets'),
+                \ function('s:LinkCompileCommands')
+            \ ],
+            \ [], [], []
+            \ )
 endfunction
 
 " Clean buildsystem.
 "
 function! s:buildsys.Clean() abort
     if isdirectory(l:self.path_to_current_config)
-        let l:command = ['rm', '-rf', l:self.path_to_current_config . '/*']
-        call cmake#command#Run(l:command, 1, 1)
+        call delete(l:self.path_to_current_config, 'rf')
     endif
     call s:RefreshConfigs()
 endfunction
@@ -295,10 +340,7 @@ function! s:buildsys.Switch(config) abort
         return
     endif
     call s:SetCurrentConfig(a:config)
-    " Link compile commands, if requested.
-    if g:cmake_link_compile_commands
-        call s:LinkCompileCommands()
-    endif
+    call s:LinkCompileCommands()
 endfunction
 
 " Get list of configuration directories (containing a buildsystem).
@@ -311,6 +353,19 @@ function! s:buildsys.GetConfigs() abort
     return l:self.configs
 endfunction
 
+" Get list of available build targets.
+"
+" Returns:
+"     List
+"         list of available build targets
+"
+function! s:buildsys.GetTargets() abort
+    if len(l:self.targets) == 0
+        call s:RefreshTargets()
+    endif
+    return l:self.targets
+endfunction
+
 " Get current build configuration.
 "
 " Returns:
@@ -319,6 +374,16 @@ endfunction
 "
 function! s:buildsys.GetCurrentConfig() abort
     return l:self.current_config
+endfunction
+
+" Get path to CMake source directory of current project.
+"
+" Returns:
+"     String
+"         path to CMake source directory
+"
+function! s:buildsys.GetSourceDir() abort
+    return l:self.project_root
 endfunction
 
 " Get path to current build configuration.
@@ -342,22 +407,27 @@ endfunction
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 function! s:GetCMakeVersionCb(...) abort
-    let l:data = cmake#job#GetCallbackData(a:000)
-    if match(l:data, '\m\C^cmake\S* version') == 0
-        let l:version_str = split(split(l:data)[2], '\.')
-        let l:major = str2nr(l:version_str[0])
-        let l:minor = str2nr(l:version_str[1])
-        let s:buildsys.cmake_version = l:major * 100 + l:minor
-    endif
+    let l:data = s:system.ExtractStdoutCallbackData(a:000)
+    for l:line in l:data
+        if match(l:line, '\m\C^cmake\S* version') == 0
+            let l:version_str = split(split(l:line)[2], '\.')
+            let l:major = str2nr(l:version_str[0])
+            let l:minor = str2nr(l:version_str[1])
+            let s:buildsys.cmake_version = l:major * 100 + l:minor
+            break
+        endif
+    endfor
 endfunction
 
 " Get CMake version. The version is stored as MAJOR * 100 + MINOR (e.g., version
 " 3.13.3 would result in 313).
 let s:command = [g:cmake_command, '--version']
-call cmake#command#Run(s:command, 1, 1, function('s:GetCMakeVersionCb'))
+call s:system.JobRun(
+        \ s:command, v:true, function('s:GetCMakeVersionCb'), v:null, {},
+        \ v:false)
+
+" Must be done before any other initial configuration.
+let s:buildsys.project_root = s:FindProjectRoot()
 
 call s:SetCurrentConfig(g:cmake_default_config)
-
 call s:RefreshConfigs()
-
-call cmake#console#RegisterCallback(function('s:RefreshConfigs'))

@@ -11,6 +11,10 @@ function! s:Log(fmt, arglist) abort
     echomsg '[Vim-CMake] ' . l:PrintfPartial()
 endfunction
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Public functions
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Echo an information message.
 "
 " Params:

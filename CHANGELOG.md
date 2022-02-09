@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+Explain the following further:
+* Big restructuring
+* Bash script gone
+* Support for windows
+* New config option: cmake_console_env
+* Fixed issue #38
+* Added :CMakeStop command
+
 ### Changed
 * Fixed searching of root path and build directory location
 * Detecting CMake version now works also for packages which are not called just

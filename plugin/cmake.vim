@@ -11,35 +11,6 @@ if exists('g:loaded_cmake') && g:loaded_cmake
 endif
 let g:loaded_cmake = 1
 
-function StdoutCallback(id, data, event)
-    for l:line in a:data
-        " Handle more properly?
-        let l:parsed_line = substitute(l:line, '\m\C\r', '\r\n', 'g')
-        call chansend(s:chan_id, l:parsed_line)
-    endfor
-endfunction
-
-function ExitCallback(id, data, event)
-    call chansend(s:chan_id, "\r\n")
-    " Command error code
-    echomsg 'Exit: ' . a:data
-endfunction
-
-function SendCmdToJob(cmd)
-    let l:opts = {
-            \ 'on_stdout': function('StdoutCallback'),
-            \ 'on_stderr': function('StdoutCallback'),
-            \ 'on_exit': function('ExitCallback'),
-            \ 'pty': v:true,
-            \ }
-    " From https://gitlab.kitware.com/cmake/cmake/-/issues/17143
-    " call setenv('CLICOLOR_FORCE', '1')
-    let l:job_id = jobstart(a:cmd, l:opts)
-    if !exists('s:chan_id')
-        let s:chan_id = nvim_open_term(bufnr(''), {})
-    endif
-endfunction
-
 let s:logger = cmake#logger#Get()
 
 let g:cmake_command = get(g:, 'cmake_command', 'cmake')
@@ -62,6 +33,8 @@ let s:config_vars = {
         \ 'g:cmake_native_build_options'  : [],
         \ 'g:cmake_console_size'          : 15,
         \ 'g:cmake_console_position'      : 'botright',
+        \ 'g:cmake_console_env'           : {'TERM': getenv('TERM')},
+        \ 'g:cmake_console_echo_cmd'      : 1,
         \ 'g:cmake_jump'                  : 0,
         \ 'g:cmake_jump_on_completion'    : 0,
         \ 'g:cmake_jump_on_error'         : 1,
@@ -73,10 +46,6 @@ let s:config_vars = {
 for s:cvar in items(s:config_vars)
     if !exists(s:cvar[0])
         let {s:cvar[0]} = s:cvar[1]
-    else
-        if type({s:cvar[0]}) is# v:t_list
-            call extend({s:cvar[0]}, s:cvar[1])
-        endif
     endif
 endfor
 
@@ -86,17 +55,14 @@ endfor
 
 command -nargs=? -bang CMakeGenerate call cmake#Generate(<bang>0, <f-args>)
 command -nargs=? CMakeClean call cmake#Clean()
+command -nargs=1 -complete=custom,cmake#GetConfigs CMakeSwitch call cmake#Switch(<f-args>)
 
-command -nargs=1 -complete=custom,cmake#GetConfigs CMakeSwitch
-        \ call cmake#Switch(<f-args>)
-
-command -nargs=? -bang -complete=custom,cmake#build#GetTargets CMakeBuild
-        \ call cmake#Build(0, 0, <bang>0, <f-args>)
-
-command CMakeInstall call cmake#Install(0, 0)
+command -nargs=? -bang -complete=custom,cmake#GetBuildTargets CMakeBuild call cmake#Build(<bang>0, <f-args>)
+command CMakeInstall call cmake#Install()
 
 command CMakeOpen call cmake#Open()
 command CMakeClose call cmake#Close()
+command CMakeStop call cmake#Stop()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Mappings
@@ -104,12 +70,12 @@ command CMakeClose call cmake#Close()
 
 nnoremap <silent> <Plug>(CMakeGenerate) :call cmake#Generate(0)<CR>
 nnoremap <silent> <Plug>(CMakeClean) :call cmake#Clean()<CR>
-
-nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0, 0, 0)<CR>
-nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Install(0, 0)<CR>
-nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
-
 nnoremap <Plug>(CMakeSwitch) :CMakeSwitch<Space>
+
+nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0)<CR>
+nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Install()<CR>
+nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
 
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#Open()<CR>
 nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close()<CR>
+nnoremap <silent> <Plug>(CMakeStop) :call cmake#Stop()<CR>
