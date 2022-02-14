@@ -25,6 +25,7 @@ let s:term_tty = ''
 let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
+let s:partial_line = ''
 
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
@@ -38,12 +39,19 @@ let s:system = cmake#system#Get()
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    " Echo data to terminal.
-    if len(l:data)
-        call s:TermEcho(l:data)
+    " In Neovim, the first and the last lines may be partial lines, thus they
+    " need to be joined on consecutive iterations. See :help channel-lines.
+    if has('nvim')
+        let s:partial_line .= remove(l:data, 0)
+        if len(l:data) > 0
+            call insert(l:data, s:partial_line)
+            let s:partial_line = remove(l:data, -1)
+        endif
     endif
+    " Echo data to terminal.
+    call s:TermEcho(l:data)
     " Save console output to list, filtering all the non-printable characters
-    " and ASCII color codes.
+    " and ANSI color codes.
     let l:filtered_data = map(l:data,
             \ {_, v -> substitute(v, '\m\C\%x1B\[[0-9;]*[a-zA-Z]', '', 'g')})
     let s:terminal.console_cmd_output += l:filtered_data
@@ -252,6 +260,9 @@ endfunction
 "         list of strings to echo
 "
 function! s:TermEcho(data) abort
+    if len(a:data) == 0
+        return
+    endif
     if has('nvim')
         call chansend(s:term_chan_id, join(a:data, "\r\n") . "\r\n")
     else
@@ -367,7 +378,7 @@ function! s:terminal.Run(command, tag, cbs, cbs_err, aus, aus_err) abort
     " Echo start message to terminal.
     if g:cmake_console_echo_cmd
         call s:TermEcho([printf(
-                \ '%sRunning command ''%s''%s',
+                \ '%sRunning command: %s%s',
                 \ "\e[1;35m",
                 \ join(a:command),
                 \ "\e[0m")

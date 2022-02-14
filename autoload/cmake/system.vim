@@ -88,6 +88,9 @@ function! s:system.JobRun(command, wait, stdout_cb, exit_cb, env, pty) abort
     if has('nvim')
         if a:stdout_cb isnot# v:null
             let l:options['on_stdout'] = a:stdout_cb
+            if a:wait
+                let l:options = {'stdout_buffered': v:true}
+            endif
         endif
         if a:exit_cb isnot# v:null
             let l:options['on_exit'] = a:exit_cb
@@ -172,16 +175,8 @@ endfunction
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
     let l:data = a:cb_arglist[1]
     if has('nvim')
-        " For Neovim, l:data is a list, where the first and the last element may
-        " be empty strings, which we remove. We also remove all the CR
-        " characters, which are returned when a pseudo terminal is allocated for
-        " the job.
-        if len(l:data) && l:data[0] ==# ''
-            call remove(l:data, 0)
-        endif
-        if len(l:data) && l:data[-1] ==# ''
-            call remove(l:data, -1)
-        endif
+        " For Neovim, l:data is a list. Remove all the CR characters, which are
+        " returned when a pseudo terminal is allocated for the job.
         call map(l:data, {_, val -> substitute(val, '\m\C\r', '', 'g')})
         return l:data
     else
