@@ -37,7 +37,6 @@ let s:system = cmake#system#Get()
 " Callback for the stdout of the command running in the Vim-CMake console.
 "
 function! s:ConsoleCmdStdoutCb(...) abort
-    call s:logger.LogDebug('Invoked console stdout callback')
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
     " Echo data to terminal.
     if len(l:data)
