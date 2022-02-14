@@ -74,7 +74,7 @@ function! cmake#util#PrintNews(current_version, news) abort
     for l:number in l:all_version_numbers
         if l:number > l:previous_version_number
             for l:news_item in a:news[s:NumberToVersion(l:number)]
-                call s:logger.Info(l:news_item)
+                call s:logger.EchoInfo(l:news_item)
             endfor
         endif
     endfor

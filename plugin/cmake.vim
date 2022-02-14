@@ -11,43 +11,31 @@ if exists('g:loaded_cmake') && g:loaded_cmake
 endif
 let g:loaded_cmake = 1
 
+let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 
-let g:cmake_command = get(g:, 'cmake_command', 'cmake')
+call s:logger.LogInfo('Loading Vim-CMake')
 
+" Check required features.
 if !has('nvim') && !has('terminal')
-    call s:logger.Error('Must run Neovim, or Vim with +terminal')
+    call s:logger.EchoError('Must run Neovim, or Vim with +terminal')
+    call s:logger.LogError('Must run Neovim, or Vim with +terminal')
     finish
 endif
-
-if !executable(g:cmake_command)
-    call s:logger.Error("Binary '%s' not found in PATH", g:cmake_command)
-    finish
-endif
-
-let s:config_vars = {
-        \ 'g:cmake_default_config'        : 'Debug',
-        \ 'g:cmake_build_dir_location'    : '.',
-        \ 'g:cmake_generate_options'      : [],
-        \ 'g:cmake_build_options'         : [],
-        \ 'g:cmake_native_build_options'  : [],
-        \ 'g:cmake_console_size'          : 15,
-        \ 'g:cmake_console_position'      : 'botright',
-        \ 'g:cmake_console_env'           : {'TERM': getenv('TERM')},
-        \ 'g:cmake_console_echo_cmd'      : 1,
-        \ 'g:cmake_jump'                  : 0,
-        \ 'g:cmake_jump_on_completion'    : 0,
-        \ 'g:cmake_jump_on_error'         : 1,
-        \ 'g:cmake_link_compile_commands' : 0,
-        \ 'g:cmake_root_markers'          : ['.git', '.svn'],
-        \ }
 
 " Assign user/default values to coniguration variables.
-for s:cvar in items(s:config_vars)
-    if !exists(s:cvar[0])
-        let {s:cvar[0]} = s:cvar[1]
+for s:cvar in items(s:const.config_vars)
+    if !has_key(g:, s:cvar[0])
+        let g:[s:cvar[0]] = s:cvar[1]
     endif
 endfor
+
+" Check if CMake executable exists.
+if !executable(g:cmake_command)
+    call s:logger.EchoError('Binary ''%s'' not found in PATH', g:cmake_command)
+    call s:logger.LogError('Binary ''%s'' not found in PATH', g:cmake_command)
+    finish
+endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Commands
@@ -64,6 +52,8 @@ command CMakeOpen call cmake#Open()
 command CMakeClose call cmake#Close()
 command CMakeStop call cmake#Stop()
 
+call s:logger.LogInfo('Commands defined')
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Mappings
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -79,3 +69,7 @@ nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#Open()<CR>
 nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close()<CR>
 nnoremap <silent> <Plug>(CMakeStop) :call cmake#Stop()<CR>
+
+call s:logger.LogInfo('Mappings defined')
+
+call s:logger.LogInfo('Vim-CMake loaded')

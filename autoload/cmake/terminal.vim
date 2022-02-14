@@ -37,6 +37,7 @@ let s:system = cmake#system#Get()
 " Callback for the stdout of the command running in the Vim-CMake console.
 "
 function! s:ConsoleCmdStdoutCb(...) abort
+    call s:logger.LogDebug('Invoked console stdout callback')
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
     " Echo data to terminal.
     if len(l:data)
@@ -52,6 +53,7 @@ endfunction
 " Callback for the end of the command running in the Vim-CMake console.
 "
 function! s:ConsoleCmdExitCb(...) abort
+    call s:logger.LogDebug('Invoked console exit callback')
     let l:error = s:system.ExtractExitCallbackData(a:000)
     " Waiting for the job's channel to be closed ensures that all output has
     " been processed. This is useful in Vim, where buffered stdout may still
@@ -87,9 +89,11 @@ function! s:ConsoleCmdExitCb(...) abort
     " Handle callbacks and autocmds.
     " Note: Funcref variable names must start with a capital.
     for l:Callback in l:callbacks
+        call s:logger.LogDebug('Callback invoked: %s()', l:Callback)
         call l:Callback()
     endfor
     for l:autocmd in l:autocmds
+        call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
         execute 'doautocmd <nomodeline> User ' . l:autocmd
     endfor
     " Reset state
@@ -165,6 +169,7 @@ function! s:CreateConsoleWindow() abort
     execute join([g:cmake_console_position, g:cmake_console_size . 'split'])
     setlocal winfixheight
     setlocal winfixwidth
+    call s:logger.LogDebug('Created console window')
 endfunction
 
 " Create Vim-CMake buffer and apply local settings.
@@ -195,6 +200,7 @@ function! s:CreateConsoleBuffer() abort
         autocmd WinEnter <buffer> call s:OnEnterConsoleWindow()
     augroup END
     return bufnr()
+    call s:logger.LogDebug('Created console buffer')
 endfunction
 
 " Setup Vim-CMake console terminal.
@@ -265,6 +271,7 @@ endfunction
 "         if set, a new buffer is created and the old one is deleted
 "
 function! s:terminal.Open(clear) abort
+    call s:logger.LogDebug('Invoked: terminal.Open(%s)', a:clear)
     let l:original_win_id = win_getid()
     let l:cmake_win_id = bufwinid(l:self.console_buffer)
     if l:cmake_win_id == -1
@@ -303,12 +310,14 @@ endfunction
 " Focus Vim-CMake console window.
 "
 function! s:terminal.Focus() abort
+    call s:logger.LogDebug('Invoked: terminal.Focus()')
     call win_gotoid(bufwinid(l:self.console_buffer))
 endfunction
 
 " Close Vim-CMake console window.
 "
 function! s:terminal.Close() abort
+    call s:logger.LogDebug('Invoked: terminal.Close()')
     if bufexists(l:self.console_buffer)
         let l:cmake_win_id = bufwinid(l:self.console_buffer)
         if l:cmake_win_id != -1
@@ -338,10 +347,13 @@ endfunction
 "         of the command
 "
 function! s:terminal.Run(command, tag, cbs, cbs_err, aus, aus_err) abort
+    call s:logger.LogDebug('Invoked: terminal.Run(%s, %s, %s, %s, %s, %s)',
+            \ a:command, string(a:tag), a:cbs, a:cbs_err, a:aus, a:aus_err)
     call assert_notequal(index(keys(l:self.console_cmd_info), a:tag), -1)
     " Prevent executing this function when a command is already running
     if l:self.console_cmd.running
-        call s:logger.Error('Another CMake command is already running')
+        call s:logger.EchoError('Another CMake command is already running')
+        call s:logger.LogError('Another CMake command is already running')
         return
     endif
     let l:self.console_cmd.running = v:true
@@ -374,6 +386,7 @@ endfunction
 " Stop command currently running in the Vim-CMake console.
 "
 function! s:terminal.Stop() abort
+    call s:logger.LogDebug('Invoked: terminal.Stop()')
     call s:system.JobStop(l:self.console_cmd_id)
 endfunction
 

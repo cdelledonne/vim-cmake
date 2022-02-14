@@ -14,6 +14,8 @@ let s:filters = [
         \ 'filereadable(bufname(v:val.bufnr))',
         \ ]
 
+let s:logger = cmake#logger#Get()
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -25,6 +27,7 @@ let s:filters = [
 "         list of lines to parse to generate Quickfix list
 "
 function! s:quickfix.Generate(lines_to_parse) abort
+    call s:logger.LogDebug('Invoked: s:quickfix.Generate()')
     " Create a list of quickfix items from the output of the last command.
     let l:list = getqflist({'lines': a:lines_to_parse})
     let l:self.list.items = filter(l:list.items, join(s:filters, ' && '))
@@ -39,9 +42,11 @@ function! s:quickfix.Generate(lines_to_parse) abort
             execute 'silent cnewer ' . (l:target - l:current)
         endif
         call setqflist([], 'r', {'items': l:self.list.items})
+        call s:logger.LogDebug('Replaced existing Quickfix list')
     " Otherwise, create a new quickfix list.
     else
         call setqflist([], ' ', l:self.list)
+        call s:logger.LogDebug('Created new Quickfix list')
     endif
     let l:self.id = getqflist({'nr': 0, 'id': 0}).id
 endfunction

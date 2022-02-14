@@ -6,6 +6,8 @@
 let s:build = {}
 
 let s:buildsys = cmake#buildsys#Get()
+let s:const = cmake#const#Get()
+let s:logger = cmake#logger#Get()
 let s:quickfix = cmake#quickfix#Get()
 let s:terminal = cmake#terminal#Get()
 
@@ -77,6 +79,8 @@ endfunction
 "         build target and other options
 "
 function! s:build.Build(clean, argstring) abort
+    call s:logger.LogDebug('Invoked: build.Build(%s, %s)',
+            \ a:clean, string(a:argstring))
     let l:build_dir = s:buildsys.GetPathToCurrentConfig()
     let l:command = [g:cmake_command, '--build', l:build_dir]
     let l:options = {}
@@ -108,6 +112,7 @@ endfunction
 " Install a project.
 "
 function! s:build.Install() abort
+    call s:logger.LogDebug('Invoked: build.Install()')
     let l:build_dir = s:buildsys.GetPathToCurrentConfig()
     let l:command = [g:cmake_command, '--install', l:build_dir]
     call s:terminal.Run(l:command, 'install', [], [], [], [])

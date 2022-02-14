@@ -3,25 +3,20 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:cmake = {}
-let s:cmake.plugin_version = '0.6.2'
-let s:cmake.project_name = ''
-
 let s:buildsys = cmake#buildsys#Get()
 let s:build = cmake#build#Get()
+let s:const = cmake#const#Get()
+let s:logger = cmake#logger#Get()
 let s:terminal = cmake#terminal#Get()
 
 " Print news of new Vim-CMake versions.
-call cmake#util#PrintNews(s:cmake.plugin_version, {
-        \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
-        \ '0.3.0': ['Vim-CMake has a new feature, run `:help cmake-quickfix`'],
-        \ '0.4.0': ['Vim-CMake has a new config option `g:cmake_generate_options`'],
-        \ '0.5.0': ['Vim-CMake has a new feature, run `:help cmake-events`'],
-        \ '0.6.0': [
-                \ 'Vim-CMake has a new config option `g:cmake_build_dir_location`',
-                \ 'Vim-CMake has improved :CMakeGenerate, run `:help cmake-generate`'
-        \ ],
-        \ })
+call cmake#util#PrintNews(s:const.plugin_version, s:const.plugin_news)
+
+" Log config options.
+call s:logger.LogInfo('Configuration options:')
+for s:cvar in sort(keys(s:const.config_vars))
+    call s:logger.LogInfo('> g:%s: %s', s:cvar, string(g:[s:cvar]))
+endfor
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " API functions
@@ -36,12 +31,14 @@ call cmake#util#PrintNews(s:cmake.plugin_version, {
 "         (optional) build configuration and additional CMake options
 "
 function! cmake#Generate(clean, ...) abort
+    call s:logger.LogDebug('API invoked: cmake#Generate(%s, %s)', a:clean, a:000)
     call s:buildsys.Generate(a:clean, join(a:000))
 endfunction
 
 " API function for :CMakeClean and <Plug>(CMakeClean).
 "
 function! cmake#Clean() abort
+    call s:logger.LogDebug('API invoked: cmake#Clean()')
     call s:buildsys.Clean()
 endfunction
 
@@ -52,6 +49,7 @@ endfunction
 "         build configuration
 "
 function! cmake#Switch(...) abort
+    call s:logger.LogDebug('API invoked: cmake#Switch(%s)', string(a:1))
     call s:buildsys.Switch(a:1)
 endfunction
 
@@ -70,6 +68,7 @@ endfunction
 "         stringified list of existing configuration directories
 "
 function! cmake#GetConfigs(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetConfigs()')
     return join(s:buildsys.GetConfigs(), "\n")
 endfunction
 
@@ -82,12 +81,14 @@ endfunction
 "         (optional) target and other build options
 "
 function! cmake#Build(clean, ...) abort
+    call s:logger.LogDebug('API invoked: cmake#Build(%s, %s)', a:clean, a:000)
     call s:build.Build(a:clean, join(a:000))
 endfunction
 
 " API function for :CMakeInstall and <Plug>(CMakeInstall).
 "
 function! cmake#Install() abort
+    call s:logger.LogDebug('API invoked: cmake#Install()')
     call s:build.Install()
 endfunction
 
@@ -108,23 +109,27 @@ endfunction
 "         available targets, one per line
 "
 function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetBuildTargets()')
     return join(s:buildsys.GetTargets(), "\n")
 endfunction
 
 " API function for :CMakeStop.
 "
 function! cmake#Stop() abort
+    call s:logger.LogDebug('API invoked: cmake#Stop()')
     call s:terminal.Stop()
 endfunction
 
 " API function for :CMakeOpen.
 "
 function! cmake#Open() abort
+    call s:logger.LogDebug('API invoked: cmake#Open()')
     call s:terminal.Open(v:false)
 endfunction
 
 " API function for :CMakeClose.
 "
 function! cmake#Close() abort
+    call s:logger.LogDebug('API invoked: cmake#Close()')
     call s:terminal.Close()
 endfunction

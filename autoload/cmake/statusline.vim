@@ -7,6 +7,8 @@ let s:statusline = {}
 let s:statusline.build_info = ''
 let s:statusline.cmd_info = ''
 
+let s:logger = cmake#logger#Get()
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -18,6 +20,7 @@ let s:statusline.cmd_info = ''
 "         statusline build info
 "
 function! s:statusline.SetBuildInfo(build_info) abort
+    call s:logger.LogDebug('Invoked: statusline.SetBuildInfo(%s)', a:build_info)
     let l:self.build_info = a:build_info
 endfunction
 
@@ -28,6 +31,7 @@ endfunction
 "         statusline command info
 "
 function! s:statusline.SetCmdInfo(cmd_info) abort
+    call s:logger.LogDebug('Invoked: statusline.SetCmdInfo(%s)', a:cmd_info)
     let l:self.cmd_info = a:cmd_info
 endfunction
 

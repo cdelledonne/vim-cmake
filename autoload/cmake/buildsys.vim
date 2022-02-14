@@ -202,6 +202,7 @@ function! s:RefreshConfigs() abort
     " existing configuration directories.
     call map(l:cache_dirs, {_, val -> fnamemodify(val, ':h:t')})
     let s:buildsys.configs = l:cache_dirs
+    call s:logger.LogDebug('Build configs: %s', s:buildsys.configs)
 endfunction
 
 " Callback for RefreshTargets().
@@ -254,6 +255,10 @@ function! s:SetCurrentConfig(config) abort
     let s:buildsys.current_config = a:config
     let l:path = s:system.Path([s:GetBuildDirLocation(), a:config], v:true)
     let s:buildsys.path_to_current_config = l:path
+    call s:logger.LogInfo('Current config: %s (%s)',
+            \ s:buildsys.current_config,
+            \ s:system.Path([s:buildsys.path_to_current_config], v:false)
+            \ )
     call s:statusline.SetBuildInfo(s:buildsys.current_config)
 endfunction
 
@@ -288,6 +293,8 @@ endfunction
 "         build configuration and additional CMake options
 "
 function! s:buildsys.Generate(clean, argstring) abort
+    call s:logger.LogDebug('Invoked: buildsys.Generate(%s, %s)',
+            \ a:clean, string(a:argstring))
     let l:command = [g:cmake_command]
     let l:optdict = s:ProcessArgString(a:argstring)
     " Construct command.
@@ -319,6 +326,7 @@ endfunction
 " Clean buildsystem.
 "
 function! s:buildsys.Clean() abort
+    call s:logger.LogDebug('Invoked: buildsys.Clean()')
     if isdirectory(l:self.path_to_current_config)
         call delete(l:self.path_to_current_config, 'rf')
     endif
@@ -332,9 +340,13 @@ endfunction
 "         build configuration name
 "
 function! s:buildsys.Switch(config) abort
+    call s:logger.LogDebug('Invoked: buildsys.Switch(%s)', a:config)
     " Check that config exists.
     if !s:ConfigExists(a:config)
-        call s:logger.Error(
+        call s:logger.EchoError(
+                \ "Build configuration '%s' not found, run ':CMakeGenerate %s'",
+                \ a:config, a:config)
+        call s:logger.LogError(
                 \ "Build configuration '%s' not found, run ':CMakeGenerate %s'",
                 \ a:config, a:config)
         return
@@ -428,6 +440,7 @@ call s:system.JobRun(
 
 " Must be done before any other initial configuration.
 let s:buildsys.project_root = s:FindProjectRoot()
+call s:logger.LogInfo('Project root: %s', s:buildsys.project_root)
 
 call s:SetCurrentConfig(g:cmake_default_config)
 call s:RefreshConfigs()
