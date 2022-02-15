@@ -27,7 +27,6 @@ let s:const.config_vars = {
         \ 'cmake_native_build_options'  : [],
         \ 'cmake_console_size'          : 15,
         \ 'cmake_console_position'      : 'botright',
-        \ 'cmake_console_env'           : {'TERM': getenv('TERM')},
         \ 'cmake_console_echo_cmd'      : 1,
         \ 'cmake_jump'                  : 0,
         \ 'cmake_jump_on_completion'    : 0,

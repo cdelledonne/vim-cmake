@@ -55,7 +55,7 @@ function! s:system.Link(target, link_name, wait) abort
     else
         let l:command = ['ln', '-sf', a:target, a:link_name]
     endif
-    return l:self.JobRun(l:command, a:wait, v:null, v:null, {}, v:false)
+    return l:self.JobRun(l:command, a:wait, v:null, v:null, v:false, {})
 endfunction
 
 " Run arbitrary job in the background.
@@ -73,24 +73,22 @@ endfunction
 "         exit callback (can be v:null), which should take a variable number of
 "         arguments, and from which s:system.ExtractExitCallbackData(a:000) can
 "         be called to retrieve the exit code
-"     env : Dict
-"         dictionary of environment variables to pass to the job
 "     pty : Boolean
 "         whether to allocate a pseudo terminal for the job
+"     options : Dict
+"         dictionary of additional job options
 "
 " Return:
 "     Number
 "         job id
 "
-function! s:system.JobRun(command, wait, stdout_cb, exit_cb, env, pty) abort
+function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty, options) abort
     " Run background job and set callback.
-    let l:options = {'env': a:env, 'pty': a:pty}
+    let l:options = a:options
+    let l:options['pty'] = a:pty
     if has('nvim')
         if a:stdout_cb isnot# v:null
             let l:options['on_stdout'] = a:stdout_cb
-            if a:wait
-                let l:options = {'stdout_buffered': v:true}
-            endif
         endif
         if a:exit_cb isnot# v:null
             let l:options['on_exit'] = a:exit_cb

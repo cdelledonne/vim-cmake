@@ -11,7 +11,7 @@ Explain the following further:
 * Big restructuring
 * Bash script gone
 * Support for windows
-* New config option: cmake_console_env
+* New config options
 * Fixed issue #38
 * Added :CMakeStop command
 

@@ -227,8 +227,8 @@ function! s:RefreshTargets() abort
             \ '--target', 'help'
             \ ]
     call s:system.JobRun(
-            \ l:command, v:true, function('s:RefreshTargetsCb'), v:null, {},
-            \ v:false)
+            \ l:command, v:true, function('s:RefreshTargetsCb'), v:null,
+            \ v:false, {})
 endfunction
 
 " Check if build configuration directory exists.
@@ -435,8 +435,8 @@ endfunction
 " 3.13.3 would result in 313).
 let s:command = [g:cmake_command, '--version']
 call s:system.JobRun(
-        \ s:command, v:true, function('s:GetCMakeVersionCb'), v:null, {},
-        \ v:false)
+        \ s:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false,
+        \ {})
 
 " Must be done before any other initial configuration.
 let s:buildsys.project_root = s:FindProjectRoot()

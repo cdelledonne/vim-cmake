@@ -147,19 +147,24 @@ endfunction
 "         job id
 "
 function! s:ConsoleCmdStart(command) abort
+    let l:options = {}
+    if has('nvim')
+        let l:options['width'] = winwidth(bufwinid(s:terminal.console_buffer))
+        let l:options['height'] = winheight(bufwinid(s:terminal.console_buffer))
+    endif
     let l:console_win_id = bufwinid(s:terminal.console_buffer)
+    " For Vim, must go back into Terminal-Job mode for the command's output to
+    " be appended to the buffer.
     if !has('nvim')
-        " For Vim, must go back into Terminal-Job mode for the command's output
-        " to be appended to the buffer.
         call win_execute(l:console_win_id, 'call s:EnterTermMode()', '')
     endif
     " Run command.
     let l:job_id = s:system.JobRun(
             \ a:command, v:false, function('s:ConsoleCmdStdoutCb'),
-            \ function('s:ConsoleCmdExitCb'), g:cmake_console_env, v:true)
+            \ function('s:ConsoleCmdExitCb'), v:true, l:options)
+    " For Neovim, scroll manually to the end of the terminal buffer while the
+    " command's output is being appended.
     if has('nvim')
-        " For Neovim, scroll manually to the end of the terminal buffer while
-        " the command's output is being appended.
         let l:buffer_length = nvim_buf_line_count(s:terminal.console_buffer)
         call nvim_win_set_cursor(l:console_win_id, [l:buffer_length, 0])
     endif
@@ -374,7 +379,6 @@ function! s:terminal.Run(command, tag, cbs, cbs_err, aus, aus_err) abort
     let l:self.console_cmd_output = []
     " Open Vim-CMake console window.
     call l:self.Open(v:false)
-    let l:term_width = winwidth(bufwinid(l:self.console_buffer))
     " Echo start message to terminal.
     if g:cmake_console_echo_cmd
         call s:TermEcho([printf(
