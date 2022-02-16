@@ -57,7 +57,7 @@ function! s:system.Link(target, link_name, wait) abort
     else
         let l:command = ['ln', '-sf', a:target, a:link_name]
     endif
-    return l:self.JobRun(l:command, a:wait, v:null, v:null, v:false, {})
+    return l:self.JobRun(l:command, a:wait, v:null, v:null, v:false)
 endfunction
 
 " Run arbitrary job in the background.
@@ -77,17 +77,18 @@ endfunction
 "         be called to retrieve the exit code
 "     pty : Boolean
 "         whether to allocate a pseudo terminal for the job
-"     options : Dict
-"         dictionary of additional job options
 "
 " Return:
 "     Number
 "         job id
 "
-function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty, options) abort
-    " Run background job and set callback.
-    let l:options = a:options
+function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
+    let l:options = {}
     let l:options['pty'] = a:pty
+    " Remove double quotes around command arguments that were quoted by the
+    " user. For instance, '-G "Unix Makefiles"' results in '-G Unix Makefiles'.
+    call map(a:command, {_, val -> substitute(
+                \ val, '\m\C\(^\|[^"\\]\)"\([^"]\|$\)', '\1\2', 'g')})
     if has('nvim')
         if a:stdout_cb isnot# v:null
             let l:options['on_stdout'] = a:stdout_cb

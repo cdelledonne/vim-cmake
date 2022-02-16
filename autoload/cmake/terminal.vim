@@ -137,7 +137,6 @@ endfunction
 "         job id
 "
 function! s:ConsoleCmdStart(command) abort
-    let l:options = {}
     let l:console_win_id = bufwinid(s:terminal.console_buffer)
     " For Vim, must go back into Terminal-Job mode for the command's output to
     " be appended to the buffer.
@@ -147,7 +146,7 @@ function! s:ConsoleCmdStart(command) abort
     " Run command.
     let l:job_id = s:system.JobRun(
             \ a:command, v:false, function('s:ConsoleCmdStdoutCb'),
-            \ function('s:ConsoleCmdExitCb'), v:true, l:options)
+            \ function('s:ConsoleCmdExitCb'), v:true)
     " For Neovim, scroll manually to the end of the terminal buffer while the
     " command's output is being appended.
     if has('nvim')
