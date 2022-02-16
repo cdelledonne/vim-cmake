@@ -38,13 +38,17 @@ let s:system = cmake#system#Get()
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
+    if has('win32')
+        call map(l:data, {_, val -> substitute(
+                \ val, '\m\C\e\[[0-9;]*[JH]', '', 'g')})
+    endif
     " Echo data to terminal.
     call s:TermEcho(l:data)
     " Save console output to list, filtering all the non-printable characters
     " and ANSI color codes.
-    let l:filtered_data = map(l:data,
-            \ {_, v -> substitute(v, '\m\C\%x1B\[[0-9;]*[a-zA-Z]', '', 'g')})
-    let s:terminal.console_cmd_output += l:filtered_data
+    call map(l:data, {_, val -> substitute(
+            \ val, '\m\C\e\[[0-9;]*[a-zA-Z]', '', 'g')})
+    let s:terminal.console_cmd_output += l:data
 endfunction
 
 " Callback for the end of the command running in the Vim-CMake console.
