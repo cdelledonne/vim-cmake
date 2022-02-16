@@ -25,7 +25,6 @@ let s:term_tty = ''
 let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
-let s:partial_line = ''
 
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
@@ -39,15 +38,6 @@ let s:system = cmake#system#Get()
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    " In Neovim, the first and the last lines may be partial lines, thus they
-    " need to be joined on consecutive iterations. See :help channel-lines.
-    if has('nvim')
-        let s:partial_line .= remove(l:data, 0)
-        if len(l:data) > 0
-            call insert(l:data, s:partial_line)
-            let s:partial_line = remove(l:data, -1)
-        endif
-    endif
     " Echo data to terminal.
     call s:TermEcho(l:data)
     " Save console output to list, filtering all the non-printable characters
@@ -148,10 +138,6 @@ endfunction
 "
 function! s:ConsoleCmdStart(command) abort
     let l:options = {}
-    if has('nvim')
-        let l:options['width'] = winwidth(bufwinid(s:terminal.console_buffer))
-        let l:options['height'] = winheight(bufwinid(s:terminal.console_buffer))
-    endif
     let l:console_win_id = bufwinid(s:terminal.console_buffer)
     " For Vim, must go back into Terminal-Job mode for the command's output to
     " be appended to the buffer.
@@ -248,8 +234,7 @@ endfunction
 " Stop terminal.
 "
 function! s:TermStop() abort
-    " Nothing to do for Neovim, as no process is attached to the terminal.
-    if !has('nvim')
+    if s:term_id != -1
         try
             call s:system.JobStop(s:term_id)
             call s:system.JobWait(s:term_id)

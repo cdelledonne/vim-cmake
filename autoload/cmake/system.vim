@@ -5,6 +5,8 @@
 
 let s:system = {}
 
+let s:stdout_partial_line = ''
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -93,6 +95,15 @@ function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty, options) abort
         if a:exit_cb isnot# v:null
             let l:options['on_exit'] = a:exit_cb
         endif
+        " In some cases, the PTY in MS-Windows (ConPTY) uses ANSI escape
+        " sequences to move the cursor position (ESC[<n>;<m>H) rather than
+        " inseting newline characters. Setting the width of the PTY to be very
+        " large and the height to be as small as possible (but larger than 1)
+        " seems to circumvent this problem. Hacky, but it seems to work.
+        if has('win32')
+            let l:options['width'] = 10000
+            let l:options['height'] = 2
+        endif
         let l:job_id = jobstart(a:command, l:options)
     else
         if a:stdout_cb isnot# v:null
@@ -173,14 +184,22 @@ endfunction
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
     let l:data = a:cb_arglist[1]
     if has('nvim')
-        " For Neovim, l:data is a list. Remove all the CR characters, which are
-        " returned when a pseudo terminal is allocated for the job.
+        " In Neovim, remove all the CR characters, which are returned when a
+        " pseudo terminal is allocated for the job.
         call map(l:data, {_, val -> substitute(val, '\m\C\r', '', 'g')})
-        return l:data
+        " The first and the last lines may be partial lines, thus they need to
+        " be joined on consecutive iterations. See :help channel-lines.
+        let s:stdout_partial_line .= remove(l:data, 0)
+        if len(l:data) > 0
+            call insert(l:data, s:stdout_partial_line)
+            let s:stdout_partial_line = remove(l:data, -1)
+        endif
     else
-        " For Vim, l:data is a string, which we return as a list.
-        return [l:data]
+        " In Vim, l:data is a string, so we transform it to a list (consisting
+        " of a single element).
+        let l:data = [l:data]
     endif
+    return l:data
 endfunction
 
 " Extract data from a system's exit callback.
