@@ -5,7 +5,7 @@
 
 let s:system = {}
 
-let s:stdout_partial_line = ''
+let s:stdout_partial_line = {}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
@@ -183,17 +183,34 @@ endfunction
 "         stdout data, as a list of strings
 "
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
+    let l:channel = a:cb_arglist[0]
     let l:data = a:cb_arglist[1]
     if has('nvim')
+        let l:eof = (l:data == [''])
         " In Neovim, remove all the CR characters, which are returned when a
         " pseudo terminal is allocated for the job.
         call map(l:data, {_, val -> substitute(val, '\m\C\r', '', 'g')})
         " The first and the last lines may be partial lines, thus they need to
         " be joined on consecutive iterations. See :help channel-lines.
-        let s:stdout_partial_line .= remove(l:data, 0)
+        " When this function is called for the first time for a particular
+        " channel, allocate an empty partial line for that channel.
+        if !has_key(s:stdout_partial_line, l:channel)
+            let s:stdout_partial_line[l:channel] = ''
+        endif
+        " Append first entry of output list to partial line.
+        let s:stdout_partial_line[l:channel] .= remove(l:data, 0)
+        " If output list contains more entries, they are all complete lines
+        " except for the last entry. Return the saved partial line (which is now
+        " complete) and all the complete lines from the list, and save a new
+        " partial line (the last entry of the list).
         if len(l:data) > 0
-            call insert(l:data, s:stdout_partial_line)
-            let s:stdout_partial_line = remove(l:data, -1)
+            call insert(l:data, s:stdout_partial_line[l:channel])
+            let s:stdout_partial_line[l:channel] = remove(l:data, -1)
+        endif
+        " At the end of the stream of a channel, remove the dictionary entry for
+        " that channel.
+        if l:eof
+            call remove(s:stdout_partial_line, l:channel)
         endif
     else
         " In Vim, l:data is a string, so we transform it to a list (consisting
