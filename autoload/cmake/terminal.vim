@@ -26,6 +26,13 @@ let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
 
+" ANSI sequence delimiters, see
+" https://en.wikipedia.org/wiki/ANSI_escape_code
+" https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
+let s:ansi_esc = '\e'
+let s:ansi_csi = s:ansi_esc . '\['
+let s:ansi_st = '\(\%x07\|\\\)'
+
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
 let s:system = cmake#system#Get()
@@ -38,16 +45,10 @@ let s:system = cmake#system#Get()
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    if has('win32')
-        call map(l:data, {_, val -> substitute(
-                \ val, '\m\C\e\[[0-9;]*[JH]', '', 'g')})
-    endif
-    " Echo data to terminal.
+    call s:FilterStdoutPreEcho(l:data)
     call s:TermEcho(l:data)
-    " Save console output to list, filtering all the non-printable characters
-    " and ANSI color codes.
-    call map(l:data, {_, val -> substitute(
-            \ val, '\m\C\e\[[0-9;]*[a-zA-Z]', '', 'g')})
+    call s:FilterStdoutPostEcho(l:data)
+    " Save console output to list.
     let s:terminal.console_cmd_output += l:data
 endfunction
 
@@ -260,6 +261,58 @@ function! s:TermEcho(data) abort
         call chansend(s:term_chan_id, join(a:data, "\r\n") . "\r\n")
     else
         call writefile(a:data, s:term_tty)
+    endif
+endfunction
+
+" Filter stdout data to remove ANSI sequences that should not be sent to the
+" console terminal.
+"
+" Params:
+"     data : List
+"         list of stdout strings to filter (filtering is done in-place)
+"
+function! s:FilterStdoutPreEcho(data) abort
+    " In MS-Windows (where ConPTY is used), remove ANSI sequences that mess up
+    " the terminal.
+    if has('win32')
+        " Remove 'erase screen' sequences.
+        let l:pattern = s:ansi_csi . '\d*J'
+        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+        " Remove 'move cursor' sequences.
+        let l:pattern = s:ansi_csi . '\(\d\+;\)*\d*H'
+        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+    endif
+endfunction
+
+" Filter stdout data to remove remaining ANSI sequences after sending the data
+" to the console terminal.
+"
+" Params:
+"     data : List
+"         list of stdout strings to filter (filtering is done in-place)
+"
+function! s:FilterStdoutPostEcho(data) abort
+    " Remove ANSI sequences for coloring and style.
+    let l:pattern = s:ansi_csi . '\(\d\+;\)*\d*m'
+    call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+    " Remove remaining ANSI sequences returned by ConPTY (MS-Windows).
+    if has('win32')
+        " Remove 'erase from cursor' sequences.
+        let l:pattern = s:ansi_csi . '\d*X'
+        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+        " Remove 'erase from cursor to EOL' sequences.
+        let l:pattern = s:ansi_csi . 'K'
+        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+        " Remove 'hide/show cursor' sequences.
+        let l:pattern = s:ansi_csi . '?25[hl]'
+        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+        " Remove 'console title' sequences.
+        let l:pattern = s:ansi_esc . '\]' . '0;.*' . s:ansi_st
+        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+        " Replace 'move forward' sequences with spaces.
+        let l:pattern = s:ansi_csi . '\(\d*\)C'
+        let l:sub = '\=repeat('' '', submatch(1))'
+        call map(a:data, {_, val -> substitute(val, l:pattern, l:sub, 'g')})
     endif
 endfunction
 
