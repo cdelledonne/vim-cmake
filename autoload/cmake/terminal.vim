@@ -52,8 +52,8 @@ let s:post_echo_rep_sub = ''
 " - 'move cursor' sequences
 if has('win32')
     let s:pre_echo_filter = s:pre_echo_filter
-            \ . '\(\|' . s:ansi_csi . '\d*J' . '\)'
-            \ . '\(\|' . s:ansi_csi . '\(\d\+;\)*\d*H' . '\)'
+            \ . '\(' . s:ansi_csi . '\d*J' . '\)'
+            \ . '\|\(' . s:ansi_csi . '\(\d\+;\)*\d*H' . '\)'
 endif
 
 " Remove ANSI sequences for coloring and style after echoing to the terminal.
