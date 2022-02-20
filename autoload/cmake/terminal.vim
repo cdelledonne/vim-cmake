@@ -26,16 +26,59 @@ let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
 
-" ANSI sequence delimiters, see
+let s:logger = cmake#logger#Get()
+let s:statusline = cmake#statusline#Get()
+let s:system = cmake#system#Get()
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" ANSI sequence filters
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " https://en.wikipedia.org/wiki/ANSI_escape_code
 " https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
+
 let s:ansi_esc = '\e'
 let s:ansi_csi = s:ansi_esc . '\['
 let s:ansi_st = '\(\%x07\|\\\)'
 
-let s:logger = cmake#logger#Get()
-let s:statusline = cmake#statusline#Get()
-let s:system = cmake#system#Get()
+let s:pre_echo_filter = ''
+let s:post_echo_filter = ''
+let s:post_echo_rep_pat = ''
+let s:post_echo_rep_sub = ''
+
+" In ConPTY (MS-Windows), remove ANSI sequences that mess up the terminal before
+" echoing data to the terminal:
+" - 'erase screen' sequences
+" - 'move cursor' sequences
+if has('win32')
+    let s:pre_echo_filter = s:pre_echo_filter
+            \ . '\(\|' . s:ansi_csi . '\d*J' . '\)'
+            \ . '\(\|' . s:ansi_csi . '\(\d\+;\)*\d*H' . '\)'
+endif
+
+" Remove ANSI sequences for coloring and style after echoing to the terminal.
+let s:post_echo_filter .= '\(' . s:ansi_csi . '\(\d\+;\)*\d*m' . '\)'
+
+" Remove additional ANSI sequences returened by ConPTY (MS-Windows) after
+" echoing to the terminal:
+" - 'erase from cursor' sequences
+" - 'erase from cursor to EOL' sequences
+" - 'hide/show cursor' sequences
+" - 'console title' sequences
+if has('win32')
+    let s:post_echo_filter = s:post_echo_filter
+            \ . '\|\(' . s:ansi_csi . '\d*X' . '\)'
+            \ . '\|\(' . s:ansi_csi . 'K' . '\)'
+            \ . '\|\(' . s:ansi_csi . '?25[hl]' . '\)'
+            \ . '\|\(' . s:ansi_esc . '\]' . '0;.*' . s:ansi_st . '\)'
+endif
+
+" Replace 'move forward' sequences with spaces in ConPTY (MS-Windows) after
+" echoing to the terminal
+if has('win32')
+    let s:post_echo_rep_pat .= s:ansi_csi . '\(\d*\)C'
+    let s:post_echo_rep_sub .= '\=repeat('' '', submatch(1))'
+endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Private functions
@@ -272,15 +315,9 @@ endfunction
 "         list of stdout strings to filter (filtering is done in-place)
 "
 function! s:FilterStdoutPreEcho(data) abort
-    " In MS-Windows (where ConPTY is used), remove ANSI sequences that mess up
-    " the terminal.
-    if has('win32')
-        " Remove 'erase screen' sequences.
-        let l:pattern = s:ansi_csi . '\d*J'
-        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
-        " Remove 'move cursor' sequences.
-        let l:pattern = s:ansi_csi . '\(\d\+;\)*\d*H'
-        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
+    if s:pre_echo_filter !=# ''
+        call map(a:data, {_, val -> substitute(
+                \ val, s:pre_echo_filter, '', 'g')})
     endif
 endfunction
 
@@ -292,27 +329,13 @@ endfunction
 "         list of stdout strings to filter (filtering is done in-place)
 "
 function! s:FilterStdoutPostEcho(data) abort
-    " Remove ANSI sequences for coloring and style.
-    let l:pattern = s:ansi_csi . '\(\d\+;\)*\d*m'
-    call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
-    " Remove remaining ANSI sequences returned by ConPTY (MS-Windows).
-    if has('win32')
-        " Remove 'erase from cursor' sequences.
-        let l:pattern = s:ansi_csi . '\d*X'
-        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
-        " Remove 'erase from cursor to EOL' sequences.
-        let l:pattern = s:ansi_csi . 'K'
-        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
-        " Remove 'hide/show cursor' sequences.
-        let l:pattern = s:ansi_csi . '?25[hl]'
-        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
-        " Remove 'console title' sequences.
-        let l:pattern = s:ansi_esc . '\]' . '0;.*' . s:ansi_st
-        call map(a:data, {_, val -> substitute(val, l:pattern, '', 'g')})
-        " Replace 'move forward' sequences with spaces.
-        let l:pattern = s:ansi_csi . '\(\d*\)C'
-        let l:sub = '\=repeat('' '', submatch(1))'
-        call map(a:data, {_, val -> substitute(val, l:pattern, l:sub, 'g')})
+    if s:post_echo_filter !=# ''
+        call map(a:data, {_, val -> substitute(
+                \ val, s:post_echo_filter, '', 'g')})
+    endif
+    if s:post_echo_rep_pat !=# ''
+        call map(a:data, {_, val -> substitute(
+                \ val, s:post_echo_rep_pat, s:post_echo_rep_sub, 'g')})
     endif
 endfunction
 
