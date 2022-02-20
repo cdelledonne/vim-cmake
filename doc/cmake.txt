@@ -313,7 +313,10 @@ g:cmake_link_compile_commands (default: `0`)
 			this is enabled, the CMake configuration options
 			`CMAKE_EXPORT_COMPILE_COMMANDS` will be set to `ON`
 			(unless explicitly set to something else in the
-			command-line arguments to `:CMakeGenerate`).
+			command-line arguments to `:CMakeGenerate`).  NOTE:
+			under MS-Windows, creating symlinks only work if the
+			"Developer mode" is enabled, or if running the console
+			as an administrator.
 
 g:cmake_root_markers (default: `['.git', '.svn']`)
 			List of file/directory names used to locate the

@@ -193,7 +193,6 @@ endfunction
 "
 function! s:RefreshConfigs() abort
     " List of directories inside of which a CMakeCache file is found.
-    " TODO: test that this works in windows
     let l:cache_dirs = findfile(
             \ 'CMakeCache.txt',
             \ s:GetBuildDirLocation() . '/**1',
@@ -275,7 +274,6 @@ function! s:LinkCompileCommands() abort
             \ [s:buildsys.project_root, 'compile_commands.json'],
             \ v:true,
             \ )
-    " TODO: test if link if overwritten in Windows, otherwise remove old link first
     call s:system.Link(l:target, l:link_name, v:true)
 endfunction
 
@@ -318,7 +316,8 @@ function! s:buildsys.Generate(clean, argstring) abort
                 \ function('s:RefreshTargets'),
                 \ function('s:LinkCompileCommands')
             \ ],
-            \ [], [], []
+            \ [function('s:RefreshConfigs')],
+            \ [], []
             \ )
 endfunction
 

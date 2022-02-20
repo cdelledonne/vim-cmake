@@ -5,7 +5,6 @@
 
 let s:terminal = {}
 let s:terminal.console_buffer = -1
-let s:terminal.console_cmd_id = -1
 let s:terminal.console_cmd_info = {
         \ 'generate': 'Generating buildsystem...',
         \ 'build': 'Building...',
@@ -13,6 +12,7 @@ let s:terminal.console_cmd_info = {
         \ 'NONE': '',
         \ }
 let s:terminal.console_cmd = {
+        \ 'id': -1,
         \ 'running': v:false,
         \ 'callbacks': [],
         \ 'callbacks_err': [],
@@ -99,54 +99,12 @@ endfunction
 "
 function! s:ConsoleCmdExitCb(...) abort
     call s:logger.LogDebug('Invoked console exit callback')
-    let l:error = s:system.ExtractExitCallbackData(a:000)
     " Waiting for the job's channel to be closed ensures that all output has
     " been processed. This is useful in Vim, where buffered stdout may still
     " come in after entering this function.
-    call s:system.ChannelWait(s:terminal.console_cmd_id)
-    let s:terminal.console_cmd_id = -1
-    " Append empty line to terminal.
-    call s:TermEcho([''])
-    " Exit terminal mode if inside the Vim-CMake console window (useful for
-    " Vim). Otherwise the terminal mode is exited after WinEnter event.
-    if win_getid() == bufwinid(s:terminal.console_buffer)
-        call s:ExitTermMode()
-    else
-        let s:exit_term_mode = 1
-    endif
-    " Perform various end-of-job tasks.
-    call s:statusline.SetCmdInfo(s:terminal.console_cmd_info['NONE'])
-    call s:statusline.Refresh()
-    if g:cmake_jump_on_completion
-        call s:terminal.Focus()
-    else
-        if l:error != 0 && g:cmake_jump_on_error
-            call s:terminal.Focus()
-        endif
-    endif
-    if l:error == 0
-        let l:callbacks = s:terminal.console_cmd.callbacks
-        let l:autocmds = s:terminal.console_cmd.autocmds
-    else
-        let l:callbacks = s:terminal.console_cmd.callbacks_err
-        let l:autocmds = s:terminal.console_cmd.autocmds_err
-    endif
-    " Handle callbacks and autocmds.
-    " Note: Funcref variable names must start with a capital.
-    for l:Callback in l:callbacks
-        call s:logger.LogDebug('Callback invoked: %s()', l:Callback)
-        call l:Callback()
-    endfor
-    for l:autocmd in l:autocmds
-        call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
-        execute 'doautocmd <nomodeline> User ' . l:autocmd
-    endfor
-    " Reset state
-    let s:terminal.console_cmd.running = v:false
-    let s:terminal.console_cmd.callbacks = []
-    let s:terminal.console_cmd.callbacks_err = []
-    let s:terminal.console_cmd.autocmds = []
-    let s:terminal.console_cmd.autocmds_err = []
+    call s:system.ChannelWait(s:terminal.console_cmd.id)
+    let l:error = s:system.ExtractExitCallbackData(a:000)
+    call s:OnCompleteCommand(l:error, v:false)
 endfunction
 
 " Enter terminal mode.
@@ -163,6 +121,60 @@ function! s:ExitTermMode() abort
     if mode() ==# 't'
         call feedkeys("\<C-\>\<C-N>", 'n')
     endif
+endfunction
+
+" Define actions to perform when completing/stopping a command.
+"
+function! s:OnCompleteCommand(error, stopped) abort
+    if a:error == 0
+        let l:callbacks = s:terminal.console_cmd.callbacks
+        let l:autocmds = s:terminal.console_cmd.autocmds
+    else
+        let l:callbacks = s:terminal.console_cmd.callbacks_err
+        let l:autocmds = s:terminal.console_cmd.autocmds_err
+    endif
+    " Reset state
+    let s:terminal.console_cmd.id = -1
+    let s:terminal.console_cmd.running = v:false
+    let s:terminal.console_cmd.callbacks = []
+    let s:terminal.console_cmd.callbacks_err = []
+    let s:terminal.console_cmd.autocmds = []
+    let s:terminal.console_cmd.autocmds_err = []
+    " Append empty line to terminal.
+    call s:TermEcho([''])
+    " Exit terminal mode if inside the Vim-CMake console window (useful for
+    " Vim). Otherwise the terminal mode is exited after WinEnter event.
+    if win_getid() == bufwinid(s:terminal.console_buffer)
+        call s:ExitTermMode()
+    else
+        let s:exit_term_mode = 1
+    endif
+    " Update statusline.
+    call s:statusline.SetCmdInfo(s:terminal.console_cmd_info['NONE'])
+    call s:statusline.Refresh()
+    " The rest of the tasks are not to be carried out if the running command was
+    " stopped by the user.
+    if a:stopped
+        return
+    endif
+    " Focus Vim-CMake console window, if requested.
+    if g:cmake_jump_on_completion
+        call s:terminal.Focus()
+    else
+        if a:error != 0 && g:cmake_jump_on_error
+            call s:terminal.Focus()
+        endif
+    endif
+    " Handle callbacks and autocmds.
+    " Note: Funcref variable names must start with a capital.
+    for l:Callback in l:callbacks
+        call s:logger.LogDebug('Callback invoked: %s()', l:Callback)
+        call l:Callback()
+    endfor
+    for l:autocmd in l:autocmds
+        call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
+        execute 'doautocmd <nomodeline> User ' . l:autocmd
+    endfor
 endfunction
 
 " Define actions to perform when entering the Vim-CMake console window.
@@ -454,7 +466,7 @@ function! s:terminal.Run(command, tag, cbs, cbs_err, aus, aus_err) abort
     endif
     " Run command.
     call s:statusline.SetCmdInfo(l:self.console_cmd_info[a:tag])
-    let l:self.console_cmd_id = s:ConsoleCmdStart(a:command)
+    let l:self.console_cmd.id = s:ConsoleCmdStart(a:command)
     " Jump to Vim-CMake console window if requested.
     if g:cmake_jump
         call l:self.Focus()
@@ -465,7 +477,8 @@ endfunction
 "
 function! s:terminal.Stop() abort
     call s:logger.LogDebug('Invoked: terminal.Stop()')
-    call s:system.JobStop(l:self.console_cmd_id)
+    call s:system.JobStop(l:self.console_cmd.id)
+    call s:OnCompleteCommand(0, a:true)
 endfunction
 
 " Get output from the last command run.

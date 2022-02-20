@@ -5,6 +5,7 @@
 
 let s:system = {}
 
+let s:shell = split(&shell) + split(&shellcmdflag)
 let s:stdout_partial_line = {}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -53,11 +54,16 @@ endfunction
 "
 function! s:system.Link(target, link_name, wait) abort
     if has('win32')
-        let l:command = ['mklink', a:link_name, a:target]
+        " In MS-Windows, must delete existing link, if present.
+        if filereadable(a:link_name)
+            let l:command = s:shell + ['del', a:link_name]
+            call l:self.JobRun(l:command, a:wait, v:null, v:null, v:false)
+        endif
+        let l:command = s:shell + ['mklink', a:link_name, a:target]
     else
         let l:command = ['ln', '-sf', a:target, a:link_name]
     endif
-    return l:self.JobRun(l:command, a:wait, v:null, v:null, v:false)
+    call l:self.JobRun(l:command, a:wait, v:null, v:null, v:false)
 endfunction
 
 " Run arbitrary job in the background.
