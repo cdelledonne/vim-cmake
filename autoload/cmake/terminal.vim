@@ -478,7 +478,7 @@ endfunction
 function! s:terminal.Stop() abort
     call s:logger.LogDebug('Invoked: terminal.Stop()')
     call s:system.JobStop(l:self.console_cmd.id)
-    call s:OnCompleteCommand(0, a:true)
+    call s:OnCompleteCommand(0, v:true)
 endfunction
 
 " Get output from the last command run.
