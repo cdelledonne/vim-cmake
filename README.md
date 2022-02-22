@@ -18,21 +18,12 @@ nice visual feedback.
 * Quickfix list population after each build
 * Airline/statusline status information, including current build configuration
 * Plug-and-play, but configurable
-* Written in Vimscript (other than one tiny Bash script)
+* Written in Vimscript
 
 **Requirements**
 
 * Vim with `+terminal`, or Neovim
-* Linux, or macOS, or Windows (on Windows Terminal)
-
-**Related projects**
-
-* [vhdirk/vim-cmake][vim-cmake]
-* [ilyachur/cmake4vim][cmake4vim]
-* [jalcine/cmake.vim][cmake.vim]
-* [sigidagi/vim-cmake-project][vim-cmake-project]
-* [LucHermitte/vim-build-tools-wrapper][LucHermitte/vim-build-tools-wrapper]
-* [kassio/neoterm][neoterm]
+* Any OS should work (please report a bug if this is not the case)
 
 <!--=========================================================================-->
 
@@ -78,6 +69,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
 | `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
 | `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window            |
+| `:CMakeStop`              | `(CMakeStop)`     | Stop running command                  |
 
 ### Additional `<Plug>` mappings
 
@@ -93,7 +85,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `cb`        | Run `:CMakeBuild`          |
 | `ci`        | Run `:CMakeInstall`        |
 | `cq`        | Close CMake console window |
-| `<C-C>`     | Stop current command       |
+| `<C-C>`     | Stop running command       |
 
 ### Events
 
@@ -131,11 +123,13 @@ follows.
 | `g:cmake_native_build_options`  | `[]`               |
 | `g:cmake_console_size`          | `15`               |
 | `g:cmake_console_position`      | `'botright'`       |
+| `g:cmake_console_echo_cmd`      | `1`                |
 | `g:cmake_jump`                  | `0`                |
 | `g:cmake_jump_on_completion`    | `0`                |
 | `g:cmake_jump_on_error`         | `1`                |
 | `g:cmake_link_compile_commands` | `0`                |
 | `g:cmake_root_markers`          | `['.git', '.svn']` |
+| `g:cmake_log_file`              | `''`               |
 
 <!--=========================================================================-->
 
@@ -147,10 +141,21 @@ write a feature request, post an issue or submit a pull request.
 
 <!--=========================================================================-->
 
+## Related projects
+
+* [vhdirk/vim-cmake][vim-cmake]
+* [ilyachur/cmake4vim][cmake4vim]
+* [jalcine/cmake.vim][cmake.vim]
+* [sigidagi/vim-cmake-project][vim-cmake-project]
+* [LucHermitte/vim-build-tools-wrapper][LucHermitte/vim-build-tools-wrapper]
+* [kassio/neoterm][neoterm]
+
+<!--=========================================================================-->
+
 ## License
 
 Vim-CMake is licensed under the [MIT license][license].  Copyright (c)
-2020&ndash;2021 Carlo Delle Donne.
+2020&ndash;2022 Carlo Delle Donne.
 
 <!--=========================================================================-->
 
