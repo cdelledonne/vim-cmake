@@ -25,16 +25,26 @@ let s:stdout_partial_line = {}
 "         escaped path string with appropriate path separators
 "
 function! s:system.Path(components, relative) abort
-    call assert_notequal(len(a:components), 0)
-    " Join path components.
+    let l:components = a:components
     let l:separator = has('win32') ? '\' : '/'
-    let l:path = join(a:components, l:separator)
+    " Join path components and get absolute path.
+    let l:path = join(l:components, l:separator)
     let l:path = simplify(l:path)
-    " Reduce to relative path or make absolute.
+    let l:path = fnamemodify(l:path, ':p')
+    " If path ends with separator, remove separator from path.
+    if match(l:path, '\m\C\' . l:separator . '$') != -1
+        let l:path = fnamemodify(l:path, ':h')
+    endif
+    " Reduce to relative path if requested.
     if a:relative
-        let l:path = fnamemodify(l:path, ':.')
-    else
-        let l:path = fnamemodify(l:path, ':p')
+        " For some reason, reducing the path to relative returns an empty string
+        " if the path happens to be the same as CWD. Thus, only reduce the path
+        " to relative when it is not CWD, otherwise just return '.'.
+        if l:path ==# getcwd()
+            let l:path = '.'
+        else
+            let l:path = fnamemodify(l:path, ':.')
+        endif
     endif
     " Simplify and escape path.
     let l:path = simplify(l:path)

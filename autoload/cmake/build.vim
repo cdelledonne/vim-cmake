@@ -9,6 +9,7 @@ let s:buildsys = cmake#buildsys#Get()
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:quickfix = cmake#quickfix#Get()
+let s:system = cmake#system#Get()
 let s:terminal = cmake#terminal#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -81,7 +82,8 @@ endfunction
 function! s:build.Build(clean, argstring) abort
     call s:logger.LogDebug('Invoked: build.Build(%s, %s)',
             \ a:clean, string(a:argstring))
-    let l:build_dir = s:buildsys.GetPathToCurrentConfig()
+    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_command, '--build', l:build_dir]
     let l:options = {}
     " Parse additional options.
@@ -113,7 +115,8 @@ endfunction
 "
 function! s:build.Install() abort
     call s:logger.LogDebug('Invoked: build.Install()')
-    let l:build_dir = s:buildsys.GetPathToCurrentConfig()
+    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_command, '--install', l:build_dir]
     call s:terminal.Run(l:command, 'install', [], [], [], [])
 endfunction

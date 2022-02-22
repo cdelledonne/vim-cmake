@@ -180,7 +180,7 @@ function! s:ProcessArgString(argstring) abort
     " configuration so that the current build configuration is up to date before
     " setting the build directory.
     let l:source_dir = s:system.Path([s:buildsys.project_root], v:true)
-    let l:build_dir = s:buildsys.path_to_current_config
+    let l:build_dir = s:system.Path([s:buildsys.path_to_current_config], v:true)
     " Return dictionary of options.
     let l:optdict = {}
     let l:optdict.opts = l:opts
@@ -251,11 +251,11 @@ endfunction
 "
 function! s:SetCurrentConfig(config) abort
     let s:buildsys.current_config = a:config
-    let l:path = s:system.Path([s:GetBuildDirLocation(), a:config], v:true)
+    let l:path = s:system.Path([s:GetBuildDirLocation(), a:config], v:false)
     let s:buildsys.path_to_current_config = l:path
     call s:logger.LogInfo('Current config: %s (%s)',
             \ s:buildsys.current_config,
-            \ s:system.Path([s:buildsys.path_to_current_config], v:false)
+            \ s:buildsys.path_to_current_config
             \ )
     call s:statusline.SetBuildInfo(s:buildsys.current_config)
 endfunction
@@ -436,7 +436,7 @@ call s:system.JobRun(
         \ s:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false)
 
 " Must be done before any other initial configuration.
-let s:buildsys.project_root = s:FindProjectRoot()
+let s:buildsys.project_root = s:system.Path([s:FindProjectRoot()], v:false)
 call s:logger.LogInfo('Project root: %s', s:buildsys.project_root)
 
 call s:SetCurrentConfig(g:cmake_default_config)
