@@ -274,32 +274,6 @@ function! s:TermSetup() abort
         let s:term_tty = job_info(s:term_id)['tty_in']
         call term_setkill(l:term, 'term')
     endif
-    " Set up autocmd to stop terminal job before exiting Vim/Neovim. Older
-    " versions of Vim/Neovim do not have 'ExitPre', in which case we use
-    " 'VimLeavePre'. However, calling TermStop() on 'VimLeavePre' in Vim seems
-    " to be too late and results in E947, in which case one should quit with
-    " e.g. :qa!.
-    " TODO: test if term_setkill() solves the problem also in Vim in CentOS and
-    " remove this
-    " augroup cmake
-    "     if exists('##ExitPre')
-    "         autocmd ExitPre * call s:TermStop()
-    "     else
-    "         autocmd VimLeavePre * call s:TermStop()
-    "     endif
-    " augroup END
-endfunction
-
-" Stop terminal.
-"
-function! s:TermStop() abort
-    if s:term_id != -1
-        try
-            call s:system.JobStop(s:term_id)
-            call s:system.JobWait(s:term_id)
-        catch /.*/
-        endtry
-    endif
 endfunction
 
 " Echo strings to terminal.
