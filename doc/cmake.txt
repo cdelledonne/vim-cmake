@@ -14,6 +14,7 @@ CONTENTS						*cmake-contents*
    3.2 Building and installing a project .............. |cmake-build|
    3.3 Switch between build configurations............. |cmake-switch|
    3.4 Opening and closing the CMake console .......... |cmake-console|
+   3.5 Stopping the running command ................... |cmake-stop|
 4. Mappings ........................................... |cmake-mappings|
    4.1 Global <Plug> mappings ......................... |cmake-plug-mappings|
    4.2 CMake console window key mappings .............. |cmake-key-mappings|
@@ -37,21 +38,12 @@ Features~
 - Quickfix list population after each build
 - Airline/statusline status information, including current build configuration
 - Plug-and-play, but configurable
-- Written in Vimscript (other than one tiny Bash script)
+- Written in Vimscript
 
 Requirements~
 
 - Vim with `+terminal`, or Neovim
-- Linux, or macOS, or Windows (on Windows Terminal)
-
-Related projects~
-
-- https://github.com/vhdirk/vim-cmake
-- https://github.com/ilyachur/cmake4vim
-- https://github.com/jalcine/cmake.vim
-- https://github.com/sigidagi/vim-cmake-project
-- https://github.com/LucHermitte/vim-build-tools-wrapper
-- https://github.com/kassio/neoterm
+- Any OS should work (please report a bug if this is not the case)
 
 ==============================================================================
 USAGE							*cmake-usage*
@@ -175,6 +167,14 @@ Opening and closing the CMake console~
 							*:CMakeClose*
 :CMakeClose		Close the CMake console window.
 
+------------------------------------------------------------------------------
+							*cmake-stop*
+Stopping the running command~
+							*:CMakeStop*
+:CMakeStop		Stop the command that is currently running in the
+			Vim-CMake console.  Stopping a command does not
+			trigger the associated events (see |cmake-events|).
+
 ==============================================================================
 MAPPINGS						*cmake-mappings*
 
@@ -204,6 +204,8 @@ Global <Plug> mappings~
 
 <Plug>(CMakeClose)	Equivalent to `:CMakeClose`.
 
+<Plug>(CMakeStop)	Equivalent to `:CMakeStop`.
+
 Example usage of the <Plug> mappings:
 >
 	nmap <leader>cg <Plug>(CMakeGenerate)
@@ -224,7 +226,7 @@ ci			Run `:CMakeInstall`.
 
 cq			Close the CMake console window.
 
-<C-C>			Stop the current command.
+<C-C>			Stop the running command.
 
 ==============================================================================
 EVENTS							*cmake-events*
@@ -295,6 +297,10 @@ g:cmake_console_position (default: `'botright'`)
 			Command modifier to use when opening the CMake console
 			window (see |:botright|).
 
+g:cmake_console_echo_cmd (default: `1`)
+			Echo running command in the Vim-CMake console, before
+			showing the output for the command itself.
+
 g:cmake_jump (default: `0`)
 			Whether to jump to the CMake console window when
 			running a `:CMake` command.
@@ -322,6 +328,10 @@ g:cmake_root_markers (default: `['.git', '.svn']`)
 			List of file/directory names used to locate the
 			project root.  When Vim-CMake is loaded, it looks for
 			the project root starting from the CWD.
+
+g:cmake_log_file (default: `''`)
+			Path to a file where to store the log of Vim-CMake.
+			An empty value disables logging.
 
 ==============================================================================
 CONTRIBUTING						*cmake-contributing*
