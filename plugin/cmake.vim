@@ -11,10 +11,16 @@ if exists('g:loaded_cmake') && g:loaded_cmake
 endif
 let g:loaded_cmake = 1
 
-let s:const = cmake#const#Get()
+" Check required features.
+if !has('nvim') && !has('terminal')
+    call s:logger.EchoError('Must run Neovim, or Vim with +terminal')
+    call s:logger.LogError('Must run Neovim, or Vim with +terminal')
+    finish
+endif
 
 " Assign user/default values to coniguration variables.
 " NOTE: must be done before loading other scripts.
+let s:const = cmake#const#Get()
 for s:cvar in items(s:const.config_vars)
     if !has_key(g:, s:cvar[0])
         let g:[s:cvar[0]] = s:cvar[1]
@@ -24,13 +30,6 @@ endfor
 let s:logger = cmake#logger#Get()
 
 call s:logger.LogInfo('Loading Vim-CMake')
-
-" Check required features.
-if !has('nvim') && !has('terminal')
-    call s:logger.EchoError('Must run Neovim, or Vim with +terminal')
-    call s:logger.LogError('Must run Neovim, or Vim with +terminal')
-    finish
-endif
 
 " Check if CMake executable exists.
 if !executable(g:cmake_command)
