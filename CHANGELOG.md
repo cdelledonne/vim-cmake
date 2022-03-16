@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.7.0 &ndash; 2022-03-16
+
 ### Added
 * MS-Windows is now supported, but only using Neovim for now
 * The new command `:CMakeStop` allows the user to stop the process currently

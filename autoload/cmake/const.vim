@@ -5,7 +5,7 @@
 
 let s:const = {}
 
-let s:const.plugin_version = '0.6.2'
+let s:const.plugin_version = '0.7.0'
 
 let s:const.plugin_news = {
     \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
@@ -15,6 +15,10 @@ let s:const.plugin_news = {
     \ '0.6.0': [
             \ 'Vim-CMake has a new config option `g:cmake_build_dir_location`',
             \ 'Vim-CMake has improved :CMakeGenerate, run `:help cmake-generate`'
+    \ ],
+    \ '0.7.0': [
+            \ 'Vim-CMake has new command `:CMakeStop`, run `:help cmake-stop`',
+            \ 'Vim-CMake has a new config option `g:cmake_echo_cmd`'
     \ ],
     \ }
 
