@@ -18,7 +18,7 @@ let s:const.plugin_news = {
     \ ],
     \ '0.7.0': [
             \ 'Vim-CMake has new command `:CMakeStop`, run `:help cmake-stop`',
-            \ 'Vim-CMake has a new config option `g:cmake_echo_cmd`'
+            \ 'Vim-CMake has a new config option `g:cmake_console_echo_cmd`'
     \ ],
     \ }
 
