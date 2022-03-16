@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 ## Unreleased
 
 ### Added
-* MS-Windows is now supported
+* MS-Windows is now supported, but only using Neovim for now
 * The new command `:CMakeStop` allows the user to stop the process currently
   running in the Vim-CMake console
 * The new configuration option `g:cmake_echo_cmd` controls whether the Vim-CMake

@@ -23,7 +23,7 @@ nice visual feedback.
 **Requirements**
 
 * Vim with `+terminal`, or Neovim
-* Any OS should work (please report a bug if this is not the case)
+* Under Windows, only Neovim is supported at the moment
 
 <!--=========================================================================-->
 

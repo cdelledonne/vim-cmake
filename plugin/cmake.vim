@@ -12,10 +12,17 @@ endif
 let g:loaded_cmake = 1
 
 " Check required features.
-if !has('nvim') && !has('terminal')
-    call s:logger.EchoError('Must run Neovim, or Vim with +terminal')
-    call s:logger.LogError('Must run Neovim, or Vim with +terminal')
-    finish
+if !has('nvim')
+    if has('win32')
+        call s:logger.EchoError('Under Windows, only Neovim is supported at the moment')
+        call s:logger.LogError('Under Windows, only Neovim is supported at the moment')
+        finish
+    endif
+    if !has('terminal')
+        call s:logger.EchoError('Must run Neovim, or Vim with +terminal')
+        call s:logger.LogError('Must run Neovim, or Vim with +terminal')
+        finish
+    endif
 endif
 
 " Assign user/default values to coniguration variables.
