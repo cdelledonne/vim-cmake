@@ -4,6 +4,7 @@
 :CMakeGenerate	cmake.txt	/*:CMakeGenerate*
 :CMakeInstall	cmake.txt	/*:CMakeInstall*
 :CMakeOpen	cmake.txt	/*:CMakeOpen*
+:CMakeStop	cmake.txt	/*:CMakeStop*
 :CMakeSwitch	cmake.txt	/*:CMakeSwitch*
 cmake	cmake.txt	/*cmake*
 cmake-build	cmake.txt	/*cmake-build*
@@ -20,6 +21,7 @@ cmake-license	cmake.txt	/*cmake-license*
 cmake-mappings	cmake.txt	/*cmake-mappings*
 cmake-plug-mappings	cmake.txt	/*cmake-plug-mappings*
 cmake-quickfix	cmake.txt	/*cmake-quickfix*
+cmake-stop	cmake.txt	/*cmake-stop*
 cmake-switch	cmake.txt	/*cmake-switch*
 cmake-usage	cmake.txt	/*cmake-usage*
 cmake.txt	cmake.txt	/*cmake.txt*

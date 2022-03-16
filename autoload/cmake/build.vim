@@ -3,10 +3,17 @@
 " Description: Functions for building a project
 " ==============================================================================
 
-let s:cmake_targets = []
+let s:build = {}
+
+let s:buildsys = cmake#buildsys#Get()
+let s:const = cmake#const#Get()
+let s:logger = cmake#logger#Get()
+let s:quickfix = cmake#quickfix#Get()
+let s:system = cmake#system#Get()
+let s:terminal = cmake#terminal#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Internal functions and callbacks
+" Private functions and callbacks
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Get dictionary of build arguments from command-line string.
@@ -30,9 +37,8 @@ let s:cmake_targets = []
 function! s:GetBuildArgs(argstring) abort
     let l:argdict = {}
     let l:arglist = split(a:argstring)
-    call cmake#build#GetTargets('', '', 0)
     " Search arguments for one that matches the name of a target.
-    for l:t in s:cmake_targets
+    for l:t in s:buildsys.GetTargets()
         let l:match_res = match(l:arglist, '\m\C^' . l:t)
         if l:match_res != -1
             " If found, get target and remove from list of arguments.
@@ -55,14 +61,10 @@ function! s:GetBuildArgs(argstring) abort
     return l:argdict
 endfunction
 
-" Callback for cmake#build#GetTargets().
+" Generate quickfix list after running build command.
 "
-function! s:GetTargetsCb(...) abort
-    let l:data = cmake#job#GetCallbackData(a:000)
-    if match(l:data, '\m\C\.\.\.\s') == 0
-        let l:target = split(l:data)[1]
-        let s:cmake_targets += [l:target]
-    endif
+function! s:GenerateQuickfix() abort
+    call s:quickfix.Generate(s:terminal.GetOutput())
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -72,23 +74,20 @@ endfunction
 " Build a project using the generated buildsystem.
 "
 " Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
-"     clean : Number
+"     clean : Boolean
 "         whether to clean before building
-"     a:1 : String
-"         optional string containing target and other options
+"     argstring : String
+"         build target and other options
 "
-function! cmake#build#Run(bg, wait, clean, ...) abort
-    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
+function! s:build.Build(clean, argstring) abort
+    call s:logger.LogDebug('Invoked: build.Build(%s, %s)',
+            \ a:clean, string(a:argstring))
+    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_command, '--build', l:build_dir]
     let l:options = {}
     " Parse additional options.
-    if a:0 > 0 && len(a:1) > 0
-        let l:options = s:GetBuildArgs(a:1)
-    endif
+    let l:options = s:GetBuildArgs(a:argstring)
     " Add CMake build options to the command.
     let l:command += g:cmake_build_options
     let l:command += get(l:options, 'cmake_build_options', [])
@@ -105,51 +104,25 @@ function! cmake#build#Run(bg, wait, clean, ...) abort
         let l:command += get(l:options, 'native_build_options', [])
     endif
     " Run build command.
-    call cmake#console#SetCmdId('build')
-    call cmake#command#Run(l:command, a:bg, a:wait)
+    call s:terminal.Run(l:command, 'build',
+            \ [function('s:GenerateQuickfix')],
+            \ [function('s:GenerateQuickfix')],
+            \ ['CMakeBuildSucceeded'], ['CMakeBuildFailed']
+            \ )
 endfunction
 
 " Install a project.
 "
-" Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
-"
-function! cmake#build#RunInstall(bg, wait) abort
-    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
+function! s:build.Install() abort
+    call s:logger.LogDebug('Invoked: build.Install()')
+    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_command, '--install', l:build_dir]
-    call cmake#console#SetCmdId('install')
-    call cmake#command#Run(l:command, a:bg, a:wait)
+    call s:terminal.Run(l:command, 'install', [], [], [], [])
 endfunction
 
-" Get list of available CMake targets. Used for autocompletion of commands.
+" Get build 'object'.
 "
-" Params:
-"     arg_lead : String
-"         the leading portion of the argument currently being completed
-"     cmd_line : String
-"         the entire command line
-"     cursor_pos : Number
-"         the cursor position in the command line (byte index)
-"
-" Returns:
-"     String
-"         available targets, one per line
-"
-function! cmake#build#GetTargets(arg_lead, cmd_line, cursor_pos) abort
-    return join(s:cmake_targets, "\n")
-endfunction
-
-" Update list of available CMake targets.
-"
-function! cmake#build#UpdateTargets() abort
-    let s:cmake_targets = []
-    let l:build_dir = fnameescape(cmake#switch#GetCurrentConfigDir())
-    let l:command = [g:cmake_command,
-            \ '--build', l:build_dir,
-            \ '--target', 'help'
-            \ ]
-    call cmake#command#Run(l:command, 1, 1, function('s:GetTargetsCb'))
+function! cmake#build#Get() abort
+    return s:build
 endfunction

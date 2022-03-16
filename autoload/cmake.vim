@@ -3,143 +3,133 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:plugin_version = '0.6.2'
+let s:buildsys = cmake#buildsys#Get()
+let s:build = cmake#build#Get()
+let s:const = cmake#const#Get()
+let s:logger = cmake#logger#Get()
+let s:terminal = cmake#terminal#Get()
 
 " Print news of new Vim-CMake versions.
-call cmake#plugnews#Print(s:plugin_version, {
-        \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
-        \ '0.3.0': ['Vim-CMake has a new feature, run `:help cmake-quickfix`'],
-        \ '0.4.0': ['Vim-CMake has a new config option `g:cmake_generate_options`'],
-        \ '0.5.0': ['Vim-CMake has a new feature, run `:help cmake-events`'],
-        \ '0.6.0': [
-                \ 'Vim-CMake has a new config option `g:cmake_build_dir_location`',
-                \ 'Vim-CMake has improved :CMakeGenerate, run `:help cmake-generate`'
-        \ ],
-        \ })
+call cmake#util#PrintNews(s:const.plugin_version, s:const.plugin_news)
+
+" Log config options.
+call s:logger.LogInfo('Configuration options:')
+for s:cvar in sort(keys(s:const.config_vars))
+    call s:logger.LogInfo('> g:%s: %s', s:cvar, string(g:[s:cvar]))
+endfor
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " API functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" API function for cmake#generate#Run().
+" API function for :CMakeGenerate and <Plug>(CMakeGenerate).
 "
 " Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
 "     clean : Number
 "         whether to clean before generating
 "     a:1 : String
 "         (optional) build configuration and additional CMake options
 "
-function! cmake#Generate(bg, wait, clean, ...) abort
-    if a:0 > 0
-        call cmake#generate#Run(a:bg, a:wait, a:clean, a:1)
-    else
-        call cmake#generate#Run(a:bg, a:wait, a:clean)
-    endif
+function! cmake#Generate(clean, ...) abort
+    call s:logger.LogDebug('API invoked: cmake#Generate(%s, %s)', a:clean, a:000)
+    call s:buildsys.Generate(a:clean, join(a:000))
 endfunction
 
-" API function for cmake#generate#Clean().
+" API function for :CMakeClean and <Plug>(CMakeClean).
 "
 function! cmake#Clean() abort
-    call cmake#generate#Clean()
+    call s:logger.LogDebug('API invoked: cmake#Clean()')
+    call s:buildsys.Clean()
 endfunction
 
-" API function for cmake#switch#SetCurrentConfigName().
+" API function for :CMakeSwitch.
 "
 " Params:
 "     a:1 : String
 "         build configuration
 "
 function! cmake#Switch(...) abort
-    " Check that config folder exists.
-    let l:configs = split(cmake#switch#GetExistingConfigs('', '', 0))
-    if index(l:configs, a:1) == -1
-        call cmake#util#Log('W', 'Build configuration "' . a:1 .
-                \ '" not found, run `:CMakeGenerate ' . a:1 . '`')
-        return
-    endif
-    call cmake#switch#SetCurrentConfigName(a:1)
+    call s:logger.LogDebug('API invoked: cmake#Switch(%s)', string(a:1))
+    call s:buildsys.Switch(a:1)
 endfunction
 
-" API function for cmake#build#Run().
+" API function for completion for :CMakeSwitch.
 "
 " Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
+"
+" Returns:
+"     String
+"         stringified list of existing configuration directories
+"
+function! cmake#GetConfigs(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetConfigs()')
+    return join(s:buildsys.GetConfigs(), "\n")
+endfunction
+
+" API function for :CMakeBuild and <Plug>(CMakeBuild).
+"
+" Params:
 "     clean : Number
 "         whether to clean before building
 "     a:1 : String
 "         (optional) target and other build options
 "
-function! cmake#Build(bg, wait, clean, ...) abort
-    if a:0 > 0
-        call cmake#build#Run(a:bg, a:wait, a:clean, a:1)
-    else
-        call cmake#build#Run(a:bg, a:wait, a:clean)
-    endif
+function! cmake#Build(clean, ...) abort
+    call s:logger.LogDebug('API invoked: cmake#Build(%s, %s)', a:clean, a:000)
+    call s:build.Build(a:clean, join(a:000))
 endfunction
 
-" API function for cmake#build#RunInstall().
+" API function for :CMakeInstall and <Plug>(CMakeInstall).
+"
+function! cmake#Install() abort
+    call s:logger.LogDebug('API invoked: cmake#Install()')
+    call s:build.Install()
+endfunction
+
+" API function for completion for :CMakeBuild.
+"
+" API function for completion for :CMakeBuild.
 "
 " Params:
-"     bg : Number
-"         whether to run the command in the background
-"     wait : Number
-"         whether to wait for completion (only for bg == 1)
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
 "
-function! cmake#Install(bg, wait) abort
-    call cmake#build#RunInstall(a:bg, a:wait)
+" Returns:
+"     String
+"         available targets, one per line
+"
+function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetBuildTargets()')
+    return join(s:buildsys.GetTargets(), "\n")
 endfunction
 
-" API function for cmake#console#Open().
+" API function for :CMakeStop.
+"
+function! cmake#Stop() abort
+    call s:logger.LogDebug('API invoked: cmake#Stop()')
+    call s:terminal.Stop()
+endfunction
+
+" API function for :CMakeOpen.
 "
 function! cmake#Open() abort
-    call cmake#console#Open(0)
+    call s:logger.LogDebug('API invoked: cmake#Open()')
+    call s:terminal.Open(v:false)
 endfunction
 
-" API function for cmake#console#Close().
+" API function for :CMakeClose.
 "
 function! cmake#Close() abort
-    call cmake#console#Close()
-endfunction
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Other public functions
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Get path to CMake source directory of current project, possibly reduced
-" relatively to CWD.
-"
-" Returns:
-"     String
-"         path to CMake source directory, unescaped (thus it must be first
-"         escaped to be used as a command argument)
-"
-function! cmake#GetSourceDir() abort
-    return fnamemodify(cmake#util#FindProjectRoot(), ':.')
-endfunction
-
-" Get path to location where the build directory is located, possibly reduced
-" relatively to CWD.
-"
-" Returns:
-"     String
-"         path to build directory location, unescaped (thus it must be first
-"         escaped to be used as a command argument)
-"
-function! cmake#GetBuildDirLocation() abort
-    if g:cmake_build_dir_location ==# '.' || g:cmake_build_dir_location ==# './'
-        let l:build_dir_location = cmake#GetSourceDir()
-    else
-        let l:build_dir_location = join(
-                \ [cmake#GetSourceDir(), g:cmake_build_dir_location], '/')
-        " Re-escape path name after concatenation.
-        let l:build_dir_location = fnameescape(l:build_dir_location)
-    endif
-    return fnamemodify(l:build_dir_location, ':.')
+    call s:logger.LogDebug('API invoked: cmake#Close()')
+    call s:terminal.Close()
 endfunction
