@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* The command list passed to `jobstart()` (or `job_start()` in Vim) is now
+  properly formatted
+
 <!--=========================================================================-->
 
 ## 0.7.0 &ndash; 2022-03-16

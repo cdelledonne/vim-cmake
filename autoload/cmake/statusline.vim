@@ -70,7 +70,7 @@ endfunction
 "         statusline command info (command currently running)
 "
 function! cmake#statusline#GetCmdInfo() abort
-    if len(s:statusline.cmd_info)
+    if len(s:statusline.cmd_info) > 0
         return s:statusline.cmd_info
     else
         return ' '

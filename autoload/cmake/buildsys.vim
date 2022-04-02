@@ -32,14 +32,14 @@ function! s:FindProjectRoot() abort
     for l:marker in g:cmake_root_markers
         " Search CWD upward for l:marker, assuming it is a file.
         let l:marker_path = findfile(l:marker, l:escaped_cwd . ';' . $HOME)
-        if len(l:marker_path)
+        if len(l:marker_path) > 0
             " If found, strip l:marker from it.
             let l:root = fnamemodify(l:marker_path, ':h')
             break
         endif
         " Search CWD upward for l:marker, assuming it is a directory.
         let l:marker_path = finddir(l:marker, l:escaped_cwd . ';' . $HOME)
-        if len(l:marker_path)
+        if len(l:marker_path) > 0
             " If found, strip l:marker from it.
             let l:root = fnamemodify(l:marker_path, ':h')
             break
@@ -78,13 +78,13 @@ endfunction
 "             s:FindVarInOpts(opts, 'CMAKE_BUILD_TYPE')
 "
 function! s:FindVarInOpts(opts, variable) abort
-    if len(a:opts)
+    if len(a:opts) > 0
         " Search the list of command-line options for an entry matching
         " '-D <variable>=<value>' or '-D <variable>:<type>=<value>' or
         " '-D<variable>=<value>' or '-D<variable>:<type>=<value>'.
         let l:opt = matchstr(a:opts, '\m\C-D\s*' . a:variable)
         " If found, return the value, otherwise return an empty string.
-        if len(l:opt)
+        if len(l:opt) > 0
             return split(l:opt, '=')[1]
         else
             return ''

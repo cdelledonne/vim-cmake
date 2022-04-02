@@ -9,6 +9,32 @@ let s:shell = split(&shell) + split(&shellcmdflag)
 let s:stdout_partial_line = {}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Private functions
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+function! s:ManipulateCommand(command) abort
+    let l:ret_command = []
+    for l:arg in a:command
+        " Remove double quotes around argument that are quoted. For instance,
+        " '-G "Unix Makefiles"' results in '-G Unix Makefiles'.
+        let l:quotes_regex = '\m\C\(^\|[^"\\]\)"\([^"]\|$\)'
+        let l:arg = substitute(l:arg, l:quotes_regex, '\1\2', 'g')
+        " Split arguments that are composed of an option (short '-O' or long
+        " '--option') and a follow-up string, where the option and the string
+        " are separated by a space.
+        let l:split_regex = '\m\C\(-\w\|--\w\+\)\s\(.\+\)'
+        let l:match_list = matchlist(l:arg, l:split_regex)
+        if len(l:match_list) > 0
+            call add(l:ret_command, l:match_list[1])
+            call add(l:ret_command, l:match_list[2])
+        else
+            call add(l:ret_command, l:arg)
+        endif
+    endfor
+    return l:ret_command
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -101,10 +127,7 @@ endfunction
 function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
     let l:options = {}
     let l:options['pty'] = a:pty
-    " Remove double quotes around command arguments that were quoted by the
-    " user. For instance, '-G "Unix Makefiles"' results in '-G Unix Makefiles'.
-    call map(a:command, {_, val -> substitute(
-                \ val, '\m\C\(^\|[^"\\]\)"\([^"]\|$\)', '\1\2', 'g')})
+    let l:command = s:ManipulateCommand(a:command)
     if has('nvim')
         if a:stdout_cb isnot# v:null
             let l:options['on_stdout'] = a:stdout_cb
@@ -121,7 +144,7 @@ function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
             let l:options['width'] = 10000
             let l:options['height'] = 2
         endif
-        let l:job_id = jobstart(a:command, l:options)
+        let l:job_id = jobstart(l:command, l:options)
     else
         if a:stdout_cb isnot# v:null
             let l:options['out_cb'] = a:stdout_cb
@@ -129,7 +152,7 @@ function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
         if a:exit_cb isnot# v:null
             let l:options['exit_cb'] = a:exit_cb
         endif
-        let l:job_id = job_start(a:command, l:options)
+        let l:job_id = job_start(l:command, l:options)
     endif
     " Wait for job to complete, if requested.
     if a:wait
