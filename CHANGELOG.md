@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 ### Changed
 * The command list passed to `jobstart()` (or `job_start()` in Vim) is now
   properly formatted
+* A link to the `compile_commands.json` file is only created on a successful
+  `:CMakeGenerate` and on a successful `:CMakeSwitch`
 
 <!--=========================================================================-->
 

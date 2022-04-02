@@ -108,7 +108,6 @@ function! s:ProcessBuildConfig(opts) abort
         let l:config = a:opts[0]
         call s:SetCurrentConfig(l:config)
         call remove(a:opts, 0)
-        call s:LinkCompileCommands()
     endif
     " If the list of command-line options does not contain an explicit value for
     " the 'CMAKE_BUILD_TYPE' variable, add it.

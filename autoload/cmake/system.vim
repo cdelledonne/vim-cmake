@@ -22,7 +22,7 @@ function! s:ManipulateCommand(command) abort
         " Split arguments that are composed of an option (short '-O' or long
         " '--option') and a follow-up string, where the option and the string
         " are separated by a space.
-        let l:split_regex = '\m\C\(-\w\|--\w\+\)\s\(.\+\)'
+        let l:split_regex = '\m\C^\(-\w\|--\w\+\)\s\(.\+\)'
         let l:match_list = matchlist(l:arg, l:split_regex)
         if len(l:match_list) > 0
             call add(l:ret_command, l:match_list[1])
