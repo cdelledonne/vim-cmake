@@ -97,8 +97,8 @@ function! s:build.Build(clean, argstring) abort
     " Add target to the command, if any was provided.
     let l:command += get(l:options, 'target', [])
     " Add native build tool options to the command.
-    if len(g:cmake_native_build_options) ||
-            \ len(get(l:options, 'native_build_options', []))
+    if len(g:cmake_native_build_options) > 0 ||
+            \ len(get(l:options, 'native_build_options', [])) > 0
         let l:command += ['--']
         let l:command += g:cmake_native_build_options
         let l:command += get(l:options, 'native_build_options', [])
