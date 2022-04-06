@@ -24,11 +24,13 @@ let s:const.plugin_news = {
 
 let s:const.config_vars = {
         \ 'cmake_command'               : 'cmake',
+        \ 'cmake_test_command'          : 'ctest',
         \ 'cmake_default_config'        : 'Debug',
         \ 'cmake_build_dir_location'    : '.',
         \ 'cmake_generate_options'      : [],
         \ 'cmake_build_options'         : [],
         \ 'cmake_native_build_options'  : [],
+        \ 'cmake_test_options'          : [],
         \ 'cmake_console_size'          : 15,
         \ 'cmake_console_position'      : 'botright',
         \ 'cmake_console_echo_cmd'      : 1,

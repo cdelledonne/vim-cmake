@@ -6,7 +6,6 @@
 let s:build = {}
 
 let s:buildsys = cmake#buildsys#Get()
-let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:quickfix = cmake#quickfix#Get()
 let s:system = cmake#system#Get()
