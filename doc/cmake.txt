@@ -12,9 +12,10 @@ CONTENTS						*cmake-contents*
 3. Commands ........................................... |cmake-commands|
    3.1 Generating a project build system .............. |cmake-generate|
    3.2 Building and installing a project .............. |cmake-build|
-   3.3 Switch between build configurations............. |cmake-switch|
-   3.4 Opening and closing the CMake console .......... |cmake-console|
-   3.5 Stopping the running command ................... |cmake-stop|
+   3.3 Running CMake-generated tests with CTest ....... |cmake-test|
+   3.4 Switch between build configurations............. |cmake-switch|
+   3.5 Opening and closing the CMake console .......... |cmake-console|
+   3.6 Stopping the running command ................... |cmake-stop|
 4. Mappings ........................................... |cmake-mappings|
    4.1 Global <Plug> mappings ......................... |cmake-plug-mappings|
    4.2 CMake console window key mappings .............. |cmake-key-mappings|
@@ -34,7 +35,7 @@ Features~
 
 - Visual experience, shows CMake output in a console-like window
 - Slick management of build configurations
-- Autocompletion for build targets and build configurations
+- Autocompletion for build targets, build configurations and tests
 - Quickfix list population after each build
 - Airline/statusline status information, including current build configuration
 - Plug-and-play, but configurable
@@ -51,7 +52,8 @@ USAGE							*cmake-usage*
 Run |:CMakeGenerate| from the top-level CMake source directory to generate a
 build system for the project.  Then, run |:CMakeBuild| to build the project.
 The built files will end up in the binary directory (out-of-source build).  To
-switch between build configurations, run |:CMakeSwitch| {config}.
+switch between build configurations, run |:CMakeSwitch| {config}.  To run
+CMake-generated tests with CTest, run |:CMakeTest|.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
 etc.), build specific targets and control build options, and fix errors using
@@ -113,31 +115,51 @@ Use |:CMakeSwitch| to switch between build configurations.
 							*cmake-build*
 Building and installing a project~
 							*:CMakeBuild*
-:CMakeBuild[!] [opts] [target] [-- [nativeopts]]
+:CMakeBuild[!] [target]... [opts] [-- [nativeopts]]
 			Build a project using the generated build system
 			from the current build configuration, and populate a
 			quickfix list (see |cmake-quickfix|).  If [!] is
 			supplied, the existing build files are cleaned (using
 			CMake's `--clean-first` option) before building the
-			project.  [opts] are passed directly to CMake.
-			[target] is the target to build instead of the default
-			target.  [nativeopts] are passed directly to the
-			native tool.
+			project.  [target] is the target to build instead of
+			the default (multiple targets can be passed, separated
+			by spaces).  [opts] are passed directly to CMake.
+			[nativeopts] are passed directly to the native tool.
 
 For instance, to build the target `mytarget` using a maximum of 4 processes
 and passing the `VERBOSE=1` option to the native tool, run
 >
-	:CMakeBuild --parallel 4 mytarget -- VERBOSE=1
+	:CMakeBuild mytarget --parallel 4 -- VERBOSE=1
 <
-Vim-CMake provides autocompletion for build targets.  Just press <TAB> at any
-point after `:CMakeBuild` in the command line to trigger autocompletion, e.g.
+Vim-CMake provides autocompletion for build targets.  Just press <TAB> after
+`:CMakeBuild` in the command line to trigger autocompletion, i.e.
 >
-	:CMakeBuild --parallel 4 <TAB>
+	:CMakeBuild <TAB>
 <
 							*:CMakeInstall*
 :CMakeInstall		Install a project from the current build
 			configuration.
 
+------------------------------------------------------------------------------
+							*cmake-test*
+Running CMake-generated tests with CTest~
+							*:CMakeTest*
+:CMakeTest [testname]... [opts]
+			Run all CMake-generated tests from the current build
+			configuration using CTest.  [testname] can be used to
+			specify a single test instead of all (multiple test
+			names can be passed, separated by spaces). [opts] are
+			passed directly to CTest.
+
+For instance, to run the test `MyUnitTest` in verbose mode, run
+>
+	:CMakeTest MyUnitTest --verbose
+<
+Vim-CMake provides autocompletion for test names.  Just press <TAB> after
+`:CMakeTest` in the command line to trigger autocompletion, i.e.
+>
+	:CMakeTest <TAB>
+<
 ------------------------------------------------------------------------------
 							*cmake-switch*
 Switching between build configurations~
@@ -185,26 +207,28 @@ some key mappings specific to the CMake console window.
 							*cmake-plug-mappings*
 Global <Plug> mappings~
 
-<Plug>(CMakeGenerate)	Equivalent to `:CMakeGenerate`.
+<Plug>(CMakeGenerate)	Equivalent to |:CMakeGenerate|.
 
-<Plug>(CMakeClean)	Equivalent to `:CMakeClean`.
+<Plug>(CMakeClean)	Equivalent to |:CMakeClean|.
 
-<Plug>(CMakeBuild)	Equivalent to `:CMakeBuild`.
+<Plug>(CMakeBuild)	Equivalent to |:CMakeBuild|.
 
 <Plug>(CMakeBuildTarget)
-			Inserts `:CMakeBuild` in the command line, and leaves
+			Inserts |:CMakeBuild| in the command line, and leaves
 			the cursor there.
 
-<Plug>(CMakeInstall)	Equivalent to `:CMakeInstall`.
+<Plug>(CMakeInstall)	Equivalent to |:CMakeInstall|.
 
-<Plug>(CMakeSwitch)	Inserts `:CMakeSwitch` in the command line, and leaves
+<Plug>(CMakeTest)	Equivalent to |:CMakeTest|.
+
+<Plug>(CMakeSwitch)	Inserts |:CMakeSwitch| in the command line, and leaves
 			the cursor there.
 
-<Plug>(CMakeOpen)	Equivalent to `:CMakeOpen`.
+<Plug>(CMakeOpen)	Equivalent to |:CMakeOpen|.
 
-<Plug>(CMakeClose)	Equivalent to `:CMakeClose`.
+<Plug>(CMakeClose)	Equivalent to |:CMakeClose|.
 
-<Plug>(CMakeStop)	Equivalent to `:CMakeStop`.
+<Plug>(CMakeStop)	Equivalent to |:CMakeStop|.
 
 Example usage of the <Plug> mappings:
 >
@@ -218,11 +242,13 @@ Example usage of the <Plug> mappings:
 							*cmake-key-mappings*
 CMake console window key mappings~
 
-cg			Run `:CMakeGenerate`.
+cg			Run |:CMakeGenerate|.
 
-cb			Run `:CMakeBuild`.
+cb			Run |:CMakeBuild|.
 
-ci			Run `:CMakeInstall`.
+ci			Run |:CMakeInstall|.
+
+ct			Run |:CMakeTest|.
 
 cq			Close the CMake console window.
 
@@ -231,7 +257,7 @@ cq			Close the CMake console window.
 ==============================================================================
 EVENTS							*cmake-events*
 
-To customize the behaviour after a `:CMakeBuild` command has finished, Vim-CMake
+To customize the behaviour after a |:CMakeBuild| command has finished, Vim-CMake
 defines some user events.
 
 `CMakeBuildFailed`	Triggered after a build has failed
@@ -270,6 +296,9 @@ configuration options, with default values, follows.
 g:cmake_command (default: `'cmake'`)
 			Name (or full path) of the CMake executable.
 
+g:cmake_test_command (default: `'ctest'`)
+			Name (or full path) of the CTest executable.
+
 g:cmake_default_config (default: `'Debug'`)
 			Default build configuration on start-up.
 
@@ -289,6 +318,10 @@ g:cmake_build_options (default: `[]`)
 g:cmake_native_build_options (default: `[]`)
 			List of options to pass to the native tool by default
 			when running |:CMakeBuild|.
+
+g:cmake_test_options (default: `[]`)
+			List of options to pass to CTest by default when
+			running |:CMakeTest|.
 
 g:cmake_console_size (default: `15`)
 			Size of the CMake console window.

@@ -14,7 +14,7 @@ nice visual feedback.
 
 * Visual experience, shows CMake output in a console-like window
 * Slick management of build configurations
-* Autocompletion for build targets and build configurations
+* Autocompletion for build targets, build configurations and tests
 * Quickfix list population after each build
 * Airline/statusline status information, including current build configuration
 * Plug-and-play, but configurable
@@ -51,7 +51,7 @@ Run `:CMakeGenerate` from the top-level CMake source directory to generate a
 build system for the project.  Then, run `:CMakeBuild` to build the project.
 The built files will end up in the binary directory ([out-of-source
 build][oos]).  To switch between build configurations, run `:CMakeSwitch
-<config>`.
+<config>`.  To run CMake-generated tests with CTest, run `:CMakeTest`.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
 etc.), build specific targets and control build options, and fix errors using
@@ -66,6 +66,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files   |
 | `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                       |
 | `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                  |
+| `:CMakeTest`              | `(CMakeTest)`     | Run CMake-generated tests with CTest  |
 | `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
 | `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
 | `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window            |
@@ -84,6 +85,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `cg`        | Run `:CMakeGenerate`       |
 | `cb`        | Run `:CMakeBuild`          |
 | `ci`        | Run `:CMakeInstall`        |
+| `ct`        | Run `:CMakeTest`           |
 | `cq`        | Close CMake console window |
 | `<C-C>`     | Stop running command       |
 
@@ -92,10 +94,10 @@ functionalities run `:help cmake`.  A quick overview follows.
 Vim-CMake provides a set of custom events to trigger further actions.
 Run `:help cmake` for an extensive documentation of all configuration options and examples
 
-| Event                           | Description                               |
-|:--------------------------------|:------------------------------------------|
-| `User CMakeBuildSucceeded`      | Triggered after a successful `:CMakeBuild`|
-| `User CMakeBuildFailed`         | Triggered after a failed `:CMakeBuild`    |
+| Event                      | Description                                |
+|:---------------------------|:-------------------------------------------|
+| `User CMakeBuildSucceeded` | Triggered after a successful `:CMakeBuild` |
+| `User CMakeBuildFailed`    | Triggered after a failed `:CMakeBuild`     |
 
 ### Quickfix list
 
@@ -116,11 +118,13 @@ follows.
 | Options                         | Default            |
 |:--------------------------------|:-------------------|
 | `g:cmake_command`               | `'cmake'`          |
+| `g:cmake_test_command`          | `'ctest'`          |
 | `g:cmake_default_config`        | `'Debug'`          |
 | `g:cmake_build_dir_location`    | `'.'`              |
 | `g:cmake_generate_options`      | `[]`               |
 | `g:cmake_build_options`         | `[]`               |
 | `g:cmake_native_build_options`  | `[]`               |
+| `g:cmake_test_options`          | `[]`               |
 | `g:cmake_console_size`          | `15`               |
 | `g:cmake_console_position`      | `'botright'`       |
 | `g:cmake_console_echo_cmd`      | `1`                |
