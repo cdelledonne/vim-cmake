@@ -269,11 +269,12 @@ function! s:LinkCompileCommands() abort
             \ [s:buildsys.path_to_current_config, 'compile_commands.json'],
             \ v:true
             \ )
-    let l:link_name = s:system.Path(
+    let l:link = s:system.Path(
             \ [s:buildsys.project_root, 'compile_commands.json'],
             \ v:true,
             \ )
-    call s:system.Link(l:target, l:link_name, v:true)
+    let l:command = [g:cmake_command, '-E', 'create_symlink', l:target, l:link]
+    call s:system.JobRun(l:command, v:true, v:null, v:null, v:false)
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
