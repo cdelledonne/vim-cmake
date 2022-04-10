@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
   properly formatted
 * A link to the `compile_commands.json` file is only created on a successful
   `:CMakeGenerate` and on a successful `:CMakeSwitch`
+* Symbolic links are created using the CMake command-line tool `cmake -E
+  create_symlink`
 
 <!--=========================================================================-->
 
