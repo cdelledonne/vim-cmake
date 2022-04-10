@@ -78,30 +78,6 @@ function! s:system.Path(components, relative) abort
     return l:path
 endfunction
 
-" Create symbolic link.
-"
-" Params:
-"     target : String
-"         ...
-"     link_name : String
-"         ...
-"     wait : Boolean
-"         whether to wait for completion
-"
-function! s:system.Link(target, link_name, wait) abort
-    if has('win32')
-        " In MS-Windows, must delete existing link, if present.
-        if filereadable(a:link_name)
-            let l:command = s:shell + ['del', a:link_name]
-            call l:self.JobRun(l:command, a:wait, v:null, v:null, v:false)
-        endif
-        let l:command = s:shell + ['mklink', a:link_name, a:target]
-    else
-        let l:command = ['ln', '-sf', a:target, a:link_name]
-    endif
-    call l:self.JobRun(l:command, a:wait, v:null, v:null, v:false)
-endfunction
-
 " Run arbitrary job in the background.
 "
 " Params:
