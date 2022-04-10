@@ -5,7 +5,6 @@
 
 let s:system = {}
 
-let s:shell = split(&shell) + split(&shellcmdflag)
 let s:stdout_partial_line = {}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
