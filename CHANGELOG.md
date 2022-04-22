@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* An explicit error message is issues when running Neovim versions < 0.5
+
 <!--=========================================================================-->
 
 ## 0.7.1 &ndash; 2022-04-10
