@@ -134,6 +134,7 @@ follows.
 | `g:cmake_link_compile_commands` | `0`                |
 | `g:cmake_root_markers`          | `['.git', '.svn']` |
 | `g:cmake_log_file`              | `''`               |
+| `g:cmake_statusline`            | `1`                |
 
 <!--=========================================================================-->
 

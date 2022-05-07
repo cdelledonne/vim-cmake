@@ -366,6 +366,10 @@ g:cmake_log_file (default: `''`)
 			Path to a file where to store the log of Vim-CMake.
 			An empty value disables logging.
 
+g:cmake_statusline (default: `1`)
+			Whether to set a custom statusline in the terminal
+			window opened by a `:CMake` command.
+
 ==============================================================================
 CONTRIBUTING						*cmake-contributing*
 

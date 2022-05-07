@@ -250,9 +250,11 @@ function! s:CreateConsoleBuffer() abort
     setlocal signcolumn=auto
     setlocal nobuflisted
     setlocal filetype=vimcmake
-    setlocal statusline=[CMake]
-    setlocal statusline+=\ %{cmake#statusline#GetBuildInfo(0)}
-    setlocal statusline+=\ %{cmake#statusline#GetCmdInfo()}
+    if g:cmake_statusline
+        setlocal statusline=[CMake]
+        setlocal statusline+=\ %{cmake#statusline#GetBuildInfo(0)}
+        setlocal statusline+=\ %{cmake#statusline#GetCmdInfo()}
+    endif
     " Avoid error E37 on :CMakeClose in some Vim instances.
     setlocal bufhidden=hide
     augroup cmake
