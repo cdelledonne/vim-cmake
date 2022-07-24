@@ -9,6 +9,7 @@ let s:terminal.console_cmd_info = {
         \ 'generate': 'Generating buildsystem...',
         \ 'build': 'Building...',
         \ 'install': 'Installing...',
+        \ 'test': 'Running tests...',
         \ 'NONE': '',
         \ }
 let s:terminal.console_cmd = {
@@ -241,6 +242,7 @@ function! s:CreateConsoleBuffer() abort
     nnoremap <buffer> <silent> cg :CMakeGenerate<CR>
     nnoremap <buffer> <silent> cb :CMakeBuild<CR>
     nnoremap <buffer> <silent> ci :CMakeInstall<CR>
+    nnoremap <buffer> <silent> ct :CMakeTest<CR>
     nnoremap <buffer> <silent> cq :CMakeClose<CR>
     nnoremap <buffer> <silent> <C-C> :CMakeStop<CR>
     setlocal nonumber

@@ -10,6 +10,9 @@ let s:buildsys.current_config = ''
 let s:buildsys.path_to_current_config = ''
 let s:buildsys.configs = []
 let s:buildsys.targets = []
+let s:buildsys.tests = []
+
+let s:refresh_tests_output = []
 
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
@@ -228,6 +231,33 @@ function! s:RefreshTargets() abort
             \ l:command, v:true, function('s:RefreshTargetsCb'), v:null, v:false)
 endfunction
 
+" Callback for RefreshTests().
+"
+function! s:RefreshTestsCb(...) abort
+    let l:data = s:system.ExtractStdoutCallbackData(a:000)
+    call extend(s:refresh_tests_output, l:data)
+endfunction
+
+" Refresh list of available CTest tests.
+"
+function! s:RefreshTests() abort
+    let s:refresh_tests_output = []
+    let s:buildsys.tests = []
+    let l:build_dir = s:buildsys.path_to_current_config
+    let l:command = [g:cmake_test_command,
+            \ '--show-only=json-v1',
+            \ '--test-dir', l:build_dir
+            \ ]
+    call s:system.JobRun(
+            \ l:command, v:true, function('s:RefreshTestsCb'), v:null, v:false)
+    " Make list of tests from JSON data.
+    let s:tests_data_json = json_decode(s:refresh_tests_output)
+    let s:tests_data_list = s:tests_data_json['tests']
+    for s:test in s:tests_data_list
+        call add(s:buildsys.tests, s:test['name'])
+    endfor
+endfunction
+
 " Check if build configuration directory exists.
 "
 " Params:
@@ -314,6 +344,7 @@ function! s:buildsys.Generate(clean, argstring) abort
             \ [
                 \ function('s:RefreshConfigs'),
                 \ function('s:RefreshTargets'),
+                \ function('s:RefreshTests'),
                 \ function('s:LinkCompileCommands')
             \ ],
             \ [function('s:RefreshConfigs')],
@@ -374,6 +405,19 @@ function! s:buildsys.GetTargets() abort
         call s:RefreshTargets()
     endif
     return l:self.targets
+endfunction
+
+" Get list of available test names.
+"
+" Returns:
+"     List
+"         list of available test names
+"
+function! s:buildsys.GetTests() abort
+    if len(l:self.tests) == 0
+        call s:RefreshTests()
+    endif
+    return l:self.tests
 endfunction
 
 " Get current build configuration.

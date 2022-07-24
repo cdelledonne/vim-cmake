@@ -221,9 +221,14 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
             call insert(l:data, s:stdout_partial_line[l:channel])
             let s:stdout_partial_line[l:channel] = remove(l:data, -1)
         endif
-        " At the end of the stream of a channel, remove the dictionary entry for
-        " that channel.
+        " At the end of the stream of a channel, "flush" any leftover partial
+        " line and return it, and remove the dictionary entry for that channel.
+        " Leftover partial lines at the end of the stream occur when the job's
+        " command does not append a newline at the end of the stream.
         if l:eof
+            if len(s:stdout_partial_line[l:channel]) > 0
+                call insert(l:data, s:stdout_partial_line[l:channel])
+            endif
             call remove(s:stdout_partial_line, l:channel)
         endif
     else

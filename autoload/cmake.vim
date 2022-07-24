@@ -5,6 +5,7 @@
 
 let s:buildsys = cmake#buildsys#Get()
 let s:build = cmake#build#Get()
+let s:test = cmake#test#Get()
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:terminal = cmake#terminal#Get()
@@ -53,25 +54,6 @@ function! cmake#Switch(...) abort
     call s:buildsys.Switch(a:1)
 endfunction
 
-" API function for completion for :CMakeSwitch.
-"
-" Params:
-"     arg_lead : String
-"         the leading portion of the argument currently being completed
-"     cmd_line : String
-"         the entire command line
-"     cursor_pos : Number
-"         the cursor position in the command line (byte index)
-"
-" Returns:
-"     String
-"         stringified list of existing configuration directories
-"
-function! cmake#GetConfigs(arg_lead, cmd_line, cursor_pos) abort
-    call s:logger.LogDebug('API invoked: cmake#GetConfigs()')
-    return join(s:buildsys.GetConfigs(), "\n")
-endfunction
-
 " API function for :CMakeBuild and <Plug>(CMakeBuild).
 "
 " Params:
@@ -92,8 +74,36 @@ function! cmake#Install() abort
     call s:build.Install()
 endfunction
 
-" API function for completion for :CMakeBuild.
+" API function for :CMakeTest and <Plug>(CMakeTest).
 "
+" Params:
+"     a:1 : String
+"         (optional) test name and other test options
+"
+function! cmake#Test(...) abort
+    call s:logger.LogDebug('API invoked: cmake#Test(%s)', a:000)
+    call s:test.Test(join(a:000))
+endfunction
+
+" API function for completion for :CMakeSwitch.
+"
+" Params:
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
+"
+" Returns:
+"     String
+"         existing configuration directories, one per line
+"
+function! cmake#GetConfigs(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetConfigs()')
+    return join(s:buildsys.GetConfigs(), "\n")
+endfunction
+
 " API function for completion for :CMakeBuild.
 "
 " Params:
@@ -111,6 +121,25 @@ endfunction
 function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
     call s:logger.LogDebug('API invoked: cmake#GetBuildTargets()')
     return join(s:buildsys.GetTargets(), "\n")
+endfunction
+
+" API function for completion for :CMakeTest.
+"
+" Params:
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
+"
+" Returns:
+"     String
+"         available tests, one per line
+"
+function! cmake#GetTests(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetTests()')
+    return join(s:buildsys.GetTests(), "\n")
 endfunction
 
 " API function for :CMakeStop.
