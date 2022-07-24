@@ -26,22 +26,26 @@ let s:terminal = cmake#terminal#Get()
 "         CMake build options, target and native options
 "
 " Example:
-"     argstring = --jobs 4 all -- VERBOSE=1
+"     argstring = --parallel 4 all -- VERBOSE=1
 "     return = {
-"             \ 'cmake_build_options': ['--jobs', '4'],
+"             \ 'cmake_build_options': ['--parallel', '4'],
 "             \ 'target': ['--target', 'all'],
 "             \ 'native_build_options': ['VERBOSE=1']
 "             \ }
 "
 function! s:GetBuildArgs(argstring) abort
-    let l:argdict = {}
+    let l:argdict = {
+            \ 'cmake_build_options': [],
+            \ 'target': [],
+            \ 'native_build_options': [],
+            \ }
     let l:arglist = split(a:argstring)
     " Search arguments for one that matches the name of a target.
     for l:t in s:buildsys.GetTargets()
         let l:match_res = match(l:arglist, '\m\C^' . l:t)
         if l:match_res != -1
             " If found, get target and remove from list of arguments.
-            let l:target =  l:arglist[l:match_res]
+            let l:target = l:arglist[l:match_res]
             let l:argdict['target'] = ['--target', l:target]
             call remove(l:arglist, l:match_res)
             break
@@ -89,18 +93,18 @@ function! s:build.Build(clean, argstring) abort
     let l:options = s:GetBuildArgs(a:argstring)
     " Add CMake build options to the command.
     let l:command += g:cmake_build_options
-    let l:command += get(l:options, 'cmake_build_options', [])
+    let l:command += l:options['cmake_build_options']
     if a:clean
         let l:command += ['--clean-first']
     endif
     " Add target to the command, if any was provided.
-    let l:command += get(l:options, 'target', [])
+    let l:command += l:options['target']
     " Add native build tool options to the command.
     if len(g:cmake_native_build_options) > 0 ||
-            \ len(get(l:options, 'native_build_options', [])) > 0
+            \ len(l:options['native_build_options']) > 0
         let l:command += ['--']
         let l:command += g:cmake_native_build_options
-        let l:command += get(l:options, 'native_build_options', [])
+        let l:command += l:options['native_build_options']
     endif
     " Run build command.
     call s:terminal.Run(l:command, 'build',
