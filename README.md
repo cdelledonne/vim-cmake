@@ -22,7 +22,7 @@ nice visual feedback.
 
 **Requirements**
 
-* Vim with `+terminal`, or Neovim
+* Vim with `+terminal`, or Neovim >= 0.5
 * Under Windows, only Neovim is supported at the moment
 
 <!--=========================================================================-->

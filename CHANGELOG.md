@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 ## Unreleased
 
 ### Added
+* An explicit error message is issued when running Neovim versions < 0.5.
 * `:CMakeTest` command, and `<Plug>(CMakeTest)` mapping, to run tests using
   CTest.
 

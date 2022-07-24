@@ -11,8 +11,25 @@ if exists('g:loaded_cmake') && g:loaded_cmake
 endif
 let g:loaded_cmake = 1
 
+" Assign user/default values to coniguration variables.
+" NOTE: must be done before loading other scripts.
+let s:const = cmake#const#Get()
+for s:cvar in items(s:const.config_vars)
+    if !has_key(g:, s:cvar[0])
+        let g:[s:cvar[0]] = s:cvar[1]
+    endif
+endfor
+
+let s:logger = cmake#logger#Get()
+
 " Check required features.
-if !has('nvim')
+if has('nvim')
+    if !has('nvim-0.5.0')
+        call s:logger.EchoError('Only Neovim versions >= 0.5 are supported')
+        call s:logger.LogError('Only Neovim versions >= 0.5 are supported')
+        finish
+    endif
+else
     if has('win32')
         call s:logger.EchoError('Under Windows, only Neovim is supported at the moment')
         call s:logger.LogError('Under Windows, only Neovim is supported at the moment')
@@ -24,17 +41,6 @@ if !has('nvim')
         finish
     endif
 endif
-
-" Assign user/default values to coniguration variables.
-" NOTE: must be done before loading other scripts.
-let s:const = cmake#const#Get()
-for s:cvar in items(s:const.config_vars)
-    if !has_key(g:, s:cvar[0])
-        let g:[s:cvar[0]] = s:cvar[1]
-    endif
-endfor
-
-let s:logger = cmake#logger#Get()
 
 call s:logger.LogInfo('Loading Vim-CMake')
 
