@@ -369,8 +369,10 @@ function! s:terminal.Open(clear) abort
             endif
         endif
     endif
-    if l:original_win_id != win_getid()
-        call win_gotoid(l:original_win_id)
+    if !g:cmake_jump
+        if l:original_win_id != win_getid()
+            call win_gotoid(l:original_win_id)
+        endif
     endif
 endfunction
 

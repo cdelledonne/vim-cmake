@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* `:CMakeOpen` now respects the value of `g:cmake_jump`.
+
 <!--=========================================================================-->
 
 ## 0.8.0 &ndash; 2022-07-24
