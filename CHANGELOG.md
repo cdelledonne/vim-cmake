@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Added
 * A new configuration option `g:cmake_statusline` controls whether Vim-CMake
-  will set a statusline in the terminal window opened by `:CMake` commands
+  will override the |statusline| option for the CMake console window.
 
 ### Changed
 * `:CMakeOpen` now respects the value of `g:cmake_jump`.
