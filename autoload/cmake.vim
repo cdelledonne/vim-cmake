@@ -9,6 +9,7 @@ let s:test = cmake#test#Get()
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:terminal = cmake#terminal#Get()
+let s:statusline = cmake#statusline#Get()
 
 " Print news of new Vim-CMake versions.
 call cmake#util#PrintNews(s:const.plugin_version, s:const.plugin_news)
@@ -161,4 +162,19 @@ endfunction
 function! cmake#Close() abort
     call s:logger.LogDebug('API invoked: cmake#Close()')
     call s:terminal.Close()
+endfunction
+
+" API function for third-party plugins to query status information
+"
+" Returns:
+"     Dictionary
+"         current_config : String
+"             name of the current cmake configuration
+"         status : String
+"             current cmake status (e.g. Building...)
+function! cmake#GetInfo() abort
+    let l:info = {}
+    let l:info.current_config = s:statusline.GetBuildInfo()
+    let l:info.status = s:statusline.GetCmdInfo()
+    return l:info
 endfunction

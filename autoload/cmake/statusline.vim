@@ -45,6 +45,26 @@ function! s:statusline.Refresh() abort
     endif
 endfunction
 
+" Get name of current build configuration
+"
+" Returns:
+"     String
+"         name of current build config
+" 
+function! s:statusline.GetBuildInfo() abort
+    return s:statusline.build_info
+endfunction
+
+" Get current command status
+"
+" Returns:
+"     String
+"         statusline command info (command currently running)
+" 
+function! s:statusline.GetCmdInfo() abort
+    return s:statusline.cmd_info
+endfunction
+
 " Get build info string for statusline/airline.
 "
 " Params:
