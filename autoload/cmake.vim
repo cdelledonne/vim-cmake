@@ -164,7 +164,7 @@ function! cmake#Close() abort
     call s:terminal.Close()
 endfunction
 
-" API function for third-party plugins to query status information
+" API function for third-party plugins to query information
 "
 " Returns:
 "     Dictionary
@@ -172,9 +172,19 @@ endfunction
 "             name of the current cmake configuration
 "         status : String
 "             current cmake status (e.g. Building...)
+"         cmake_version : Dictionary
+"             major : Number
+"                 cmake major version
+"             minor : Number
+"                 cmake minor version
+"             patch : Number
+"                 cmake patch version
+"             string : String
+"                 cmake version in string representation
 function! cmake#GetInfo() abort
     let l:info = {}
-    let l:info.config = s:buildsys.GetCurrentConfig()
     let l:info.status = s:terminal.GetCmdInfo()
+    let l:info.config = s:buildsys.GetCurrentConfig()
+    let l:info.cmake_version = s:buildsys.GetCMakeVersion()
     return l:info
 endfunction
