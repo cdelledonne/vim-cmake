@@ -4,36 +4,10 @@
 " ==============================================================================
 
 let s:statusline = {}
-let s:statusline.build_info = ''
-let s:statusline.cmd_info = ''
-
-let s:logger = cmake#logger#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Set build info string for statusline/airline.
-"
-" Params:
-"     build_info : String
-"         statusline build info
-"
-function! s:statusline.SetBuildInfo(build_info) abort
-    call s:logger.LogDebug('Invoked: statusline.SetBuildInfo(%s)', a:build_info)
-    let l:self.build_info = a:build_info
-endfunction
-
-" Set command info string for statusline/airline.
-"
-" Params:
-"     cmd_info : String
-"         statusline command info
-"
-function! s:statusline.SetCmdInfo(cmd_info) abort
-    call s:logger.LogDebug('Invoked: statusline.SetCmdInfo(%s)', a:cmd_info)
-    let l:self.cmd_info = a:cmd_info
-endfunction
 
 " Force a refresh of the statusline/airline.
 "
@@ -43,26 +17,6 @@ function! s:statusline.Refresh() abort
     else
         execute 'redrawstatus!'
     endif
-endfunction
-
-" Get name of current build configuration
-"
-" Returns:
-"     String
-"         name of current build config
-" 
-function! s:statusline.GetBuildInfo() abort
-    return s:statusline.build_info
-endfunction
-
-" Get current command status
-"
-" Returns:
-"     String
-"         statusline command info (command currently running)
-" 
-function! s:statusline.GetCmdInfo() abort
-    return s:statusline.cmd_info
 endfunction
 
 " Get build info string for statusline/airline.
@@ -77,9 +31,9 @@ endfunction
 "
 function! cmake#statusline#GetBuildInfo(active) abort
     if a:active
-        return s:statusline.build_info
+        return cmake#GetInfo().config
     else
-        return '[' . s:statusline.build_info . ']'
+        return '[' . cmake#GetInfo().config . ']'
     endif
 endfunction
 
@@ -90,8 +44,8 @@ endfunction
 "         statusline command info (command currently running)
 "
 function! cmake#statusline#GetCmdInfo() abort
-    if len(s:statusline.cmd_info) > 0
-        return s:statusline.cmd_info
+    if len(cmake#GetInfo().status) > 0
+        return cmake#GetInfo().status
     else
         return ' '
     endif

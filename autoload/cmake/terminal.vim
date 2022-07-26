@@ -12,6 +12,7 @@ let s:terminal.console_cmd_info = {
         \ 'test': 'Running tests...',
         \ 'NONE': '',
         \ }
+let s:terminal.cmd_info = ''
 let s:terminal.console_cmd = {
         \ 'id': -1,
         \ 'running': v:false,
@@ -151,7 +152,7 @@ function! s:OnCompleteCommand(error, stopped) abort
         let s:exit_term_mode = 1
     endif
     " Update statusline.
-    call s:statusline.SetCmdInfo(s:terminal.console_cmd_info['NONE'])
+    let s:terminal.cmd_info = s:terminal.console_cmd_info['NONE']
     call s:statusline.Refresh()
     " The rest of the tasks are not to be carried out if the running command was
     " stopped by the user.
@@ -252,7 +253,7 @@ function! s:CreateConsoleBuffer() abort
     setlocal filetype=vimcmake
     if g:cmake_statusline
         setlocal statusline=[CMake]
-        setlocal statusline+=\ [%{cmake#GetInfo().current_config}]
+        setlocal statusline+=\ [%{cmake#GetInfo().config}]
         setlocal statusline+=\ %{cmake#GetInfo().status}
     endif
     " Avoid error E37 on :CMakeClose in some Vim instances.
@@ -445,7 +446,7 @@ function! s:terminal.Run(command, tag, cbs, cbs_err, aus, aus_err) abort
                 \ ])
     endif
     " Run command.
-    call s:statusline.SetCmdInfo(l:self.console_cmd_info[a:tag])
+    let s:terminal.cmd_info = l:self.console_cmd_info[a:tag]
     let l:self.console_cmd.id = s:ConsoleCmdStart(a:command)
     " Jump to Vim-CMake console window if requested.
     if g:cmake_jump
@@ -469,6 +470,16 @@ endfunction
 "
 function! s:terminal.GetOutput() abort
     return l:self.console_cmd_output
+endfunction
+
+" Get current command info
+"
+" Returns:
+"     String
+"         current command info
+"
+function! s:terminal.GetCmdInfo() abort
+    return l:self.cmd_info
 endfunction
 
 " Get terminal 'object'.

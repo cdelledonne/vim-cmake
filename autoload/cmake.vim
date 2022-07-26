@@ -168,13 +168,13 @@ endfunction
 "
 " Returns:
 "     Dictionary
-"         current_config : String
+"         config : String
 "             name of the current cmake configuration
 "         status : String
 "             current cmake status (e.g. Building...)
 function! cmake#GetInfo() abort
     let l:info = {}
-    let l:info.current_config = s:statusline.GetBuildInfo()
-    let l:info.status = s:statusline.GetCmdInfo()
+    let l:info.config = s:buildsys.GetCurrentConfig()
+    let l:info.status = s:terminal.GetCmdInfo()
     return l:info
 endfunction

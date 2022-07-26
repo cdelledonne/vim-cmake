@@ -286,7 +286,6 @@ function! s:SetCurrentConfig(config) abort
             \ s:buildsys.current_config,
             \ s:buildsys.path_to_current_config
             \ )
-    call s:statusline.SetBuildInfo(s:buildsys.current_config)
 endfunction
 
 " Link compile commands from source directory to build directory.
