@@ -168,18 +168,18 @@ endfunction
 " Returns:
 "     Dictionary
 "         status : String
-"             current cmake status (e.g. Building...)
+"             current CMake status (e.g. Building...)
 "         config : String
-"             name of the set cmake configuration
+"             name of the set CMake configuration
 "         cmake_version : Dictionary
 "             major : Number
-"                 cmake major version
+"                 CMake major version
 "             minor : Number
-"                 cmake minor version
+"                 CMake minor version
 "             patch : Number
-"                 cmake patch version
+"                 CMake patch version
 "             string : String
-"                 cmake version in string representation
+"                 CMake version in string representation
 "         project_dir : String
 "             absolute path to detected project root (see g:cmake_root_markers)
 "         build_dir : String

@@ -365,7 +365,10 @@ g:cmake_link_compile_commands (default: `0`)
 g:cmake_root_markers (default: `['.git', '.svn']`)
 		List of file/directory names used to locate the project root.
 		When Vim-CMake is loaded, it looks for the project root
-		starting from the CWD.
+		starting from the CWD.  NOTE: when this list contains `'.git'`
+		as one of the root markers, Vim-CMake will use `git` commands
+		to try to determine the actual project root, especially useful
+		if the CWD is a Git submodule.
 
 g:cmake_log_file (default: `''`)
 		Path to a file where to store the log of Vim-CMake. An empty
@@ -402,7 +405,8 @@ cmake#GetInfo()
 				string : String
 					CMake version in string representation
 			project_dir : String
-				absolute path to the vcs root
+				absolute path to detected project root (see
+				`g:cmake_root_markers`)
 			build_dir : String
 				absolute path to the build directory for the
 				set configuration
