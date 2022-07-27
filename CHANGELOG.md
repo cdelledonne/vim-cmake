@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Changed
 * `:CMakeOpen` now respects the value of `g:cmake_jump`.
+* Project root detection now uses `git` commands, when possible, to tell apart
+  actual project roots from Git submodules.
 
 <!--=========================================================================-->
 

@@ -23,6 +23,78 @@ let s:terminal = cmake#terminal#Get()
 " Private functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+function! s:GetCMakeVersionCb(...) abort
+    let l:data = s:system.ExtractStdoutCallbackData(a:000)
+    let l:index = match(l:data, '\m\C^cmake\S* version')
+    if l:index != -1
+        let l:version_str = split(l:data[l:index])[2]
+        let l:version_parts = split(l:version_str, '\.')
+        let s:cmake_version.major = str2nr(l:version_parts[0])
+        let s:cmake_version.minor = str2nr(l:version_parts[1])
+        let s:cmake_version.patch = str2nr(l:version_parts[2])
+        let s:cmake_version.string = l:version_str
+    endif
+endfunction
+
+" Get CMake version.
+"
+" Returns:
+"     Dictionary
+"         the version is returned as a dictionary containing the keys major,
+"         minor and patch (e.g., version 3.13.3 would result in the dict
+"         {'major': 3, 'minor': 13, 'patch': 3, 'string': '3.13.3'})
+"
+function! s:GetCMakeVersion() abort
+    let s:cmake_version = {}
+    let l:command = [g:cmake_command, '--version']
+    call s:system.JobRun(
+            \ l:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false)
+    return s:cmake_version
+endfunction
+
+function! s:FindGitRootCb(...) abort
+    let l:data = s:system.ExtractStdoutCallbackData(a:000)
+    for l:line in l:data
+        if isdirectory(l:line)
+            let s:git_root = l:line
+            break
+        endif
+    endfor
+endfunction
+
+" Find project root using git commands.
+"
+" Returns:
+"     String
+"         path to the root of the project, or empty string if nothing is found
+"
+function! s:FindGitRoot() abort
+    let s:git_root = ''
+    " Use `git rev-parse --show-superproject-working-tree` to look for git root,
+    " assuming we're in a git submodule. If we are actually in a git submodule,
+    " this will result in the path to the root repo.
+    let l:command = ['git', 'rev-parse', '--show-superproject-working-tree']
+    call s:system.JobRun(
+            \ l:command, v:true, function('s:FindGitRootCb'), v:null, v:false)
+    if s:git_root !=# ''
+        return s:git_root
+    endif
+    " Use `git rev-parse --show-toplevel` to look for git root, assuming we're
+    " in a git repo but not in a submodule. If we are actually in a git repo,
+    " this will result in the path to the repo.
+    " Note: if invoked from a git submodule, this command returns the path to
+    " the submodule, not the path to the root repo, this is why this needs to be
+    " invoked only after `git rev-parse --show-superproject-working-tree`.
+    let l:command = ['git', 'rev-parse', '--show-toplevel']
+    call s:system.JobRun(
+            \ l:command, v:true, function('s:FindGitRootCb'), v:null, v:false)
+    if s:git_root !=# ''
+        return s:git_root
+    endif
+    " If we're not in a git repo at all, return an empty string.
+    return ''
+endfunction
+
 " Find project root by looking for g:cmake_root_markers upwards.
 "
 " Returns:
@@ -30,6 +102,16 @@ let s:terminal = cmake#terminal#Get()
 "         escaped path to the root of the project
 "
 function! s:FindProjectRoot() abort
+    " If '.git' is one of the root markers, try to use git commands to obtain
+    " the root of the project.
+    let l:match_res = match(g:cmake_root_markers, '\m\C^\.git$')
+    if l:match_res != -1
+        let l:root = s:FindGitRoot()
+        if l:root !=# ''
+            return l:root
+        endif
+    endif
+    " Otherwise, search for root markers manually.
     let l:root = getcwd()
     let l:escaped_cwd = fnameescape(getcwd())
     for l:marker in g:cmake_root_markers
@@ -478,26 +560,7 @@ endfunction
 " Initialization
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-function! s:GetCMakeVersionCb(...) abort
-    let l:data = s:system.ExtractStdoutCallbackData(a:000)
-
-    let l:index = match(l:data, '\m\C^cmake\S* version')
-    if l:index != -1
-        let l:version_str = split(l:data[l:index])[2]
-        let l:version_parts = split(l:version_str, '\.')
-        let s:buildsys.cmake_version.major = str2nr(l:version_parts[0])
-        let s:buildsys.cmake_version.minor = str2nr(l:version_parts[1])
-        let s:buildsys.cmake_version.patch = str2nr(l:version_parts[2])
-        let s:buildsys.cmake_version.string = l:version_str
-    endif
-endfunction
-
-" Get CMake version. The version is stored as a dictionary containing the keys
-" major, minor and patch (e.g., version 3.13.3 would result in the dict
-" {'major': 3, 'minor': 13, 'patch': 3, 'string': '3.13.3'})
-let s:command = [g:cmake_command, '--version']
-call s:system.JobRun(
-        \ s:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false)
+let s:buildsys.cmake_version = s:GetCMakeVersion()
 
 " Must be done before any other initial configuration.
 let s:buildsys.project_root = s:system.Path([s:FindProjectRoot()], v:false)
