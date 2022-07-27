@@ -9,6 +9,7 @@
 :CMakeTest	cmake.txt	/*:CMakeTest*
 cmake	cmake.txt	/*cmake*
 cmake-api	cmake.txt	/*cmake-api*
+cmake-api-getinfo	cmake.txt	/*cmake-api-getinfo*
 cmake-build	cmake.txt	/*cmake-build*
 cmake-commands	cmake.txt	/*cmake-commands*
 cmake-configuration	cmake.txt	/*cmake-configuration*
