@@ -146,7 +146,9 @@ function `cmake#GetInfo()` which returns a dictionary containing the
 information. For extensive information run `:help cmake-api`.
 
 To show the CMake version in your statusline you could do:
-	set statusline=%{cmake#GetInfo().cmake_version.string}
+```vim
+set statusline=%{cmake#GetInfo().cmake_version.string}
+```
 or integrate this as a component in your preferred statusline plugin.
 
 <!--=========================================================================-->
