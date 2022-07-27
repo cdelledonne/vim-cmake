@@ -483,8 +483,8 @@ function! s:GetCMakeVersionCb(...) abort
 
     let l:index = match(l:data, '\m\C^cmake\S* version')
     if l:index != -1
-        let l:version_str = l:data[l:index]->split()[2]
-        let l:version_parts = l:version_str->split('\.')
+        let l:version_str = split(l:data[l:index])[2]
+        let l:version_parts = split(l:version_str, '\.')
         let s:buildsys.cmake_version.major = str2nr(l:version_parts[0])
         let s:buildsys.cmake_version.minor = str2nr(l:version_parts[1])
         let s:buildsys.cmake_version.patch = str2nr(l:version_parts[2])
