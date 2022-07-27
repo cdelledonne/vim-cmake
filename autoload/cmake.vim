@@ -9,7 +9,6 @@ let s:test = cmake#test#Get()
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:terminal = cmake#terminal#Get()
-let s:statusline = cmake#statusline#Get()
 
 " Print news of new Vim-CMake versions.
 call cmake#util#PrintNews(s:const.plugin_version, s:const.plugin_news)
@@ -168,10 +167,10 @@ endfunction
 "
 " Returns:
 "     Dictionary
-"         config : String
-"             name of the set cmake configuration
 "         status : String
 "             current cmake status (e.g. Building...)
+"         config : String
+"             name of the set cmake configuration
 "         cmake_version : Dictionary
 "             major : Number
 "                 cmake major version
@@ -182,7 +181,7 @@ endfunction
 "             string : String
 "                 cmake version in string representation
 "         project_dir : String
-"             absolute path to the vcs root
+"             absolute path to detected project root (see g:cmake_root_markers)
 "         build_dir : String
 "             absolute path to the build directory for the set configuration
 function! cmake#GetInfo() abort
