@@ -169,7 +169,7 @@ endfunction
 " Returns:
 "     Dictionary
 "         config : String
-"             name of the current cmake configuration
+"             name of the set cmake configuration
 "         status : String
 "             current cmake status (e.g. Building...)
 "         cmake_version : Dictionary
@@ -181,10 +181,16 @@ endfunction
 "                 cmake patch version
 "             string : String
 "                 cmake version in string representation
+"         project_dir : String
+"             absolute path to the vcs root
+"         build_dir : String
+"             absolute path to the build directory for the set configuration
 function! cmake#GetInfo() abort
     let l:info = {}
     let l:info.status = s:terminal.GetCmdInfo()
     let l:info.config = s:buildsys.GetCurrentConfig()
     let l:info.cmake_version = s:buildsys.GetCMakeVersion()
+    let l:info.project_dir = s:buildsys.GetSourceDir()
+    let l:info.build_dir = s:buildsys.GetPathToCurrentConfig()
     return l:info
 endfunction
