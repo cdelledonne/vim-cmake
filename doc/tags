@@ -8,6 +8,7 @@
 :CMakeSwitch	cmake.txt	/*:CMakeSwitch*
 :CMakeTest	cmake.txt	/*:CMakeTest*
 cmake	cmake.txt	/*cmake*
+cmake-api	cmake.txt	/*cmake-api*
 cmake-build	cmake.txt	/*cmake-build*
 cmake-commands	cmake.txt	/*cmake-commands*
 cmake-configuration	cmake.txt	/*cmake-configuration*

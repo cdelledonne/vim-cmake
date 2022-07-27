@@ -4,7 +4,7 @@
 " ==============================================================================
 
 let s:buildsys = {}
-let s:buildsys.cmake_version = 0
+let s:buildsys.cmake_version = {'major': 0, 'minor': 0, 'patch': 0, 'string': ''}
 let s:buildsys.project_root = ''
 let s:buildsys.current_config = ''
 let s:buildsys.path_to_current_config = ''
@@ -286,7 +286,6 @@ function! s:SetCurrentConfig(config) abort
             \ s:buildsys.current_config,
             \ s:buildsys.path_to_current_config
             \ )
-    call s:statusline.SetBuildInfo(s:buildsys.current_config)
 endfunction
 
 " Link compile commands from source directory to build directory.
@@ -327,7 +326,9 @@ function! s:buildsys.Generate(clean, argstring) abort
     " Construct command.
     call extend(l:command, g:cmake_generate_options)
     call extend(l:command, l:optdict.opts)
-    if l:self.cmake_version < 313
+    let l:cmake_version_comparable =
+                \ l:self.cmake_version.major * 100 + l:self.cmake_version.minor
+    if l:cmake_version_comparable < 313
         call add(l:command, '-H' . l:optdict.source_dir)
         call add(l:command, '-B' . l:optdict.build_dir)
     else
@@ -430,6 +431,23 @@ function! s:buildsys.GetCurrentConfig() abort
     return l:self.current_config
 endfunction
 
+" Get CMake version as dict
+"
+" Returns:
+"     Dictionary
+"         major : Number
+"             cmake major version
+"         minor : Number
+"             cmake minor version
+"         patch : Number
+"             cmake patch version
+"         string : String
+"             cmake version in string representation
+"
+function! s:buildsys.GetCMakeVersion() abort
+    return l:self.cmake_version
+endfunction
+
 " Get path to CMake source directory of current project.
 "
 " Returns:
@@ -462,19 +480,21 @@ endfunction
 
 function! s:GetCMakeVersionCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    for l:line in l:data
-        if match(l:line, '\m\C^cmake\S* version') == 0
-            let l:version_str = split(split(l:line)[2], '\.')
-            let l:major = str2nr(l:version_str[0])
-            let l:minor = str2nr(l:version_str[1])
-            let s:buildsys.cmake_version = l:major * 100 + l:minor
-            break
-        endif
-    endfor
+
+    let l:index = match(l:data, '\m\C^cmake\S* version')
+    if l:index != -1
+        let l:version_str = split(l:data[l:index])[2]
+        let l:version_parts = split(l:version_str, '\.')
+        let s:buildsys.cmake_version.major = str2nr(l:version_parts[0])
+        let s:buildsys.cmake_version.minor = str2nr(l:version_parts[1])
+        let s:buildsys.cmake_version.patch = str2nr(l:version_parts[2])
+        let s:buildsys.cmake_version.string = l:version_str
+    endif
 endfunction
 
-" Get CMake version. The version is stored as MAJOR * 100 + MINOR (e.g., version
-" 3.13.3 would result in 313).
+" Get CMake version. The version is stored as a dictionary containing the keys
+" major, minor and patch (e.g., version 3.13.3 would result in the dict
+" {'major': 3, 'minor': 13, 'patch': 3, 'string': '3.13.3'})
 let s:command = [g:cmake_command, '--version']
 call s:system.JobRun(
         \ s:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false)

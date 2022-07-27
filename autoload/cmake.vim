@@ -162,3 +162,34 @@ function! cmake#Close() abort
     call s:logger.LogDebug('API invoked: cmake#Close()')
     call s:terminal.Close()
 endfunction
+
+" API function for third-party plugins to query information
+"
+" Returns:
+"     Dictionary
+"         status : String
+"             current cmake status (e.g. Building...)
+"         config : String
+"             name of the set cmake configuration
+"         cmake_version : Dictionary
+"             major : Number
+"                 cmake major version
+"             minor : Number
+"                 cmake minor version
+"             patch : Number
+"                 cmake patch version
+"             string : String
+"                 cmake version in string representation
+"         project_dir : String
+"             absolute path to detected project root (see g:cmake_root_markers)
+"         build_dir : String
+"             absolute path to the build directory for the set configuration
+function! cmake#GetInfo() abort
+    let l:info = {}
+    let l:info.status = s:terminal.GetCmdInfo()
+    let l:info.config = s:buildsys.GetCurrentConfig()
+    let l:info.cmake_version = s:buildsys.GetCMakeVersion()
+    let l:info.project_dir = s:buildsys.GetSourceDir()
+    let l:info.build_dir = s:buildsys.GetPathToCurrentConfig()
+    return l:info
+endfunction

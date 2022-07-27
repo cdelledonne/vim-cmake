@@ -22,8 +22,9 @@ CONTENTS						*cmake-contents*
 5. Events ............................................. |cmake-events|
 6. Quickfix list ...................................... |cmake-quickfix|
 7. Configuration ...................................... |cmake-configuration|
-8. Contributing ....................................... |cmake-contributing|
-9. License ............................................ |cmake-license|
+8. Public API ......................................... |cmake-api|
+9. Contributing ....................................... |cmake-contributing|
+10. License ........................................... |cmake-license|
 
 ==============================================================================
 INTRO							*cmake-intro*
@@ -365,6 +366,55 @@ g:cmake_root_markers (default: `['.git', '.svn']`)
 g:cmake_log_file (default: `''`)
 			Path to a file where to store the log of Vim-CMake.
 			An empty value disables logging.
+
+g:cmake_statusline (default: `0`)
+			Whether to override the |statusline| option for the
+			CMake console window.
+
+==============================================================================
+Public API						*cmake-api*
+
+Vim-CMake provides a public API to query information about the CMake
+environment as well as plugin state. This is intended to be used for
+statusline configuration and third-party plugin integration.
+The public API consists of a single function `cmake#GetInfo()` which returns a
+dictionary of the following structure:
+	status : String
+		current cmake status (e.g. Building...)
+	config : String
+		name of the set cmake configuration
+	cmake_version : Dictionary
+		major : Number
+			cmake major version
+		minor : Number
+			cmake minor version
+		patch : Number
+			cmake patch version
+		string : String
+			cmake version in string representation
+	project_dir : String
+		absolute path to the vcs root
+	build_dir : String
+		absolute path to the build directory for the set configuration
+
+Example return value:
+	{
+	\ 'status': 'Building...',
+	\ 'config': 'Debug',
+	\ 'cmake_version': {
+	  \ 'major': 3,
+	  \ 'minor': 23,
+	  \ 'patch': 2,
+	  \ 'string': '3.23.2',
+	  \},
+	\ 'project_dir': '/home/<user>/<project>',
+	\ 'build_dir': '/home/<user>/<project>/Debug',
+	\}
+
+Example usage:
+To show the CMake version in your statusline you could do:
+	set statusline=%{cmake#GetInfo().cmake_version.string}
+or integrate this as a component in your preferred statusline plugin.
 
 ==============================================================================
 CONTRIBUTING						*cmake-contributing*
