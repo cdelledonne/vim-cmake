@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.9.0 &ndash; 2022-07-27
+
 ### Added
 * A new configuration option `g:cmake_statusline` controls whether Vim-CMake
   will override the |statusline| option for the CMake console window.
