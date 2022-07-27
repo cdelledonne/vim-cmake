@@ -7,23 +7,23 @@ Version:	0.8.0
 ==============================================================================
 CONTENTS						*cmake-contents*
 
-1. Intro .............................................. |cmake-intro|
-2. Usage .............................................. |cmake-usage|
-3. Commands ........................................... |cmake-commands|
-   3.1 Generating a project build system .............. |cmake-generate|
-   3.2 Building and installing a project .............. |cmake-build|
-   3.3 Running CMake-generated tests with CTest ....... |cmake-test|
-   3.4 Switch between build configurations............. |cmake-switch|
-   3.5 Opening and closing the CMake console .......... |cmake-console|
-   3.6 Stopping the running command ................... |cmake-stop|
-4. Mappings ........................................... |cmake-mappings|
-   4.1 Global <Plug> mappings ......................... |cmake-plug-mappings|
-   4.2 CMake console window key mappings .............. |cmake-key-mappings|
-5. Events ............................................. |cmake-events|
-6. Quickfix list ...................................... |cmake-quickfix|
-7. Configuration ...................................... |cmake-configuration|
-8. Public API ......................................... |cmake-api|
-9. Contributing ....................................... |cmake-contributing|
+ 1. Intro ............................................. |cmake-intro|
+ 2. Usage ............................................. |cmake-usage|
+ 3. Commands .......................................... |cmake-commands|
+    3.1 Generating a project build system ............. |cmake-generate|
+    3.2 Building and installing a project ............. |cmake-build|
+    3.3 Running CMake-generated tests with CTest ...... |cmake-test|
+    3.4 Switch between build configurations............ |cmake-switch|
+    3.5 Opening and closing the CMake console ......... |cmake-console|
+    3.6 Stopping the running command .................. |cmake-stop|
+ 4. Mappings .......................................... |cmake-mappings|
+    4.1 Global <Plug> mappings ........................ |cmake-plug-mappings|
+    4.2 CMake console window key mappings ............. |cmake-key-mappings|
+ 5. Events ............................................ |cmake-events|
+ 6. Quickfix list ..................................... |cmake-quickfix|
+ 7. Configuration ..................................... |cmake-configuration|
+ 8. Public API ........................................ |cmake-api|
+ 9. Contributing ...................................... |cmake-contributing|
 10. License ........................................... |cmake-license|
 
 ==============================================================================
@@ -71,18 +71,18 @@ Vim-CMake defines a small set of CMake-related commands.
 Generating a project build system~
 							*:CMakeGenerate*
 :CMakeGenerate[!] [config] [opts]
-			Generate project build system for a CMake project.  If
-			[!] is supplied, the existing build system is removed
-			before generating a new one.  [config] specifies the
-			build configuration to generate.  [opts] are passed
-			directly to CMake.
+		Generate project build system for a CMake project.  If [!] is
+		supplied, the existing build system is removed before
+		generating a new one.  [config] specifies the build
+		configuration to generate.  [opts] are passed to the CMake
+		command as arguments.
 
 By default, the build system is generated for the build configuration
 specified by `g:cmake_default_config` (see |cmake-configuration|).  For
-instance, if the default build configuration is "Debug", `cmake` will be
-passed `-D CMAKE_BUILD_TYPE=Debug`, and the build system will be generated in
+instance, if the default build configuration is "Debug", CMake will be passed
+`-D CMAKE_BUILD_TYPE=Debug`, and the build system will be generated in
 `Debug/`, relative to `g:cmake_build_dir_location` (see
-|cmake-configuration|).  That will result in the following `cmake` command:
+|cmake-configuration|).  That will result in the following CMake command:
 >
 	cmake -D CMAKE_BUILD_TYPE=Debug [...] \
 		-S <project_root> -B <build_dir_location>/Debug
@@ -91,17 +91,17 @@ To generate a build system for another configuration, e.g., "Release", run
 >
 	:CMakeGenerate Release [...]
 <
-which will result in the following `cmake` command:
+which will result in the following CMake command:
 >
 	cmake -D CMAKE_BUILD_TYPE=Release [...] \
 		-S <project_root> -B <build_dir_location>/Release
 <
 To generate a build system for a configuration, while passing a different
-`CMAKE_BUILD_TYPE` to `cmake`, run
+`CMAKE_BUILD_TYPE` to CMake, run
 >
 	:CMakeGenerate SomeConfigName -D CMAKE_BUILD_TYPE=Release [...]
 <
-which will result in the following `cmake` command:
+which will result in the following CMake command:
 >
 	cmake -D CMAKE_BUILD_TYPE=Release [...] \
 		-S <project_root> -B <build_dir_location>/SomeConfigName
@@ -109,23 +109,23 @@ which will result in the following `cmake` command:
 Use |:CMakeSwitch| to switch between build configurations.
 
 							*:CMakeClean*
-:CMakeClean		Remove project build system relative to the current
-			build configuration.
+:CMakeClean
+		Remove project build system relative to the current build
+		configuration.
 
 ------------------------------------------------------------------------------
 							*cmake-build*
 Building and installing a project~
 							*:CMakeBuild*
 :CMakeBuild[!] [target]... [opts] [-- [nativeopts]]
-			Build a project using the generated build system
-			from the current build configuration, and populate a
-			quickfix list (see |cmake-quickfix|).  If [!] is
-			supplied, the existing build files are cleaned (using
-			CMake's `--clean-first` option) before building the
-			project.  [target] is the target to build instead of
-			the default (multiple targets can be passed, separated
-			by spaces).  [opts] are passed directly to CMake.
-			[nativeopts] are passed directly to the native tool.
+		Build a project using the generated build system from the
+		current build configuration, and populate a quickfix list (see
+		|cmake-quickfix|).  If [!] is supplied, the existing build
+		files are cleaned (using CMake's `--clean-first` option)
+		before building the project.  [target] is the target to build
+		instead of the default (multiple targets can be passed,
+		separated by spaces).  [opts] are passed to the CMake command
+		as arguments. [nativeopts] are passed to the native tool.
 
 For instance, to build the target `mytarget` using a maximum of 4 processes
 and passing the `VERBOSE=1` option to the native tool, run
@@ -138,19 +138,19 @@ Vim-CMake provides autocompletion for build targets.  Just press <TAB> after
 	:CMakeBuild <TAB>
 <
 							*:CMakeInstall*
-:CMakeInstall		Install a project from the current build
-			configuration.
+:CMakeInstall
+		Install a project from the current build configuration.
 
 ------------------------------------------------------------------------------
 							*cmake-test*
 Running CMake-generated tests with CTest~
 							*:CMakeTest*
 :CMakeTest [testname]... [opts]
-			Run all CMake-generated tests from the current build
-			configuration using CTest.  [testname] can be used to
-			specify a single test instead of all (multiple test
-			names can be passed, separated by spaces). [opts] are
-			passed directly to CTest.
+		Run all CMake-generated tests from the current build
+		configuration using CTest.  [testname] can be used to specify
+		a single test instead of all (multiple test names can be
+		passed, separated by spaces). [opts] are passed to the CTest
+		command as arguments.
 
 For instance, to run the test `MyUnitTest` in verbose mode, run
 >
@@ -165,10 +165,11 @@ Vim-CMake provides autocompletion for test names.  Just press <TAB> after
 							*cmake-switch*
 Switching between build configurations~
 							*:CMakeSwitch*
-:CMakeSwitch {config}   Switch to build configuration {config}.  The build
-			configuration must exist, that is, there has to be a
-			project build system (for instance generated with
-			|:CMakeGenerate|) in the directory {config}.
+:CMakeSwitch {config}
+		Switch to build configuration {config}.  The build
+		configuration must exist, that is, there has to be a project
+		build system (for instance generated with |:CMakeGenerate|) in
+		the directory {config}.
 
 For instance, to switch to an existing configuration called "Release", run
 >
@@ -185,18 +186,22 @@ Vim-CMake provides autocompletion for existing build configurations.  Press
 							*cmake-console*
 Opening and closing the CMake console~
 							*:CMakeOpen*
-:CMakeOpen		Open the CMake console window.
+:CMakeOpen
+		Open the CMake console window.
 
 							*:CMakeClose*
-:CMakeClose		Close the CMake console window.
+:CMakeClose
+		Close the CMake console window.
 
 ------------------------------------------------------------------------------
 							*cmake-stop*
 Stopping the running command~
 							*:CMakeStop*
-:CMakeStop		Stop the command that is currently running in the
-			Vim-CMake console.  Stopping a command does not
-			trigger the associated events (see |cmake-events|).
+
+:CMakeStop
+		Stop the command that is currently running in the Vim-CMake
+		console.  Stopping a command does not trigger the associated
+		events (see |cmake-events|).
 
 ==============================================================================
 MAPPINGS						*cmake-mappings*
@@ -295,126 +300,133 @@ Vim-CMake has sensible defaults, but aims to be configurable.  A list of
 configuration options, with default values, follows.
 
 g:cmake_command (default: `'cmake'`)
-			Name (or full path) of the CMake executable.
+		Name (or full path) of the CMake executable.
 
 g:cmake_test_command (default: `'ctest'`)
-			Name (or full path) of the CTest executable.
+		Name (or full path) of the CTest executable.
 
 g:cmake_default_config (default: `'Debug'`)
-			Default build configuration on start-up.
+		Default build configuration on start-up.
 
 g:cmake_build_dir_location (default: `'.'`)
-			Location of the build directory, relative to the
-			project root.  Each build configuration creates a
-			build directory at this location.
+		Location of the build directory, relative to the project root.
+		Each build configuration creates a build directory at this
+		location.
 
 g:cmake_generate_options (default: `[]`)
-			List of options to pass to CMake by default when
-			running |:CMakeGenerate|.
+		List of options to pass to CMake by default when running
+		|:CMakeGenerate|.
 
 g:cmake_build_options (default: `[]`)
-			List of options to pass to CMake by default when
-			running |:CMakeBuild|.
+		List of options to pass to CMake by default when running
+		|:CMakeBuild|.
 
 g:cmake_native_build_options (default: `[]`)
-			List of options to pass to the native tool by default
-			when running |:CMakeBuild|.
+		List of options to pass to the native tool by default when
+		running |:CMakeBuild|.
 
 g:cmake_test_options (default: `[]`)
-			List of options to pass to CTest by default when
-			running |:CMakeTest|.
+		List of options to pass to CTest by default when running
+		|:CMakeTest|.
 
 g:cmake_console_size (default: `15`)
-			Size of the CMake console window.
+		Size of the CMake console window.
 
 g:cmake_console_position (default: `'botright'`)
-			Command modifier to use when opening the CMake console
-			window (see |:botright|).
+		Command modifier to use when opening the CMake console window
+		(see |:botright|).
 
 g:cmake_console_echo_cmd (default: `1`)
-			Echo running command in the Vim-CMake console, before
-			showing the output for the command itself.
+		Echo running command in the Vim-CMake console, before showing
+		the output for the command itself.
 
 g:cmake_jump (default: `0`)
-			Whether to jump to the CMake console window when
-			running a `:CMake` command.
+		Whether to jump to the CMake console window when running a
+		`:CMake` command.
 
 g:cmake_jump_on_completion (default: `0`)
-			Whether to jump to the CMake console window when a
-			`:CMake` command completes.
+		Whether to jump to the CMake console window when a `:CMake`
+		command completes.
 
 g:cmake_jump_on_error (default: `1`)
-			Whether to jump to the CMake console window when a
-			`:CMake` command returns an error.
+		Whether to jump to the CMake console window when a `:CMake`
+		command returns an error.
 
 g:cmake_link_compile_commands (default: `0`)
-			Whether to create a symlink in the CMake source
-			directory to the `compile_commands.json` file.  If
-			this is enabled, the CMake configuration options
-			`CMAKE_EXPORT_COMPILE_COMMANDS` will be set to `ON`
-			(unless explicitly set to something else in the
-			command-line arguments to `:CMakeGenerate`).  NOTE:
-			under MS-Windows, creating symlinks only work if the
-			"Developer mode" is enabled, or if running the console
-			as an administrator.
+		Whether to create a symlink in the CMake source directory to
+		the `compile_commands.json` file.  If this is enabled, the
+		CMake configuration options `CMAKE_EXPORT_COMPILE_COMMANDS`
+		will be set to `ON` (unless explicitly set to something else
+		in the command-line arguments to `:CMakeGenerate`).  NOTE:
+		under MS-Windows, creating symlinks only work if the
+		"Developer mode" is enabled, or if running the console as an
+		administrator.
 
 g:cmake_root_markers (default: `['.git', '.svn']`)
-			List of file/directory names used to locate the
-			project root.  When Vim-CMake is loaded, it looks for
-			the project root starting from the CWD.
+		List of file/directory names used to locate the project root.
+		When Vim-CMake is loaded, it looks for the project root
+		starting from the CWD.
 
 g:cmake_log_file (default: `''`)
-			Path to a file where to store the log of Vim-CMake.
-			An empty value disables logging.
+		Path to a file where to store the log of Vim-CMake. An empty
+		value disables logging.
 
 g:cmake_statusline (default: `0`)
-			Whether to override the |statusline| option for the
-			CMake console window.
+		Whether to override the |statusline| option for the CMake
+		console window.
 
 ==============================================================================
-Public API						*cmake-api*
+PUBLIC API						*cmake-api*
 
-Vim-CMake provides a public API to query information about the CMake
-environment as well as plugin state. This is intended to be used for
-statusline configuration and third-party plugin integration.
-The public API consists of a single function `cmake#GetInfo()` which returns a
-dictionary of the following structure:
-	status : String
-		current cmake status (e.g. Building...)
-	config : String
-		name of the set cmake configuration
-	cmake_version : Dictionary
-		major : Number
-			cmake major version
-		minor : Number
-			cmake minor version
-		patch : Number
-			cmake patch version
-		string : String
-			cmake version in string representation
-	project_dir : String
-		absolute path to the vcs root
-	build_dir : String
-		absolute path to the build directory for the set configuration
+Vim-CMake exposes a public API.
 
-Example return value:
-	{
-	\ 'status': 'Building...',
-	\ 'config': 'Debug',
-	\ 'cmake_version': {
-	  \ 'major': 3,
-	  \ 'minor': 23,
-	  \ 'patch': 2,
-	  \ 'string': '3.23.2',
-	  \},
-	\ 'project_dir': '/home/<user>/<project>',
-	\ 'build_dir': '/home/<user>/<project>/Debug',
-	\}
+							*cmake-api-getinfo*
+cmake#GetInfo()
+		Query information about the CMake environment as well as
+		plugin state. This is intended to be used for statusline
+		configuration and third-party plugin integration.
 
-Example usage:
-To show the CMake version in your statusline you could do:
-	set statusline=%{cmake#GetInfo().cmake_version.string}
-or integrate this as a component in your preferred statusline plugin.
+                Return: ~
+			Dictionary of the following structure:
+			status : String
+				current CMake status (e.g. Building...)
+			config : String
+				name of the set CMake configuration
+			cmake_version : Dictionary
+				major : Number
+					CMake major version
+				minor : Number
+					CMake minor version
+				patch : Number
+					CMake patch version
+				string : String
+					CMake version in string representation
+			project_dir : String
+				absolute path to the vcs root
+			build_dir : String
+				absolute path to the build directory for the
+				set configuration
+
+		Example return value: >
+			{
+			    \ 'status': 'Building...',
+			    \ 'config': 'Debug',
+			    \ 'cmake_version': {
+			        \ 'major': 3,
+			        \ 'minor': 23,
+			        \ 'patch': 2,
+			        \ 'string': '3.23.2',
+			    \ },
+			    \ 'project_dir': '/home/<user>/<project>',
+			    \ 'build_dir': '/home/<user>/<project>/Debug',
+			\ }
+<
+		Example usage to show the CMake version in your statusline:
+>
+			set statusline=%{cmake#GetInfo().cmake_version.string}
+<
+		You can integrate the returned information as a component in
+		your preferred statusline plugin.
 
 ==============================================================================
 CONTRIBUTING						*cmake-contributing*
