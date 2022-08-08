@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* Fixed console output filtering to restore quickfix functionality
+
 <!--=========================================================================-->
 
 ## 0.9.0 &ndash; 2022-07-27
