@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.10.0 &ndash; 2022-08-09
+
 ### Added
 * Vim-CMake now uses a JSON data file to store plugin and per-project state.
 * A new configuration option `g:cmake_restore_state` controls whether Vim-CMake
