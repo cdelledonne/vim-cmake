@@ -194,10 +194,13 @@ function! s:ProcessBuildConfig(opts) abort
         call s:SetCurrentConfig(l:config)
         call remove(a:opts, 0)
     endif
-    " If the list of command-line options does not contain an explicit value for
-    " the 'CMAKE_BUILD_TYPE' variable, add it.
-    if s:FindVarInOpts(a:opts, 'CMAKE_BUILD_TYPE') ==# ''
-        call add(a:opts, '-D CMAKE_BUILD_TYPE=' . l:config)
+    " If the build configuration does not exist yet, and the list of
+    " command-line options does not contain an explicit value for the
+    " 'CMAKE_BUILD_TYPE' variable, add it.
+    if match(s:buildsys.configs, '\m\C' . l:config) == -1
+        if s:FindVarInOpts(a:opts, 'CMAKE_BUILD_TYPE') ==# ''
+            call add(a:opts, '-D CMAKE_BUILD_TYPE=' . l:config)
+        endif
     endif
 endfunction
 
