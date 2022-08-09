@@ -378,6 +378,10 @@ g:cmake_statusline (default: `0`)
 		Whether to override the |statusline| option for the CMake
 		console window.
 
+g:cmake_restore_state (default: `1`)
+		Whether to restore project state (for instance, build
+		configuration) upon starting the editor.
+
 ==============================================================================
 PUBLIC API						*cmake-api*
 

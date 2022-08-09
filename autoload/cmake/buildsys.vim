@@ -15,6 +15,7 @@ let s:buildsys.tests = []
 let s:refresh_tests_output = []
 
 let s:logger = cmake#logger#Get()
+let s:state = cmake#state#Get()
 let s:statusline = cmake#statusline#Get()
 let s:system = cmake#system#Get()
 let s:terminal = cmake#terminal#Get()
@@ -371,6 +372,9 @@ function! s:SetCurrentConfig(config) abort
             \ s:buildsys.current_config,
             \ s:buildsys.path_to_current_config
             \ )
+    " Save project's current config and build dir.
+    let l:state = {'config': a:config, 'build_dir': l:path}
+    call s:state.WriteProjectState(s:buildsys.project_root, l:state)
 endfunction
 
 " Link compile commands from source directory to build directory.
@@ -569,5 +573,13 @@ let s:buildsys.cmake_version = s:GetCMakeVersion()
 let s:buildsys.project_root = s:system.Path([s:FindProjectRoot()], v:false)
 call s:logger.LogInfo('Project root: %s', s:buildsys.project_root)
 
-call s:SetCurrentConfig(g:cmake_default_config)
+if g:cmake_restore_state
+    call s:SetCurrentConfig(get(
+            \ s:state.ReadProjectState(s:buildsys.project_root),
+            \ 'config',
+            \ g:cmake_default_config))
+else
+    call s:SetCurrentConfig(g:cmake_default_config)
+endif
+
 call s:RefreshConfigs()
