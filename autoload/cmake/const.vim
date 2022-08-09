@@ -43,6 +43,7 @@ let s:const.config_vars = {
         \ 'cmake_root_markers'          : ['.git', '.svn'],
         \ 'cmake_log_file'              : '',
         \ 'cmake_statusline'            : 0,
+        \ 'cmake_restore_state'         : 1,
         \ }
 
 " Get const 'object'.

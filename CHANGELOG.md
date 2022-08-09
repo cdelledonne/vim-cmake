@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* Vim-CMake now uses a JSON data file to store plugin and per-project state.
+* A new configuration option `g:cmake_restore_state` controls whether Vim-CMake
+  should restore project state (for instance, build configuration) upon starting
+  the editor.
+
 ### Changed
 * `-DCMAKE_BUILD_TYPE` flag is only added for new build configurations, not for
   existing ones.
