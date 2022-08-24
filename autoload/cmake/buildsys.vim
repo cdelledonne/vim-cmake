@@ -14,6 +14,7 @@ let s:buildsys.tests = []
 
 let s:refresh_tests_output = []
 
+let s:fileapi = cmake#fileapi#Get()
 let s:logger = cmake#logger#Get()
 let s:state = cmake#state#Get()
 let s:statusline = cmake#statusline#Get()
@@ -450,6 +451,7 @@ function! s:buildsys.Generate(clean, argstring) abort
     if a:clean
         call l:self.Clean()
     endif
+    call s:fileapi.UpdateQueries(l:optdict.build_dir)
     " Run generate command.
     let l:run_options = {}
     let l:run_options.callbacks_succ = [
@@ -461,6 +463,7 @@ function! s:buildsys.Generate(clean, argstring) abort
     let l:run_options.callbacks_err = [function('s:RefreshConfigs')]
     let l:run_options.autocmds_pre = ['CMakeGeneratePre']
     call s:terminal.Run(l:command, 'GENERATE', l:run_options)
+    call s:fileapi.Reparse(l:optdict.build_dir)
 endfunction
 
 " Clean buildsystem.
