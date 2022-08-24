@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* Calls to `json_decode()` are always passed a string now, to comply with Vim.
+
 <!--=========================================================================-->
 
 ## 0.10.0 &ndash; 2022-08-09
