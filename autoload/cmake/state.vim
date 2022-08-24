@@ -21,7 +21,8 @@ function! s:state.ReadGlobalState() abort
     " Try to read JSON state file, otherwise return empty dict.
     let l:state = {}
     try
-        let l:state = json_decode(readfile(l:state_file))
+        let l:state_data = join(readfile(l:state_file))
+        let l:state = json_decode(l:state_data)
     catch
     endtry
     return l:state

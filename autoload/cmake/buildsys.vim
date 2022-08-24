@@ -337,7 +337,7 @@ function! s:RefreshTests() abort
     call s:system.JobRun(
             \ l:command, v:true, function('s:RefreshTestsCb'), v:null, v:false)
     " Make list of tests from JSON data.
-    let s:tests_data_json = json_decode(s:refresh_tests_output)
+    let s:tests_data_json = json_decode(join(s:refresh_tests_output))
     let s:tests_data_list = s:tests_data_json['tests']
     for s:test in s:tests_data_list
         call add(s:buildsys.tests, s:test['name'])
