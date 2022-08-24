@@ -28,6 +28,11 @@ let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
 
+let s:pre_filter_list = []
+let s:post_filter_list = []
+let s:post_rep_pat = ''
+let s:post_rep_sub = ''
+
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
 let s:system = cmake#system#Get()
@@ -43,44 +48,56 @@ let s:ansi_esc = '\e'
 let s:ansi_csi = s:ansi_esc . '\['
 let s:ansi_st = '\(\%x07\|\\\)'
 
-let s:pre_echo_filter = ''
-let s:post_echo_filter = ''
-let s:post_echo_rep_pat = ''
-let s:post_echo_rep_sub = ''
-
 " In ConPTY (MS-Windows), remove ANSI sequences that mess up the terminal before
 " echoing data to the terminal:
-" - 'erase screen' sequences
-" - 'move cursor' sequences
+"
+" | Sequence                  | Description               |
+" |---------------------------|---------------------------|
+" | CSI <n> J                 | Erase display             |
+" | CSI <y> ; <x> H           | Move cursor               |
+"
 if has('win32')
-    let s:pre_echo_filter = s:pre_echo_filter
-            \ . '\(' . s:ansi_csi . '\d*J' . '\)'
-            \ . '\|\(' . s:ansi_csi . '\(\d\+;\)*\d*H' . '\)'
+    call add(s:pre_filter_list, s:ansi_csi . '\d*J')
+    call add(s:pre_filter_list, s:ansi_csi . '\(\d\+;\)*\d*H')
 endif
 
-" Remove ANSI sequences for coloring and style after echoing to the terminal.
-let s:post_echo_filter .= '\(' . s:ansi_csi . '\(\d\+;\)*\d*m' . '\)'
+" Remove ANSI sequences after echoing to the terminal:
+"
+" | Sequence                  | Description               |
+" |---------------------------|---------------------------|
+" | CSI <n> ; <o> m           | Text formatting           |
+" | CSI K                     | Erase from cursor to EOL  |
+"
+call add(s:post_filter_list, s:ansi_csi . '\(\d\+;\)*\d*m')
+call add(s:post_filter_list, s:ansi_csi . 'K')
 
 " Remove additional ANSI sequences returened by ConPTY (MS-Windows) after
 " echoing to the terminal:
-" - 'erase from cursor' sequences
-" - 'erase from cursor to EOL' sequences
-" - 'hide/show cursor' sequences
-" - 'console title' sequences
+"
+" | Sequence                  | Description               |
+" |---------------------------|---------------------------|
+" | CSI <n> X                 | Erase from cursor         |
+" | CSI ? 25 [h|l]            | Hide/show cursor          |
+" | ESC ] 0 ; <string> <ST>   | Console title             |
+"
 if has('win32')
-    let s:post_echo_filter = s:post_echo_filter
-            \ . '\|\(' . s:ansi_csi . '\d*X' . '\)'
-            \ . '\|\(' . s:ansi_csi . 'K' . '\)'
-            \ . '\|\(' . s:ansi_csi . '?25[hl]' . '\)'
-            \ . '\|\(' . s:ansi_esc . '\]' . '0;.*' . s:ansi_st . '\)'
+    call add(s:post_filter_list, s:ansi_csi . '\d*X')
+    call add(s:post_filter_list, s:ansi_csi . '?25[hl]')
+    call add(s:post_filter_list, s:ansi_esc . '\]' . '0;.*' . s:ansi_st)
 endif
 
 " Replace 'move forward' sequences with spaces in ConPTY (MS-Windows) after
-" echoing to the terminal
+" echoing to the terminal.
 if has('win32')
-    let s:post_echo_rep_pat .= s:ansi_csi . '\(\d*\)C'
-    let s:post_echo_rep_sub .= '\=repeat('' '', submatch(1))'
+    let s:post_rep_pat .= s:ansi_csi . '\(\d*\)C'
+    let s:post_rep_sub .= '\=repeat('' '', submatch(1))'
 endif
+
+" Transform filter lists into filter strings.
+call map(s:pre_filter_list, {_, val -> '\(' . val . '\)'})
+call map(s:post_filter_list, {_, val -> '\(' . val . '\)'})
+let s:pre_filter = join(s:pre_filter_list, '\|')
+let s:post_filter = join(s:post_filter_list, '\|')
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Private functions
@@ -306,9 +323,8 @@ endfunction
 "         list of stdout strings to filter (filtering is done in-place)
 "
 function! s:FilterStdoutPreEcho(data) abort
-    if s:pre_echo_filter !=# ''
-        call map(a:data, {_, val -> substitute(
-                \ val, s:pre_echo_filter, '', 'g')})
+    if s:pre_filter !=# ''
+        call map(a:data, {_, val -> substitute(val, s:pre_filter, '', 'g')})
     endif
 endfunction
 
@@ -320,13 +336,12 @@ endfunction
 "         list of stdout strings to filter (filtering is done in-place)
 "
 function! s:FilterStdoutPostEcho(data) abort
-    if s:post_echo_filter !=# ''
-        call map(a:data, {_, val -> substitute(
-                \ val, s:post_echo_filter, '', 'g')})
+    if s:post_filter !=# ''
+        call map(a:data, {_, val -> substitute(val, s:post_filter, '', 'g')})
     endif
-    if s:post_echo_rep_pat !=# ''
+    if s:post_rep_pat !=# ''
         call map(a:data, {_, val -> substitute(
-                \ val, s:post_echo_rep_pat, s:post_echo_rep_sub, 'g')})
+                \ val, s:post_rep_pat, s:post_rep_sub, 'g')})
     endif
 endfunction
 

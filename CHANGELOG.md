@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 ## Unreleased
 
 ### Changed
+* Fixed console output filtering to restore quickfix functionality.
 * Calls to `json_decode()` are always passed a string now, to comply with Vim.
 
 <!--=========================================================================-->
