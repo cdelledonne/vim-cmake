@@ -73,7 +73,8 @@ function! s:ParseIndex(build_dir) abort
     " Update response references
     let l:responses = {}
     for l:response in l:reply.responses
-        let l:responses[l:response.kind] = s:system.Path([a:build_dir] + s:reply_path + [l:response.jsonFile], v:true)
+        let l:path = [a:build_dir] + s:reply_path + [l:response.jsonFile]
+        let l:responses[l:response.kind] = s:system.Path(l:path, v:true)
     endfor
     let s:fileapi.version = l:reply.client.query.version
     let s:fileapi.index.responses = l:responses
@@ -88,9 +89,11 @@ endfunction
 "       1: Updated
 "
 function! s:ParseCodemodel(build_dir) abort
-    let l:codemodel_path = s:system.Path([a:build_dir] + s:reply_path + [s:fileapi.index.responses.codemodel], v:true)
+    let l:path_list = [a:build_dir] + s:reply_path + [s:fileapi.index.responses.codemodel]
+    let l:codemodel_path = s:system.Path(l:path_list, v:true)
     let l:codemodel = json_decode(join(readfile(s:fileapi.index.responses.codemodel)))
-    let s:fileapi.codemodel.targets = map(copy(l:codemodel.configurations[0].targets), {_, val -> val.name})
+    call map(l:codemodel.configurations[0].targets, {_, val -> val.name})
+    let s:fileapi.codemodel.targets = l:codemodel.configurations[0].targets
 endfunction
 
 " Check if CMake version is supported
@@ -110,7 +113,7 @@ endfunction
 "         path to current build configuration
 "
 function! s:fileapi.UpdateQueries(build_dir) abort
-    let l:query_path = s:system.Path(extend([a:build_dir], s:query_path), v:true)
+    let l:query_path = s:system.Path([a:build_dir] + s:query_path, v:true)
     call mkdir(fnamemodify(l:query_path, ':h'), 'p')
     call writefile([json_encode(s:query)], l:query_path)
 endf
