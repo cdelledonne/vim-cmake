@@ -4,11 +4,6 @@
 " ==============================================================================
 
 let s:fileapi = {}
-let s:fileapi.version = 0
-let s:fileapi.lastIndexName = 'unset' " won't compare true
-let s:fileapi.index = {}
-let s:fileapi.codemodel = {}
-let s:fileapi.codemodel.targets = []
 
 let s:client_name = 'vim-cmake'
 let s:api_path = ['.cmake', 'api', 'v1']
@@ -106,6 +101,16 @@ endfunction
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" Reset all fileapi state
+"
+function! s:fileapi.Reset() abort
+    let s:fileapi.version = 0
+    let s:fileapi.lastIndexName = 'unset' " won't compare true
+    let s:fileapi.index = {}
+    let s:fileapi.codemodel = {}
+    let s:fileapi.codemodel.targets = []
+endfunction
+
 " Set or update the query file
 "
 " Params:
@@ -141,3 +146,9 @@ endfunction
 function! cmake#fileapi#Get() abort
     return s:fileapi
 endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Initialization
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+call s:fileapi.Reset()

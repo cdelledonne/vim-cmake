@@ -359,6 +359,7 @@ function! s:SetCurrentConfig(config) abort
     let l:state.config = a:config
     let l:state.build_dir = l:path
     call s:state.WriteProjectState(s:buildsys.project_root, l:state)
+    call s:RefreshTargets()
 endfunction
 
 " Link compile commands from source directory to build directory.
@@ -454,6 +455,7 @@ function! s:buildsys.Clean() abort
         call delete(l:self.path_to_current_config, 'rf')
     endif
     call s:RefreshConfigs()
+    call s:fileapi.Reset()
 endfunction
 
 " Set current build configuration after checking that the configuration exists.
