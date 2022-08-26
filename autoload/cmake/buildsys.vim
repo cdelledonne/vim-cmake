@@ -9,7 +9,6 @@ let s:buildsys.project_root = ''
 let s:buildsys.current_config = ''
 let s:buildsys.path_to_current_config = ''
 let s:buildsys.configs = []
-let s:buildsys.targets = []
 let s:buildsys.tests = []
 
 let s:refresh_tests_output = []
@@ -293,30 +292,11 @@ function! s:RefreshConfigs() abort
     call s:logger.LogDebug('Build configs: %s', s:buildsys.configs)
 endfunction
 
-" Callback for RefreshTargets().
-"
-function! s:RefreshTargetsCb(...) abort
-    let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    for l:line in l:data
-        if match(l:line, '\m\C\.\.\.\s') == 0
-            let l:target = split(l:line)[1]
-            let s:buildsys.targets += [l:target]
-        endif
-    endfor
-endfunction
-
 " Refresh list of available CMake targets.
 "
 function! s:RefreshTargets() abort
-    let s:buildsys.targets = []
     let l:build_dir = s:buildsys.path_to_current_config
-    let l:command = [
-        \ g:cmake_command,
-        \ '--build', l:build_dir,
-        \ '--target', 'help'
-    \ ]
-    call s:system.JobRun(
-            \ l:command, v:true, function('s:RefreshTargetsCb'), v:null, v:false)
+    call s:fileapi.Reparse(l:build_dir)
 endfunction
 
 " Callback for RefreshTests().
@@ -515,10 +495,8 @@ endfunction
 "         list of available build targets
 "
 function! s:buildsys.GetTargets() abort
-    if len(l:self.targets) == 0
-        call s:RefreshTargets()
-    endif
-    return l:self.targets
+    call s:RefreshTargets()
+    return s:fileapi.GetTargets()
 endfunction
 
 " Get list of available test names.
