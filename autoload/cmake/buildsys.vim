@@ -34,6 +34,7 @@ function! s:GetCMakeVersionCb(...) abort
         let s:cmake_version.minor = str2nr(l:version_parts[1])
         let s:cmake_version.patch = str2nr(l:version_parts[2])
         let s:cmake_version.string = l:version_str
+        call s:fileapi.CheckCMakeVersion(s:cmake_version)
     endif
 endfunction
 

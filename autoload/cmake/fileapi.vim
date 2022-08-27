@@ -4,6 +4,7 @@
 " ==============================================================================
 
 let s:fileapi = {}
+let s:fileapi.cmake_version_supported = v:false
 
 let s:client_name = 'vim-cmake'
 let s:api_path = ['.cmake', 'api', 'v1']
@@ -91,15 +92,38 @@ function! s:ParseCodemodel(build_dir) abort
     let s:fileapi.codemodel.targets = l:codemodel.configurations[0].targets
 endfunction
 
-" Check if CMake version is supported
-"
-function! s:AssertCMakeVersion() abort
-    return v:true " FIXME: Actually check version
-endfunction
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Check if CMake version is supported
+"
+" Params:
+"     cmake_version : Dictionary
+"         major : Number
+"             cmake major version
+"         minor : Number
+"             cmake minor version
+"
+" Returns:
+"   Boolean
+"       Whether passed cmake version is supported by fileapi
+"
+function! s:fileapi.CheckCMakeVersion(cmake_version) abort
+    let l:cmake_version_comparable =
+                \ a:cmake_version.major * 100 + a:cmake_version.minor
+    let s:fileapi.cmake_version_supported = l:cmake_version_comparable >= 314
+    if !s:fileapi.cmake_version_supported
+        let l:warning =
+                    \ 'fileapi: CMake version not supported.'
+                    \ . ' Certain functionality will not work correctly.'
+                    \ . ' (Minimum supported is CMake 3.14)'
+        call s:logger.EchoWarn(l:warning)
+        call s:logger.LogWarn(l:warning)
+    endif
+
+    return s:fileapi.cmake_version_supported
+endfunction
 
 " Reset all fileapi state
 "
@@ -130,6 +154,10 @@ endf
 "         path to current build configuration
 "
 function! s:fileapi.Reparse(build_dir) abort
+    if !s:fileapi.cmake_version_supported
+        return
+    endif
+
     let l:ret = s:ParseIndex(a:build_dir)
     " We only have to reparse if the index file changed
     if l:ret == 1
