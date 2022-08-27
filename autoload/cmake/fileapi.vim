@@ -137,6 +137,12 @@ function! s:fileapi.Reparse(build_dir) abort
     endif
 endfunction
 
+" Get List of CMake target names
+"
+" Returns:
+"     List
+"         CMake target names
+"
 function! s:fileapi.GetTargets() abort
     return s:fileapi.codemodel.targets
 endfunction

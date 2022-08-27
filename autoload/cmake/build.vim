@@ -6,6 +6,7 @@
 let s:build = {}
 
 let s:buildsys = cmake#buildsys#Get()
+let s:fileapi = cmake#fileapi#Get()
 let s:logger = cmake#logger#Get()
 let s:quickfix = cmake#quickfix#Get()
 let s:system = cmake#system#Get()
@@ -69,6 +70,14 @@ function! s:GenerateQuickfix() abort
     call s:quickfix.Generate(s:terminal.GetOutput())
 endfunction
 
+" Refresh list of available CMake targets.
+"
+function! s:RefreshTargets() abort
+    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
+    call s:fileapi.Reparse(l:build_dir)
+endfunction
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -105,10 +114,11 @@ function! s:build.Build(clean, argstring) abort
         let l:command += g:cmake_native_build_options
         let l:command += l:options.native_build_options
     endif
+    call s:fileapi.UpdateQueries(l:build_dir)
     " Run build command.
     let l:run_options = {}
-    let l:run_options.callbacks_succ = [function('s:GenerateQuickfix')]
-    let l:run_options.callbacks_err = [function('s:GenerateQuickfix')]
+    let l:run_options.callbacks_succ = [function('s:GenerateQuickfix'), function('s:RefreshTargets')]
+    let l:run_options.callbacks_err = [function('s:GenerateQuickfix'), function('s:RefreshTargets')]
     let l:run_options.autocmds_pre = ['CMakeBuildPre']
     let l:run_options.autocmds_succ = ['CMakeBuildSucceeded']
     let l:run_options.autocmds_err = ['CMakeBuildFailed']
