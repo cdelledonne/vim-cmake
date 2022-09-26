@@ -172,7 +172,7 @@ function! s:system.JobWait(job_id) abort
     if has('nvim')
         call jobwait([a:job_id])
     else
-        while job_status(a:job_id) ==# 'run'
+        while ch_status(a:job_id) !=# 'closed'
             execute 'sleep 5m'
         endwhile
     endif
