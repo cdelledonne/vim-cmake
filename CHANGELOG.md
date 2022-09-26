@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.10.2 &ndash; 2022-09-26
+
 ### Changed
 * Use `ch_status()` instead of `job_status()` to wait for job in Vim, to make
   sure that all of the job's output has been captured.
