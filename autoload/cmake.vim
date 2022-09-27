@@ -19,6 +19,15 @@ for s:cvar in sort(keys(s:const.config_vars))
     call s:logger.LogInfo('> g:%s: %s', s:cvar, string(g:[s:cvar]))
 endfor
 
+" Initialize project variables and set up autocmd to reinitialize in case of a
+" directory change.
+call s:buildsys.Init()
+if g:cmake_reinit_on_dir_changed
+    augroup vimcmake
+        autocmd DirChanged * call s:buildsys.Init()
+    augroup END
+endif
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " API functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

@@ -275,7 +275,7 @@ function! s:CreateConsoleBuffer() abort
     endif
     " Avoid error E37 on :CMakeClose in some Vim instances.
     setlocal bufhidden=hide
-    augroup cmake
+    augroup vimcmake
         autocmd WinEnter <buffer> call s:OnEnterConsoleWindow()
     augroup END
     return bufnr()

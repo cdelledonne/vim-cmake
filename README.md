@@ -136,6 +136,7 @@ follows.
 | `g:cmake_log_file`              | `''`               |
 | `g:cmake_statusline`            | `0`                |
 | `g:cmake_restore_state`         | `1`                |
+| `g:cmake_reinit_on_dir_changed` | `1`                |
 
 <!--=========================================================================-->
 

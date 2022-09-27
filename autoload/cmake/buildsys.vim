@@ -399,6 +399,25 @@ endfunction
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" Initialize project variables.
+"
+function! s:buildsys.Init() abort
+    " Must be done before any other initial configuration.
+    let s:buildsys.project_root = s:system.Path([s:FindProjectRoot()], v:false)
+    call s:logger.LogInfo('Project root: %s', s:buildsys.project_root)
+
+    if g:cmake_restore_state
+        call s:SetCurrentConfig(get(
+                    \ s:state.ReadProjectState(s:buildsys.project_root),
+                    \ 'config',
+                    \ g:cmake_default_config))
+    else
+        call s:SetCurrentConfig(g:cmake_default_config)
+    endif
+
+    call s:RefreshConfigs()
+endfunction
+
 " Generate a buildsystem for the project using CMake.
 "
 " Params:
@@ -568,18 +587,3 @@ endfunction
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 let s:buildsys.cmake_version = s:GetCMakeVersion()
-
-" Must be done before any other initial configuration.
-let s:buildsys.project_root = s:system.Path([s:FindProjectRoot()], v:false)
-call s:logger.LogInfo('Project root: %s', s:buildsys.project_root)
-
-if g:cmake_restore_state
-    call s:SetCurrentConfig(get(
-            \ s:state.ReadProjectState(s:buildsys.project_root),
-            \ 'config',
-            \ g:cmake_default_config))
-else
-    call s:SetCurrentConfig(g:cmake_default_config)
-endif
-
-call s:RefreshConfigs()

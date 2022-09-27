@@ -382,6 +382,10 @@ g:cmake_restore_state (default: `1`)
 		Whether to restore project state (for instance, build
 		configuration) upon starting the editor.
 
+g:cmake_reinit_on_dir_changed (default: `1`)
+		Whether to reinitialize Vim-CMake when changing the current
+		directory (e.g. with `:cd`).
+
 ==============================================================================
 PUBLIC API						*cmake-api*
 
