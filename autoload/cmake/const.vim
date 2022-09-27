@@ -45,6 +45,7 @@ let s:const.config_vars = {
         \ 'cmake_log_file'              : '',
         \ 'cmake_statusline'            : 0,
         \ 'cmake_restore_state'         : 1,
+        \ 'cmake_reinit_on_dir_changed' : 1,
         \ }
 
 " Get const 'object'.
