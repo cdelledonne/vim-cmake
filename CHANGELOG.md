@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.10.3 &ndash; 2022-10-25
+
 ### Changed
 * By default, reinitialize Vim-CMake when changing the current directory, with
   an option to disable such behavior (`g:cmake_reinit_on_dir_changed`).
