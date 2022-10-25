@@ -44,6 +44,7 @@ let s:system = cmake#system#Get()
 " https://en.wikipedia.org/wiki/ANSI_escape_code
 " https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
 
+let s:cr = '\r'
 let s:ansi_esc = '\e'
 let s:ansi_csi = s:ansi_esc . '\['
 let s:ansi_st = '\(\%x07\|\\\)'
@@ -65,9 +66,11 @@ endif
 "
 " | Sequence                  | Description               |
 " |---------------------------|---------------------------|
+" | CR                        | Carriage return           |
 " | CSI <n> ; <o> m           | Text formatting           |
 " | CSI K                     | Erase from cursor to EOL  |
 "
+call add(s:post_filter_list, s:cr)
 call add(s:post_filter_list, s:ansi_csi . '\(\d\+;\)*\d*m')
 call add(s:post_filter_list, s:ansi_csi . 'K')
 
@@ -107,11 +110,15 @@ let s:post_filter = join(s:post_filter_list, '\|')
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    call s:FilterStdoutPreEcho(l:data)
-    call s:TermEcho(l:data)
-    call s:FilterStdoutPostEcho(l:data)
-    " Save console output to list.
-    let s:terminal.console_cmd_output += l:data
+    let l:all_lines = l:data.all_lines
+    let l:terminated_lines = l:data.terminated_lines
+    " Echo all lines to terminal.
+    call s:FilterStdoutPreEcho(l:all_lines)
+    call s:TermEcho(l:all_lines, v:false)
+    " Save terminated lines to list.
+    call s:FilterStdoutPreEcho(l:terminated_lines)
+    call s:FilterStdoutPostEcho(l:terminated_lines)
+    let s:terminal.console_cmd_output += l:terminated_lines
 endfunction
 
 " Callback for the end of the command running in the Vim-CMake console.
@@ -160,7 +167,7 @@ function! s:OnCompleteCommand(error, stopped) abort
     let s:terminal.console_cmd.autocmds = []
     let s:terminal.console_cmd.autocmds_err = []
     " Append empty line to terminal.
-    call s:TermEcho([''])
+    call s:TermEcho([''], v:true)
     " Exit terminal mode if inside the Vim-CMake console window (useful for
     " Vim). Otherwise the terminal mode is exited after WinEnter event.
     if win_getid() == bufwinid(s:terminal.console_buffer)
@@ -303,13 +310,18 @@ endfunction
 " Params:
 "     data : List
 "         list of strings to echo
+"     newline : Boolean
+"         whether to terminate with newline
 "
-function! s:TermEcho(data) abort
+function! s:TermEcho(data, newline) abort
     if len(a:data) == 0
         return
     endif
     if has('nvim')
-        call chansend(s:term_chan_id, join(a:data, "\r\n") . "\r\n")
+        if a:newline
+            call add(a:data, '')
+        endif
+        call chansend(s:term_chan_id, a:data)
     else
         call writefile(a:data, s:term_tty)
     endif
@@ -453,12 +465,12 @@ function! s:terminal.Run(command, tag, cbs, cbs_err, aus, aus_err) abort
     call l:self.Open(v:false)
     " Echo start message to terminal.
     if g:cmake_console_echo_cmd
-        call s:TermEcho([printf(
+        let l:msg = printf(
                 \ '%sRunning command: %s%s',
                 \ "\e[1;35m",
                 \ join(a:command),
                 \ "\e[0m")
-                \ ])
+        call s:TermEcho([l:msg . "\r"], v:true)
     endif
     " Run command.
     let s:terminal.cmd_info = l:self.console_cmd_info[a:tag]

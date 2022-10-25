@@ -113,7 +113,7 @@ endfunction
 "     stdout_cb : Funcref
 "         stdout callback (can be v:null), which should take a variable number
 "         of arguments, and from which s:system.ExtractStdoutCallbackData(a:000)
-"         can be called to retrieve the stdout string
+"         can be called to retrieve the stdout lines
 "     exit_cb : Funcref
 "         exit callback (can be v:null), which should take a variable number of
 "         arguments, and from which s:system.ExtractExitCallbackData(a:000) can
@@ -219,50 +219,57 @@ endfunction
 "         differ between Neovim and Vim
 "
 " Returns:
-"     List
-"         stdout data, as a list of strings
+"     Dictionary
+"         all_lines : List
+"             all stdout lines, useful for echoing directly to the terminal
+"         terminated_lines : List
+"             only terminated stdout lines, useful for post-processing
 "
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
     let l:channel = a:cb_arglist[0]
     let l:data = a:cb_arglist[1]
     if has('nvim')
+        let l:all_lines = l:data
+        let l:terminated_lines = []
+        " A list only containing an empty string signals the EOF.
         let l:eof = (l:data == [''])
-        " In Neovim, remove all the CR characters, which are returned when a
-        " pseudo terminal is allocated for the job.
-        call map(l:data, {_, val -> substitute(val, '\m\C\r', '', 'g')})
         " The first and the last lines may be partial lines, thus they need to
         " be joined on consecutive iterations. See :help channel-lines.
         " When this function is called for the first time for a particular
-        " channel, allocate an empty partial line for that channel.
+        " channel, allocate an empty partial line buffer for that channel.
         if !has_key(s:stdout_partial_line, l:channel)
             let s:stdout_partial_line[l:channel] = ''
         endif
-        " Append first entry of output list to partial line.
-        let s:stdout_partial_line[l:channel] .= remove(l:data, 0)
-        " If output list contains more entries, they are all complete lines
-        " except for the last entry. Return the saved partial line (which is now
-        " complete) and all the complete lines from the list, and save a new
-        " partial line (the last entry of the list).
-        if len(l:data) > 0
-            call insert(l:data, s:stdout_partial_line[l:channel])
-            let s:stdout_partial_line[l:channel] = remove(l:data, -1)
+        " Copy first entry of output data list to partial line buffer.
+        let s:stdout_partial_line[l:channel] .= l:data[0]
+        " If output data list contains more entries, the remaining entries are
+        " all complete lines, except for the last entry. The saved parial line
+        " (which is now complete), as well as all the other complete lines, can
+        " be added to the list of terminated lines. The last entry of the data
+        " list is saved to the partial line buffer.
+        if len(l:data) > 1
+            call add(l:terminated_lines, s:stdout_partial_line[l:channel])
+            call extend(l:terminated_lines, l:data[1:-2])
+            let s:stdout_partial_line[l:channel] = l:data[-1]
         endif
         " At the end of the stream of a channel, "flush" any leftover partial
-        " line and return it, and remove the dictionary entry for that channel.
-        " Leftover partial lines at the end of the stream occur when the job's
-        " command does not append a newline at the end of the stream.
+        " line, and remove the dictionary entry for that channel. Leftover
+        " partial lines at the end of the stream occur when the job's command
+        " does not append a newline at the end of the stream.
         if l:eof
             if len(s:stdout_partial_line[l:channel]) > 0
-                call insert(l:data, s:stdout_partial_line[l:channel])
+                call add(l:terminated_lines, s:stdout_partial_line[l:channel])
             endif
             call remove(s:stdout_partial_line, l:channel)
         endif
     else
-        " In Vim, l:data is a string, so we transform it to a list (consisting
-        " of a single element).
-        let l:data = [l:data]
+        " In Vim, data is a string, so we transform it to a list (consisting of
+        " a single element). Also, there aren't any such thing as unterminated
+        " lines in Vim.
+        let l:all_lines = [l:data]
+        let l:terminated_lines = [l:data]
     endif
-    return l:data
+    return {'all_lines': l:all_lines, 'terminated_lines': l:terminated_lines}
 endfunction
 
 " Extract data from a system's exit callback.
