@@ -43,6 +43,7 @@ let s:const.config_vars = {
         \ 'cmake_link_compile_commands' : 0,
         \ 'cmake_root_markers'          : ['.git', '.svn'],
         \ 'cmake_log_file'              : '',
+        \ 'cmake_log_level'             : 'INFO',
         \ 'cmake_statusline'            : 0,
         \ 'cmake_restore_state'         : 1,
         \ 'cmake_reinit_on_dir_changed' : 1,

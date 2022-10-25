@@ -374,6 +374,10 @@ g:cmake_log_file (default: `''`)
 		Path to a file where to store the log of Vim-CMake. An empty
 		value disables logging.
 
+g:cmake_log_level (default: `'INFO'`)
+		Level for logging. Valid values are: `'ERROR'`, `'WARN'`,
+		`'INFO'`, `'DEBUG'`, `'TRACE'`.
+
 g:cmake_statusline (default: `0`)
 		Whether to override the |statusline| option for the CMake
 		console window.
