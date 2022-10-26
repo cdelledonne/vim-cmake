@@ -405,6 +405,8 @@ cmake#GetInfo()
 
                 Return: ~
 			Dictionary of the following structure:
+			version : String
+				Vim-CMake version
 			status : String
 				current CMake status (e.g. Building...)
 			config : String

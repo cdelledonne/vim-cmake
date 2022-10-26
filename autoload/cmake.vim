@@ -176,6 +176,8 @@ endfunction
 "
 " Returns:
 "     Dictionary
+"         version : String
+"             Vim-CMake version
 "         status : String
 "             current CMake status (e.g. Building...)
 "         config : String
@@ -195,6 +197,7 @@ endfunction
 "             absolute path to the build directory for the set configuration
 function! cmake#GetInfo() abort
     let l:info = {}
+    let l:info.version = s:const.plugin_version
     let l:info.status = s:terminal.GetCmdInfo()
     let l:info.config = s:buildsys.GetCurrentConfig()
     let l:info.cmake_version = s:buildsys.GetCMakeVersion()

@@ -145,10 +145,10 @@ follows.
 
 ## Public API
 
-Vim-CMake provides a public API to query information about the CMake
-environment as well as plugin state. The public API consists of a single
-function `cmake#GetInfo()` which returns a dictionary containing the
-information. For extensive information run `:help cmake-api`.
+Vim-CMake provides a public API to query information about the CMake environment
+as well as plugin state. The public API consists of a single function
+`cmake#GetInfo()` which returns a dictionary containing the information. For
+extensive information run `:help cmake-api`.
 
 To show the CMake version in your statusline you could do:
 ```vim

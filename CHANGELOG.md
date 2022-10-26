@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* Dictionary returned by public API `cmake#GetInfo()` now includes a `version`
+  entry (Vim-CMake's version).
+
 <!--=========================================================================-->
 
 ## 0.11.1 &ndash; 2022-10-26
