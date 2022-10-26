@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+<!--=========================================================================-->
+
+## 0.11.1 &ndash; 2022-10-26
+
 ### Changed
 * Fixed dictionary accessing calls in `s:terminal.Run()`.
 

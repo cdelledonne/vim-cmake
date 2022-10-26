@@ -2,7 +2,7 @@
 *cmake* *vim-cmake*
 
 Maintainer:	Carlo Delle Donne <https://github.com/cdelledonne>
-Version:	0.11.0
+Version:	0.11.1
 
 ==============================================================================
 CONTENTS						*cmake-contents*
