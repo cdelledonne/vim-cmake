@@ -91,11 +91,13 @@ functionalities run `:help cmake`.  A quick overview follows.
 
 ### Events
 
-Vim-CMake provides a set of custom events to trigger further actions.
-Run `:help cmake` for an extensive documentation of all configuration options and examples
+Vim-CMake provides a set of custom events to trigger further actions. Run `:help
+cmake` for an extensive documentation of all configuration options and examples.
 
 | Event                      | Description                                |
 |:---------------------------|:-------------------------------------------|
+| `User CMakeGeneratePre`    | Triggered before running `:CMakeGenerate`  |
+| `User CMakeBuildPre`       | Triggered before running `:CMakeBuild`     |
 | `User CMakeBuildSucceeded` | Triggered after a successful `:CMakeBuild` |
 | `User CMakeBuildFailed`    | Triggered after a failed `:CMakeBuild`     |
 

@@ -137,20 +137,20 @@ function! s:system.JobRun(command, wait, options) abort
     let l:command = s:ManipulateCommand(a:command)
     let l:job_options = {}
     if has_key(a:options, 'pty')
-        let l:job_options['pty'] = a:options['pty']
+        let l:job_options.pty = a:options.pty
     endif
     if has('nvim')
         if has_key(a:options, 'stdout_cb')
-            let l:job_options['on_stdout'] = a:options['stdout_cb']
+            let l:job_options.on_stdout = a:options.stdout_cb
         endif
         if has_key(a:options, 'exit_cb')
-            let l:job_options['on_exit'] = a:options['exit_cb']
+            let l:job_options.on_exit = a:options.exit_cb
         endif
         if has_key(a:options, 'width')
-            let l:job_options['width'] = a:options['width']
+            let l:job_options.width = a:options.width
         endif
         if has_key(a:options, 'height')
-            let l:job_options['height'] = a:options['height']
+            let l:job_options.height = a:options.height
         endif
         " In some cases, the PTY in MS-Windows (ConPTY) uses ANSI escape
         " sequences to move the cursor position (ESC[<n>;<m>H) rather than
@@ -158,16 +158,16 @@ function! s:system.JobRun(command, wait, options) abort
         " large and the height to be as small as possible (but larger than 1)
         " seems to circumvent this problem. Hacky, but it seems to work.
         if has('win32')
-            let l:job_options['width'] = 10000
-            let l:job_options['height'] = 2
+            let l:job_options.width = 10000
+            let l:job_options.height = 2
         endif
         let l:job_id = jobstart(l:command, l:job_options)
     else
         if has_key(a:options, 'stdout_cb')
-            let l:job_options['out_cb'] = a:options['stdout_cb']
+            let l:job_options.out_cb = a:options.stdout_cb
         endif
         if has_key(a:options, 'exit_cb')
-            let l:job_options['exit_cb'] = a:options['exit_cb']
+            let l:job_options.exit_cb = a:options.exit_cb
         endif
         let l:job_id = job_start(l:command, l:job_options)
     endif
@@ -285,7 +285,10 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
         let l:all_lines = [l:data]
         let l:terminated_lines = [l:data]
     endif
-    return {'all_lines': l:all_lines, 'terminated_lines': l:terminated_lines}
+    let l:lines = {}
+    let l:lines.all_lines = l:all_lines
+    let l:lines.terminated_lines = l:terminated_lines
+    return l:lines
 endfunction
 
 " Extract data from a system's exit callback.

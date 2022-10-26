@@ -27,15 +27,14 @@ let s:terminal = cmake#terminal#Get()
 " Example:
 "     argstring = --parallel 4 TestOne TestTwo
 "     return = {
-"             \ 'cmake_test_options': ['--parallel', '4'],
-"             \ 'test_names': ['-R', 'TestOne|TestTwo'],
-"             \ }
+"         \ 'cmake_test_options': ['--parallel', '4'],
+"         \ 'test_names': ['-R', 'TestOne|TestTwo'],
+"     \ }
 "
 function! s:GetTestArgs(argstring) abort
-    let l:argdict = {
-            \ 'cmake_test_options': [],
-            \ 'test_names': [],
-            \ }
+    let l:argdict = {}
+    let l:argdict.cmake_test_options = []
+    let l:argdict.test_names = []
     let l:arglist = split(a:argstring)
     " Search arguments for those that match the name of a test.
     let l:test_names = []
@@ -49,10 +48,10 @@ function! s:GetTestArgs(argstring) abort
         endif
     endfor
     if len(l:test_names) > 0
-        let l:argdict['test_names'] = ['-R', join(l:test_names, '|')]
+        let l:argdict.test_names = ['-R', join(l:test_names, '|')]
     endif
     " Get command-line CMake arguments.
-    let l:argdict['cmake_test_options'] = l:arglist
+    let l:argdict.cmake_test_options = l:arglist
     return l:argdict
 endfunction
 
@@ -81,7 +80,7 @@ function! s:test.Test(argstring) abort
     let l:command += get(l:options, 'test_names', [])
     " Run test command.
     " echo l:command
-    call s:terminal.Run(l:command, 'test', [], [], [], [])
+    call s:terminal.Run(l:command, 'TEST', {})
 endfunction
 
 " Get test 'object'.

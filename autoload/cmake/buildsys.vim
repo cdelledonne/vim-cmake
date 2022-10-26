@@ -309,10 +309,11 @@ endfunction
 function! s:RefreshTargets() abort
     let s:buildsys.targets = []
     let l:build_dir = s:buildsys.path_to_current_config
-    let l:command = [g:cmake_command,
-            \ '--build', l:build_dir,
-            \ '--target', 'help'
-            \ ]
+    let l:command = [
+        \ g:cmake_command,
+        \ '--build', l:build_dir,
+        \ '--target', 'help'
+    \ ]
     call s:system.JobRun(
             \ l:command, v:true, {'stdout_cb': function('s:RefreshTargetsCb')})
 endfunction
@@ -330,17 +331,18 @@ function! s:RefreshTests() abort
     let s:refresh_tests_output = []
     let s:buildsys.tests = []
     let l:build_dir = s:buildsys.path_to_current_config
-    let l:command = [g:cmake_test_command,
-            \ '--show-only=json-v1',
-            \ '--test-dir', l:build_dir
-            \ ]
+    let l:command = [
+        \ g:cmake_test_command,
+        \ '--show-only=json-v1',
+        \ '--test-dir', l:build_dir
+    \ ]
     call s:system.JobRun(
             \ l:command, v:true, {'stdout_cb': function('s:RefreshTestsCb')})
     " Make list of tests from JSON data.
     let s:tests_data_json = json_decode(join(s:refresh_tests_output))
-    let s:tests_data_list = s:tests_data_json['tests']
+    let s:tests_data_list = s:tests_data_json.tests
     for s:test in s:tests_data_list
-        call add(s:buildsys.tests, s:test['name'])
+        call add(s:buildsys.tests, s:test.name)
     endfor
 endfunction
 
@@ -370,10 +372,11 @@ function! s:SetCurrentConfig(config) abort
     let s:buildsys.path_to_current_config = l:path
     call s:logger.LogInfo('Current config: %s (%s)',
             \ s:buildsys.current_config,
-            \ s:buildsys.path_to_current_config
-            \ )
+            \ s:buildsys.path_to_current_config)
     " Save project's current config and build dir.
-    let l:state = {'config': a:config, 'build_dir': l:path}
+    let l:state = {}
+    let l:state.config = a:config
+    let l:state.build_dir = l:path
     call s:state.WriteProjectState(s:buildsys.project_root, l:state)
 endfunction
 
@@ -408,9 +411,9 @@ function! s:buildsys.Init() abort
 
     if g:cmake_restore_state
         call s:SetCurrentConfig(get(
-                    \ s:state.ReadProjectState(s:buildsys.project_root),
-                    \ 'config',
-                    \ g:cmake_default_config))
+                \ s:state.ReadProjectState(s:buildsys.project_root),
+                \ 'config',
+                \ g:cmake_default_config))
     else
         call s:SetCurrentConfig(g:cmake_default_config)
     endif
@@ -435,7 +438,7 @@ function! s:buildsys.Generate(clean, argstring) abort
     call extend(l:command, g:cmake_generate_options)
     call extend(l:command, l:optdict.opts)
     let l:cmake_version_comparable =
-                \ l:self.cmake_version.major * 100 + l:self.cmake_version.minor
+            \ l:self.cmake_version.major * 100 + l:self.cmake_version.minor
     if l:cmake_version_comparable < 313
         call add(l:command, '-H' . l:optdict.source_dir)
         call add(l:command, '-B' . l:optdict.build_dir)
@@ -448,17 +451,16 @@ function! s:buildsys.Generate(clean, argstring) abort
         call l:self.Clean()
     endif
     " Run generate command.
-    call s:terminal.Run(
-            \ l:command, 'generate',
-            \ [
-                \ function('s:RefreshConfigs'),
-                \ function('s:RefreshTargets'),
-                \ function('s:RefreshTests'),
-                \ function('s:LinkCompileCommands')
-            \ ],
-            \ [function('s:RefreshConfigs')],
-            \ [], []
-            \ )
+    let l:run_options = {}
+    let l:run_options.callbacks_succ = [
+        \ function('s:RefreshConfigs'),
+        \ function('s:RefreshTargets'),
+        \ function('s:RefreshTests'),
+        \ function('s:LinkCompileCommands'),
+    \ ]
+    let l:run_options.callbacks_err = [function('s:RefreshConfigs')]
+    let l:run_options.autocmds_pre = ['CMakeGeneratePre']
+    call s:terminal.Run(l:command, 'GENERATE', l:run_options)
 endfunction
 
 " Clean buildsystem.

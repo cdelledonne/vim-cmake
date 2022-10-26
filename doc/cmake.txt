@@ -263,9 +263,11 @@ cq			Close the CMake console window.
 ==============================================================================
 EVENTS							*cmake-events*
 
-To customize the behaviour after a |:CMakeBuild| command has finished, Vim-CMake
-defines some user events.
+To customize the behaviour before and after running Vim-CMake commands,
+Vim-CMake defines some user events.
 
+`CMakeGeneratePre`	Triggered before running |:CMakeGenerate|
+`CMakeBuildPre`		Triggered before running |:CMakeBuild|
 `CMakeBuildFailed`	Triggered after a build has failed
 `CMakeBuildSucceeded`	Triggered after a build has succeeded
 
@@ -273,13 +275,13 @@ Example usage of `CMakeBuildFailed` to jump to the first error
 >
 	let g:cmake_jump_on_error = 0 " We do not want to focus the console
 	augroup vim-cmake-group
-	autocmd User CMakeBuildFailed :cfirst
+	autocmd User CMakeBuildFailed cfirst
 	augroup END
 <
 Example usage of `CMakeBuildSucceeded` to close the Vim-CMake console
 >
 	augroup vim-cmake-group
-	autocmd! User CMakeBuildSucceeded CMakeClose
+	autocmd User CMakeBuildSucceeded CMakeClose
 	augroup END
 <
 ==============================================================================
