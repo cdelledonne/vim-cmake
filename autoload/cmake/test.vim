@@ -81,7 +81,7 @@ function! s:test.Test(argstring) abort
     let l:command += get(l:options, 'test_names', [])
     " Run test command.
     " echo l:command
-    call s:terminal.Run(l:command, 'test', [], [], [], [])
+    call s:terminal.Run(l:command, 'test', {})
 endfunction
 
 " Get test 'object'.

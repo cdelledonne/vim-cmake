@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* Implemented user autocommands `CMakeGeneratePre` and `CMakeBuildPre` to allow
+  custom actions before running `:CMakeGenerate` `:CMakeBuild`.
+
 <!--=========================================================================-->
 
 ## 0.10.3 &ndash; 2022-10-25
