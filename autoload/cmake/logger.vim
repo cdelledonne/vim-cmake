@@ -11,7 +11,7 @@ let s:levels = {
     \ 'INFO': 3,
     \ 'DEBUG': 4,
     \ 'TRACE': 5,
-    \ }
+\ }
 
 function! s:Echo(fmt, arglist) abort
     " Trick to convert list (a:arglist) into arguments for printf().

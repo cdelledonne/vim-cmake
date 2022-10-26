@@ -28,17 +28,17 @@ let s:terminal = cmake#terminal#Get()
 " Example:
 "     argstring = --parallel 4 all -- VERBOSE=1
 "     return = {
-"             \ 'cmake_build_options': ['--parallel', '4'],
-"             \ 'target': ['--target', 'all'],
-"             \ 'native_build_options': ['VERBOSE=1']
-"             \ }
+"         \ 'cmake_build_options': ['--parallel', '4'],
+"         \ 'target': ['--target', 'all'],
+"         \ 'native_build_options': ['VERBOSE=1']
+"     \ }
 "
 function! s:GetBuildArgs(argstring) abort
     let l:argdict = {
-            \ 'cmake_build_options': [],
-            \ 'target': [],
-            \ 'native_build_options': [],
-            \ }
+        \ 'cmake_build_options': [],
+        \ 'target': [],
+        \ 'native_build_options': [],
+    \ }
     let l:arglist = split(a:argstring)
     " Search arguments for one that matches the name of a target.
     for l:t in s:buildsys.GetTargets()
