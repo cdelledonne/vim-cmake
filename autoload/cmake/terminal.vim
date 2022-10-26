@@ -137,7 +137,7 @@ endfunction
 " Exit terminal mode.
 "
 function! s:ExitTermMode() abort
-    if mode() ==# 't'
+    if mode() == 't'
         call feedkeys("\<C-\>\<C-N>", 'n')
     endif
 endfunction
