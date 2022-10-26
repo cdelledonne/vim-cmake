@@ -449,17 +449,17 @@ function! s:buildsys.Generate(clean, argstring) abort
         call l:self.Clean()
     endif
     " Run generate command.
-    call s:terminal.Run(
-            \ l:command, 'generate',
-            \ [
-                \ function('s:RefreshConfigs'),
-                \ function('s:RefreshTargets'),
-                \ function('s:RefreshTests'),
-                \ function('s:LinkCompileCommands')
-            \ ],
-            \ [function('s:RefreshConfigs')],
-            \ [], []
-            \ )
+    let l:run_options = {
+        \ 'callbacks_succ': [
+            \ function('s:RefreshConfigs'),
+            \ function('s:RefreshTargets'),
+            \ function('s:RefreshTests'),
+            \ function('s:LinkCompileCommands')
+        \ ],
+        \ 'callbacks_err': [function('s:RefreshConfigs')],
+        \ 'autocmds_pre': ['CMakeGeneratePre'],
+    \ }
+    call s:terminal.Run(l:command, 'generate', l:run_options)
 endfunction
 
 " Clean buildsystem.

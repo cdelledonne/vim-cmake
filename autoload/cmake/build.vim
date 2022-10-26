@@ -107,11 +107,14 @@ function! s:build.Build(clean, argstring) abort
         let l:command += l:options['native_build_options']
     endif
     " Run build command.
-    call s:terminal.Run(l:command, 'build',
-            \ [function('s:GenerateQuickfix')],
-            \ [function('s:GenerateQuickfix')],
-            \ ['CMakeBuildSucceeded'], ['CMakeBuildFailed']
-            \ )
+    let l:run_options = {
+        \ 'callbacks_succ': [function('s:GenerateQuickfix')],
+        \ 'callbacks_err': [function('s:GenerateQuickfix')],
+        \ 'autocmds_pre': ['CMakeBuildPre'],
+        \ 'autocmds_succ': ['CMakeBuildSucceeded'],
+        \ 'autocmds_err': ['CMakeBuildFailed'],
+    \ }
+    call s:terminal.Run(l:command, 'build', l:run_options)
 endfunction
 
 " Install a project.
@@ -121,7 +124,7 @@ function! s:build.Install() abort
     let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
     let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_command, '--install', l:build_dir]
-    call s:terminal.Run(l:command, 'install', [], [], [], [])
+    call s:terminal.Run(l:command, 'install', {})
 endfunction
 
 " Get build 'object'.
