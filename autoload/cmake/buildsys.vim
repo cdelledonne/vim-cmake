@@ -340,9 +340,9 @@ function! s:RefreshTests() abort
             \ l:command, v:true, function('s:RefreshTestsCb'), v:null, v:false)
     " Make list of tests from JSON data.
     let s:tests_data_json = json_decode(join(s:refresh_tests_output))
-    let s:tests_data_list = s:tests_data_json['tests']
+    let s:tests_data_list = s:tests_data_json.tests
     for s:test in s:tests_data_list
-        call add(s:buildsys.tests, s:test['name'])
+        call add(s:buildsys.tests, s:test.name)
     endfor
 endfunction
 
@@ -374,7 +374,9 @@ function! s:SetCurrentConfig(config) abort
             \ s:buildsys.current_config,
             \ s:buildsys.path_to_current_config)
     " Save project's current config and build dir.
-    let l:state = {'config': a:config, 'build_dir': l:path}
+    let l:state = {}
+    let l:state.config = a:config
+    let l:state.build_dir = l:path
     call s:state.WriteProjectState(s:buildsys.project_root, l:state)
 endfunction
 
@@ -449,17 +451,16 @@ function! s:buildsys.Generate(clean, argstring) abort
         call l:self.Clean()
     endif
     " Run generate command.
-    let l:run_options = {
-        \ 'callbacks_succ': [
-            \ function('s:RefreshConfigs'),
-            \ function('s:RefreshTargets'),
-            \ function('s:RefreshTests'),
-            \ function('s:LinkCompileCommands')
-        \ ],
-        \ 'callbacks_err': [function('s:RefreshConfigs')],
-        \ 'autocmds_pre': ['CMakeGeneratePre'],
-    \ }
-    call s:terminal.Run(l:command, 'generate', l:run_options)
+    let l:run_options = {}
+    let l:run_options.callbacks_succ = [
+        \ function('s:RefreshConfigs'),
+        \ function('s:RefreshTargets'),
+        \ function('s:RefreshTests'),
+        \ function('s:LinkCompileCommands'),
+    \ ]
+    let l:run_options.callbacks_err = [function('s:RefreshConfigs')]
+    let l:run_options.autocmds_pre = ['CMakeGeneratePre']
+    call s:terminal.Run(l:command, 'GENERATE', l:run_options)
 endfunction
 
 " Clean buildsystem.

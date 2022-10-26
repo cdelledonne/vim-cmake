@@ -5,13 +5,12 @@
 
 let s:logger = {}
 
-let s:levels = {
-    \ 'ERROR': 1,
-    \ 'WARN': 2,
-    \ 'INFO': 3,
-    \ 'DEBUG': 4,
-    \ 'TRACE': 5,
-\ }
+let s:levels = {}
+let s:levels.ERROR = 1
+let s:levels.WARN = 2
+let s:levels.INFO = 3
+let s:levels.DEBUG = 4
+let s:levels.TRACE = 5
 
 function! s:Echo(fmt, arglist) abort
     " Trick to convert list (a:arglist) into arguments for printf().

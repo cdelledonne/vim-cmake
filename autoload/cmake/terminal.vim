@@ -5,23 +5,23 @@
 
 let s:terminal = {}
 let s:terminal.console_buffer = -1
-let s:terminal.console_cmd_info = {
-    \ 'generate': 'Generating buildsystem...',
-    \ 'build': 'Building...',
-    \ 'install': 'Installing...',
-    \ 'test': 'Running tests...',
-    \ 'NONE': '',
-\ }
+
 let s:terminal.cmd_info = ''
-let s:terminal.console_cmd = {
-    \ 'id': -1,
-    \ 'running': v:false,
-    \ 'callbacks_succ': [],
-    \ 'callbacks_err': [],
-    \ 'autocmds_succ': [],
-    \ 'autocmds_err': [],
-\ }
+let s:terminal.console_cmd_info = {}
+let s:terminal.console_cmd_info.GENERATE = 'Generating buildsystem...'
+let s:terminal.console_cmd_info.BUILD = 'Building...'
+let s:terminal.console_cmd_info.INSTALL = 'Installing...'
+let s:terminal.console_cmd_info.TEST = 'Running tests...'
+let s:terminal.console_cmd_info.NONE = ''
+
 let s:terminal.console_cmd_output = []
+let s:terminal.console_cmd = {}
+let s:terminal.console_cmd.id = -1
+let s:terminal.console_cmd.running = v:false
+let s:terminal.console_cmd.callbacks_succ = []
+let s:terminal.console_cmd.callbacks_err = []
+let s:terminal.console_cmd.autocmds_succ = []
+let s:terminal.console_cmd.autocmds_err = []
 
 let s:term_tty = ''
 let s:term_id = -1
@@ -169,7 +169,7 @@ function! s:OnCompleteCommand(error, stopped) abort
         let s:exit_term_mode = 1
     endif
     " Update statusline.
-    let s:terminal.cmd_info = s:terminal.console_cmd_info['NONE']
+    let s:terminal.cmd_info = s:terminal.console_cmd_info.NONE
     call s:statusline.Refresh()
     " The rest of the tasks are not to be carried out if the running command was
     " stopped by the user.
@@ -292,10 +292,10 @@ function! s:TermSetup() abort
     if has('nvim')
         let s:term_chan_id = nvim_open_term(bufnr(''), l:options)
     else
-        let l:options['curwin'] = 1
+        let l:options.curwin = 1
         let l:term = term_start('NONE', l:options)
         let s:term_id = term_getjob(l:term)
-        let s:term_tty = job_info(s:term_id)['tty_in']
+        let s:term_tty = job_info(s:term_id).tty_in
         call term_setkill(l:term, 'term')
     endif
 endfunction
@@ -449,15 +449,15 @@ function! s:terminal.Run(command, tag, options) abort
         return
     endif
     let l:self.console_cmd.running = v:true
-    let l:self.console_cmd.callbacks_succ = a:options['callbacks_succ']
-    let l:self.console_cmd.callbacks_err = a:options['callbacks_err']
-    let l:self.console_cmd.autocmds_succ = a:options['autocmds_succ']
-    let l:self.console_cmd.autocmds_err = a:options['autocmds_err']
+    let l:self.console_cmd.callbacks_succ = a:options.callbacks_succ
+    let l:self.console_cmd.callbacks_err = a:options.callbacks_err
+    let l:self.console_cmd.autocmds_succ = a:options.autocmds_succ
+    let l:self.console_cmd.autocmds_err = a:options.autocmds_err
     let l:self.console_cmd_output = []
     " Open Vim-CMake console window.
     call l:self.Open(v:false)
     " Invoke pre-run autocommands.
-    for l:autocmd in a:options['autocmds_pre']
+    for l:autocmd in a:options.autocmds_pre
         call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
         if exists('#User' . '#' . l:autocmd)
             execute 'doautocmd <nomodeline> User ' . l:autocmd

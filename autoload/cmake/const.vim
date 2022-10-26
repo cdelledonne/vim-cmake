@@ -25,29 +25,28 @@ let s:const.plugin_news = {
     \ '0.10.0': ['Vim-CMake has a new config option `g:cmake_restore_state`'],
     \ }
 
-let s:const.config_vars = {
-    \ 'cmake_command'               : 'cmake',
-    \ 'cmake_test_command'          : 'ctest',
-    \ 'cmake_default_config'        : 'Debug',
-    \ 'cmake_build_dir_location'    : '.',
-    \ 'cmake_generate_options'      : [],
-    \ 'cmake_build_options'         : [],
-    \ 'cmake_native_build_options'  : [],
-    \ 'cmake_test_options'          : [],
-    \ 'cmake_console_size'          : 15,
-    \ 'cmake_console_position'      : 'botright',
-    \ 'cmake_console_echo_cmd'      : 1,
-    \ 'cmake_jump'                  : 0,
-    \ 'cmake_jump_on_completion'    : 0,
-    \ 'cmake_jump_on_error'         : 1,
-    \ 'cmake_link_compile_commands' : 0,
-    \ 'cmake_root_markers'          : ['.git', '.svn'],
-    \ 'cmake_log_file'              : '',
-    \ 'cmake_log_level'             : 'INFO',
-    \ 'cmake_statusline'            : 0,
-    \ 'cmake_restore_state'         : 1,
-    \ 'cmake_reinit_on_dir_changed' : 1,
-\ }
+let s:const.config_vars = {}
+let s:const.config_vars.cmake_command               = 'cmake'
+let s:const.config_vars.cmake_test_command          = 'ctest'
+let s:const.config_vars.cmake_default_config        = 'Debug'
+let s:const.config_vars.cmake_build_dir_location    = '.'
+let s:const.config_vars.cmake_generate_options      = []
+let s:const.config_vars.cmake_build_options         = []
+let s:const.config_vars.cmake_native_build_options  = []
+let s:const.config_vars.cmake_test_options          = []
+let s:const.config_vars.cmake_console_size          = 15
+let s:const.config_vars.cmake_console_position      = 'botright'
+let s:const.config_vars.cmake_console_echo_cmd      = 1
+let s:const.config_vars.cmake_jump                  = 0
+let s:const.config_vars.cmake_jump_on_completion    = 0
+let s:const.config_vars.cmake_jump_on_error         = 1
+let s:const.config_vars.cmake_link_compile_commands = 0
+let s:const.config_vars.cmake_root_markers          = ['.git', '.svn']
+let s:const.config_vars.cmake_log_file              = ''
+let s:const.config_vars.cmake_log_level             = 'INFO'
+let s:const.config_vars.cmake_statusline            = 0
+let s:const.config_vars.cmake_restore_state         = 1
+let s:const.config_vars.cmake_reinit_on_dir_changed = 1
 
 " Get const 'object'.
 "
