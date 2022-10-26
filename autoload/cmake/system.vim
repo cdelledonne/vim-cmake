@@ -110,31 +110,47 @@ endfunction
 "         the command to be run, as a list of command and arguments
 "     wait : Boolean
 "         whether to wait for completion
-"     stdout_cb : Funcref
-"         stdout callback (can be v:null), which should take a variable number
-"         of arguments, and from which s:system.ExtractStdoutCallbackData(a:000)
-"         can be called to retrieve the stdout lines
-"     exit_cb : Funcref
-"         exit callback (can be v:null), which should take a variable number of
-"         arguments, and from which s:system.ExtractExitCallbackData(a:000) can
-"         be called to retrieve the exit code
-"     pty : Boolean
-"         whether to allocate a pseudo terminal for the job
+"     options : Dictionary
+"         stdout_cb : Funcref
+"             stdout callback (can be left unset), which should take a variable
+"             number of arguments, and from which
+"             s:system.ExtractStdoutCallbackData(a:000) can be called to
+"             retrieve the stdout lines
+"         exit_cb : Funcref
+"             exit callback (can be left unset), which should take a variable
+"             number of arguments, and from which
+"             s:system.ExtractExitCallbackData(a:000) can be called to retrieve
+"             the exit code
+"         pty : Boolean
+"             whether to allocate a pseudo-terminal for the job (leaving this
+"             unset is the same as setting it to v:false)
+"         width : Number
+"             for PTY jobs, width of the pseudo-terminal (can be left unset)
+"         height : Number
+"             for PTY jobs, height of the pseudo-terminal (can be left unset)
 "
 " Return:
 "     Number
 "         job id
 "
-function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
-    let l:options = {}
-    let l:options['pty'] = a:pty
+function! s:system.JobRun(command, wait, options) abort
     let l:command = s:ManipulateCommand(a:command)
+    let l:job_options = {}
+    if has_key(a:options, 'pty')
+        let l:job_options['pty'] = a:options['pty']
+    endif
     if has('nvim')
-        if a:stdout_cb isnot# v:null
-            let l:options['on_stdout'] = a:stdout_cb
+        if has_key(a:options, 'stdout_cb')
+            let l:job_options['on_stdout'] = a:options['stdout_cb']
         endif
-        if a:exit_cb isnot# v:null
-            let l:options['on_exit'] = a:exit_cb
+        if has_key(a:options, 'exit_cb')
+            let l:job_options['on_exit'] = a:options['exit_cb']
+        endif
+        if has_key(a:options, 'width')
+            let l:job_options['width'] = a:options['width']
+        endif
+        if has_key(a:options, 'height')
+            let l:job_options['height'] = a:options['height']
         endif
         " In some cases, the PTY in MS-Windows (ConPTY) uses ANSI escape
         " sequences to move the cursor position (ESC[<n>;<m>H) rather than
@@ -142,18 +158,18 @@ function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
         " large and the height to be as small as possible (but larger than 1)
         " seems to circumvent this problem. Hacky, but it seems to work.
         if has('win32')
-            let l:options['width'] = 10000
-            let l:options['height'] = 2
+            let l:job_options['width'] = 10000
+            let l:job_options['height'] = 2
         endif
-        let l:job_id = jobstart(l:command, l:options)
+        let l:job_id = jobstart(l:command, l:job_options)
     else
-        if a:stdout_cb isnot# v:null
-            let l:options['out_cb'] = a:stdout_cb
+        if has_key(a:options, 'stdout_cb')
+            let l:job_options['out_cb'] = a:options['stdout_cb']
         endif
-        if a:exit_cb isnot# v:null
-            let l:options['exit_cb'] = a:exit_cb
+        if has_key(a:options, 'exit_cb')
+            let l:job_options['exit_cb'] = a:options['exit_cb']
         endif
-        let l:job_id = job_start(l:command, l:options)
+        let l:job_id = job_start(l:command, l:job_options)
     endif
     " Wait for job to complete, if requested.
     if a:wait

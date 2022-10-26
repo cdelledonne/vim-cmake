@@ -230,9 +230,13 @@ function! s:ConsoleCmdStart(command) abort
         call win_execute(l:console_win_id, 'call s:EnterTermMode()', '')
     endif
     " Run command.
-    let l:job_id = s:system.JobRun(
-            \ a:command, v:false, function('s:ConsoleCmdStdoutCb'),
-            \ function('s:ConsoleCmdExitCb'), v:true)
+    let l:options = {
+            \ 'stdout_cb': function('s:ConsoleCmdStdoutCb'),
+            \ 'exit_cb': function('s:ConsoleCmdExitCb'),
+            \ 'pty': v:true,
+            \ 'width': winwidth(l:console_win_id),
+            \ }
+    let l:job_id = s:system.JobRun(a:command, v:false, l:options)
     " For Neovim, scroll manually to the end of the terminal buffer while the
     " command's output is being appended.
     if has('nvim')

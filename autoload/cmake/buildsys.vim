@@ -49,7 +49,7 @@ function! s:GetCMakeVersion() abort
     let s:cmake_version = {}
     let l:command = [g:cmake_command, '--version']
     call s:system.JobRun(
-            \ l:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:GetCMakeVersionCb')})
     return s:cmake_version
 endfunction
 
@@ -76,7 +76,7 @@ function! s:FindGitRoot() abort
     " this will result in the path to the root repo.
     let l:command = ['git', 'rev-parse', '--show-superproject-working-tree']
     call s:system.JobRun(
-            \ l:command, v:true, function('s:FindGitRootCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:FindGitRootCb')})
     if s:git_root !=# ''
         return s:git_root
     endif
@@ -88,7 +88,7 @@ function! s:FindGitRoot() abort
     " invoked only after `git rev-parse --show-superproject-working-tree`.
     let l:command = ['git', 'rev-parse', '--show-toplevel']
     call s:system.JobRun(
-            \ l:command, v:true, function('s:FindGitRootCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:FindGitRootCb')})
     if s:git_root !=# ''
         return s:git_root
     endif
@@ -314,7 +314,7 @@ function! s:RefreshTargets() abort
             \ '--target', 'help'
             \ ]
     call s:system.JobRun(
-            \ l:command, v:true, function('s:RefreshTargetsCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:RefreshTargetsCb')})
 endfunction
 
 " Callback for RefreshTests().
@@ -335,7 +335,7 @@ function! s:RefreshTests() abort
             \ '--test-dir', l:build_dir
             \ ]
     call s:system.JobRun(
-            \ l:command, v:true, function('s:RefreshTestsCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:RefreshTestsCb')})
     " Make list of tests from JSON data.
     let s:tests_data_json = json_decode(join(s:refresh_tests_output))
     let s:tests_data_list = s:tests_data_json['tests']
@@ -392,7 +392,7 @@ function! s:LinkCompileCommands() abort
             \ v:true,
             \ )
     let l:command = [g:cmake_command, '-E', 'create_symlink', l:target, l:link]
-    call s:system.JobRun(l:command, v:true, v:null, v:null, v:false)
+    call s:system.JobRun(l:command, v:true, {})
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
