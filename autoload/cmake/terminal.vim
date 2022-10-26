@@ -6,21 +6,21 @@
 let s:terminal = {}
 let s:terminal.console_buffer = -1
 let s:terminal.console_cmd_info = {
-        \ 'generate': 'Generating buildsystem...',
-        \ 'build': 'Building...',
-        \ 'install': 'Installing...',
-        \ 'test': 'Running tests...',
-        \ 'NONE': '',
-        \ }
+    \ 'generate': 'Generating buildsystem...',
+    \ 'build': 'Building...',
+    \ 'install': 'Installing...',
+    \ 'test': 'Running tests...',
+    \ 'NONE': '',
+\ }
 let s:terminal.cmd_info = ''
 let s:terminal.console_cmd = {
-        \ 'id': -1,
-        \ 'running': v:false,
-        \ 'callbacks': [],
-        \ 'callbacks_err': [],
-        \ 'autocmds': [],
-        \ 'autocmds_err': [],
-        \ }
+    \ 'id': -1,
+    \ 'running': v:false,
+    \ 'callbacks': [],
+    \ 'callbacks_err': [],
+    \ 'autocmds': [],
+    \ 'autocmds_err': [],
+\ }
 let s:terminal.console_cmd_output = []
 
 let s:term_tty = ''

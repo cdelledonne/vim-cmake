@@ -27,15 +27,15 @@ let s:terminal = cmake#terminal#Get()
 " Example:
 "     argstring = --parallel 4 TestOne TestTwo
 "     return = {
-"             \ 'cmake_test_options': ['--parallel', '4'],
-"             \ 'test_names': ['-R', 'TestOne|TestTwo'],
-"             \ }
+"         \ 'cmake_test_options': ['--parallel', '4'],
+"         \ 'test_names': ['-R', 'TestOne|TestTwo'],
+"     \ }
 "
 function! s:GetTestArgs(argstring) abort
     let l:argdict = {
-            \ 'cmake_test_options': [],
-            \ 'test_names': [],
-            \ }
+        \ 'cmake_test_options': [],
+        \ 'test_names': [],
+    \ }
     let l:arglist = split(a:argstring)
     " Search arguments for those that match the name of a test.
     let l:test_names = []

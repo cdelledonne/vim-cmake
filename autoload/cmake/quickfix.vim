@@ -10,9 +10,9 @@ let s:quickfix.list.title = 'CMakeBuild'
 let s:quickfix.id = -1
 
 let s:filters = [
-        \ 'v:val.valid == 1',
-        \ 'filereadable(bufname(v:val.bufnr))',
-        \ ]
+    \ 'v:val.valid == 1',
+    \ 'filereadable(bufname(v:val.bufnr))',
+\ ]
 
 let s:logger = cmake#logger#Get()
 
