@@ -164,17 +164,6 @@ write a feature request, post an issue or submit a pull request.
 
 <!--=========================================================================-->
 
-## Related projects
-
-* [vhdirk/vim-cmake][vim-cmake]
-* [ilyachur/cmake4vim][cmake4vim]
-* [jalcine/cmake.vim][cmake.vim]
-* [sigidagi/vim-cmake-project][vim-cmake-project]
-* [LucHermitte/vim-build-tools-wrapper][LucHermitte/vim-build-tools-wrapper]
-* [kassio/neoterm][neoterm]
-
-<!--=========================================================================-->
-
 ## License
 
 Vim-CMake is licensed under the [MIT license][license].  Copyright (c)
