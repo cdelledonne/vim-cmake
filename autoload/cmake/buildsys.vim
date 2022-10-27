@@ -296,8 +296,7 @@ endfunction
 " Refresh list of available CMake targets.
 "
 function! s:RefreshTargets() abort
-    let l:build_dir = s:buildsys.path_to_current_config
-    call s:fileapi.Reparse(l:build_dir)
+    call s:fileapi.Parse(s:buildsys.path_to_current_config)
 endfunction
 
 " Callback for RefreshTests().
@@ -445,7 +444,7 @@ function! s:buildsys.Generate(clean, argstring) abort
     let l:run_options.callbacks_err = [function('s:RefreshConfigs')]
     let l:run_options.autocmds_pre = ['CMakeGeneratePre']
     call s:terminal.Run(l:command, 'GENERATE', l:run_options)
-    call s:fileapi.Reparse(l:optdict.build_dir)
+    call s:fileapi.Parse(l:optdict.build_dir)
 endfunction
 
 " Clean buildsystem.

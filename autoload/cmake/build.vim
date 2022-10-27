@@ -73,9 +73,7 @@ endfunction
 " Refresh list of available CMake targets.
 "
 function! s:RefreshTargets() abort
-    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
-    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
-    call s:fileapi.Reparse(l:build_dir)
+    call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
