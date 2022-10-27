@@ -5,7 +5,7 @@
 
 let s:const = {}
 
-let s:const.plugin_version = '0.10.3'
+let s:const.plugin_version = '0.11.1'
 
 let s:const.plugin_news = {
     \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
@@ -23,6 +23,7 @@ let s:const.plugin_news = {
     \ '0.8.0': ['Vim-CMake has a new feature, run `:help cmake-test`'],
     \ '0.9.0': ['Vim-CMake has a new API function, run `:help cmake-api`'],
     \ '0.10.0': ['Vim-CMake has a new config option `g:cmake_restore_state`'],
+    \ '0.11.0': ['Vim-CMake has more autocmds, run `:help cmake-events`'],
     \ }
 
 let s:const.config_vars = {}

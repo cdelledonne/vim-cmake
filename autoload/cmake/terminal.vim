@@ -464,15 +464,15 @@ function! s:terminal.Run(command, tag, options) abort
         return
     endif
     let l:self.console_cmd.running = v:true
-    let l:self.console_cmd.callbacks_succ = a:options.callbacks_succ
-    let l:self.console_cmd.callbacks_err = a:options.callbacks_err
-    let l:self.console_cmd.autocmds_succ = a:options.autocmds_succ
-    let l:self.console_cmd.autocmds_err = a:options.autocmds_err
+    let l:self.console_cmd.callbacks_succ = get(a:options, 'callbacks_succ', [])
+    let l:self.console_cmd.callbacks_err = get(a:options, 'callbacks_err', [])
+    let l:self.console_cmd.autocmds_succ = get(a:options, 'autocmds_succ', [])
+    let l:self.console_cmd.autocmds_err = get(a:options, 'autocmds_err', [])
     let l:self.console_cmd_output = []
     " Open Vim-CMake console window.
     call l:self.Open(v:false)
     " Invoke pre-run autocommands.
-    for l:autocmd in a:options.autocmds_pre
+    for l:autocmd in get(a:options, 'autocmds_pre', [])
         call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
         if exists('#User' . '#' . l:autocmd)
             execute 'doautocmd <nomodeline> User ' . l:autocmd

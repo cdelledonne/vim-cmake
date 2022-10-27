@@ -26,7 +26,7 @@ If applicable, add screenshots to help explain your problem.
 ### Other info
 - OS:
 - Vim/Neovim version:
-- Vim-CMake version (5th line in `:help cmake`):
+- Vim-CMake version (`:echo cmake#GetInfo().version`):
 - CMake version (`cmake --version`):
 
 ### Additional context
