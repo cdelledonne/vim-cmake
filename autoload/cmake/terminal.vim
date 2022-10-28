@@ -24,7 +24,6 @@ let s:terminal.console_cmd.autocmds_succ = []
 let s:terminal.console_cmd.autocmds_err = []
 
 let s:term_tty = ''
-let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
 
@@ -304,8 +303,7 @@ function! s:TermSetup() abort
     else
         let l:options.curwin = 1
         let l:term = term_start('NONE', l:options)
-        let s:term_id = term_getjob(l:term)
-        let s:term_tty = job_info(s:term_id).tty_in
+        let s:term_tty = term_gettty(l:term, 1)
         call term_setkill(l:term, 'term')
     endif
 endfunction
@@ -322,13 +320,15 @@ function! s:TermEcho(data, newline) abort
     if len(a:data) == 0
         return
     endif
+    if a:newline
+        call add(a:data, '')
+    endif
     if has('nvim')
-        if a:newline
-            call add(a:data, '')
-        endif
         call chansend(s:term_chan_id, a:data)
     else
-        call writefile(a:data, s:term_tty)
+        " Use binary mode 'b' such that there isn't a NL character at the end of
+        " the last line to write.
+        call writefile(a:data, s:term_tty, 'b')
     endif
 endfunction
 

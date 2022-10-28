@@ -128,6 +128,8 @@ endfunction
 "             for PTY jobs, width of the pseudo-terminal (can be left unset)
 "         height : Number
 "             for PTY jobs, height of the pseudo-terminal (can be left unset)
+"         env : Dictionary
+"             environment variables to pass to the job (only in Vim)
 "
 " Return:
 "     Number
@@ -136,9 +138,8 @@ endfunction
 function! s:system.JobRun(command, wait, options) abort
     let l:command = s:ManipulateCommand(a:command)
     let l:job_options = {}
-    if has_key(a:options, 'pty')
-        let l:job_options.pty = a:options.pty
-    endif
+    let l:job_options.pty = get(a:options, 'pty', v:false)
+    let l:job_options.env = get(a:options, 'env', {})
     if has('nvim')
         if has_key(a:options, 'stdout_cb')
             let l:job_options.on_stdout = a:options.stdout_cb
@@ -161,6 +162,7 @@ function! s:system.JobRun(command, wait, options) abort
             let l:job_options.width = 10000
             let l:job_options.height = 2
         endif
+        " Start job.
         let l:job_id = jobstart(l:command, l:job_options)
     else
         if has_key(a:options, 'stdout_cb')
@@ -169,6 +171,17 @@ function! s:system.JobRun(command, wait, options) abort
         if has_key(a:options, 'exit_cb')
             let l:job_options.exit_cb = a:options.exit_cb
         endif
+        if l:job_options.pty
+            " When allocating a PTY, we need to use 'raw' stdout mode in Vim, so
+            " that the stdout stream is not buffered, and thus we don't have to
+            " wait for NL characters to receive outout.
+            let l:job_options.out_mode = 'raw'
+            " Moreover, we need to pass the 'TERM' environment variable
+            " explicitly, otherwise Vim sets is to 'dumb', which prevents some
+            " programs from producing some ANSI codes.
+            let l:job_options.env.TERM = 'xterm-256color'
+        endif
+        " Start job.
         let l:job_id = job_start(l:command, l:job_options)
     endif
     " Wait for job to complete, if requested.
