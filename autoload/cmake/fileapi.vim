@@ -176,9 +176,3 @@ endfunction
 function! cmake#fileapi#Get() abort
     return s:fileapi
 endfunction
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Initialization
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-call s:fileapi.Reset()

@@ -359,7 +359,6 @@ function! s:SetCurrentConfig(config) abort
     let l:state.config = a:config
     let l:state.build_dir = l:path
     call s:state.WriteProjectState(s:buildsys.project_root, l:state)
-    call s:RefreshTargets()
 endfunction
 
 " Link compile commands from source directory to build directory.
@@ -401,6 +400,7 @@ function! s:buildsys.Init() abort
     endif
 
     call s:RefreshConfigs()
+    call s:RefreshTargets()
 endfunction
 
 " Generate a buildsystem for the project using CMake.
@@ -444,7 +444,6 @@ function! s:buildsys.Generate(clean, argstring) abort
     let l:run_options.callbacks_err = [function('s:RefreshConfigs')]
     let l:run_options.autocmds_pre = ['CMakeGeneratePre']
     call s:terminal.Run(l:command, 'GENERATE', l:run_options)
-    call s:fileapi.Parse(l:optdict.build_dir)
 endfunction
 
 " Clean buildsystem.
@@ -478,6 +477,7 @@ function! s:buildsys.Switch(config) abort
     endif
     call s:SetCurrentConfig(a:config)
     call s:LinkCompileCommands()
+    call s:RefreshTargets()
 endfunction
 
 " Get list of configuration directories (containing a buildsystem).
