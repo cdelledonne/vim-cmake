@@ -60,7 +60,7 @@ function! s:ParseIndex(build_dir) abort
     endif
     let s:fileapi.last_index_name = l:index_path
 
-    let l:index = json_decode(readfile(l:index_path))
+    let l:index = json_decode(join(readfile(l:index_path)))
     let l:reply = l:index.reply['client-' . s:client_name]['query.json']
     if l:reply.client.query.version != s:query_version
         " TODO: Regenerate to update queries or bail
