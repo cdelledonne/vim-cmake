@@ -11,6 +11,12 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 * Dictionary returned by public API `cmake#GetInfo()` now includes a `version`
   entry (Vim-CMake's version).
 
+### Changed
+* The filtering of ANSI sequences on stdout produced by CMake commands is now
+  applied mostly after outputting lines to the Vim-CMake console, and before
+  parsing such lines for the Quickfix feature. This avoids unnecessary
+  processing of output lines, and defers such task to the terminal emulator.
+
 <!--=========================================================================-->
 
 ## 0.11.1 &ndash; 2022-10-26
