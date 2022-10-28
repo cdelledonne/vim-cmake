@@ -177,8 +177,8 @@ function! s:system.JobRun(command, wait, options) abort
             " wait for NL characters to receive outout.
             let l:job_options.out_mode = 'raw'
             " Moreover, we need to pass the 'TERM' environment variable
-            " explicitly, otherwise Vim sets is to 'dumb', which prevents some
-            " programs from producing some ANSI codes.
+            " explicitly, otherwise Vim sets it to 'dumb', which prevents some
+            " programs from producing some ANSI sequences.
             let l:job_options.env.TERM = 'xterm-256color'
         endif
         " Start job.
