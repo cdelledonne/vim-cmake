@@ -54,6 +54,9 @@ endfunction
 function! s:ParseIndex(build_dir) abort
     let l:index_path = s:FindIndexFile(a:build_dir)
     if l:index_path ==# ''
+        " TODO: only show this with an existing build tree without api files
+        call s:logger.EchoError('Api response missing, run :CMakeGenerate')
+        call s:logger.LogError('Api response missing, run :CMakeGenerate')
         return 0
     elseif l:index_path ==# s:fileapi.last_index_name
         return 2
