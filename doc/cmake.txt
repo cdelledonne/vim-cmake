@@ -137,6 +137,8 @@ Vim-CMake provides autocompletion for build targets.  Just press <TAB> after
 >
 	:CMakeBuild <TAB>
 <
+This feature uses the `cmake-file-api(7)` to retrieve a list of targets which
+requires CMake 3.14 or later to work.
 							*:CMakeInstall*
 :CMakeInstall
 		Install a project from the current build configuration.
