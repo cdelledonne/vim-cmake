@@ -14,7 +14,8 @@ nice visual feedback.
 
 * Visual experience, shows CMake output in a console-like window
 * Slick management of build configurations
-* Autocompletion for build targets, build configurations and tests
+* Autocompletion for build targets, build configurations and tests using the
+  `cmake-file-api(7)`
 * Quickfix list population after each build
 * Airline/statusline status information, including current build configuration
 * Plug-and-play, but configurable
@@ -24,6 +25,7 @@ nice visual feedback.
 
 * Vim with `+terminal`, or Neovim >= 0.5
 * Under Windows, only Neovim is supported at the moment
+* Target completion requires CMake 3.14 or later
 
 <!--=========================================================================-->
 
