@@ -109,11 +109,11 @@ let s:post_filter = join(s:post_filter_list, '\|')
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    let l:all_lines = l:data.all_lines
+    let l:raw_lines = l:data.raw_lines
     let l:terminated_lines = l:data.terminated_lines
-    " Echo all lines to terminal.
-    call s:FilterStdoutPreEcho(l:all_lines)
-    call s:TermEcho(l:all_lines, v:false)
+    " Echo raw lines to terminal.
+    call s:FilterStdoutPreEcho(l:raw_lines)
+    call s:TermEcho(l:raw_lines, v:false)
     " Save terminated lines to list.
     call s:FilterStdoutPreEcho(l:terminated_lines)
     call s:FilterStdoutPostEcho(l:terminated_lines)

@@ -249,8 +249,8 @@ endfunction
 "
 " Returns:
 "     Dictionary
-"         all_lines : List
-"             all stdout lines, useful for echoing directly to the terminal
+"         raw_lines : List
+"             raw stdout lines, useful for echoing directly to the terminal
 "         terminated_lines : List
 "             only terminated stdout lines, useful for post-processing
 "
@@ -258,7 +258,7 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
     let l:channel = a:cb_arglist[0]
     let l:data = a:cb_arglist[1]
     if has('nvim')
-        let l:all_lines = l:data
+        let l:raw_lines = l:data
         let l:terminated_lines = []
         " A list only containing an empty string signals the EOF.
         let l:eof = (l:data == [''])
@@ -295,11 +295,11 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
         " In Vim, data is a string, so we transform it to a list (consisting of
         " a single element). Also, there aren't any such thing as unterminated
         " lines in Vim.
-        let l:all_lines = [l:data]
         let l:terminated_lines = [l:data]
+        let l:raw_lines = [l:data]
     endif
     let l:lines = {}
-    let l:lines.all_lines = l:all_lines
+    let l:lines.raw_lines = l:raw_lines
     let l:lines.terminated_lines = l:terminated_lines
     return l:lines
 endfunction
