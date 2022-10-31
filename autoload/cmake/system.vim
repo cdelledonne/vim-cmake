@@ -179,7 +179,7 @@ function! s:system.JobRun(command, wait, options) abort
             " Moreover, we need to pass the 'TERM' environment variable
             " explicitly, otherwise Vim sets it to 'dumb', which prevents some
             " programs from producing some ANSI sequences.
-            let l:job_options.env.TERM = 'xterm-256color'
+            let l:job_options.env.TERM = getenv('TERM')
         endif
         " Start job.
         let l:job_id = job_start(l:command, l:job_options)
