@@ -55,8 +55,13 @@ function! s:ParseIndex(build_dir) abort
     let l:index_path = s:FindIndexFile(a:build_dir)
     if l:index_path ==# ''
         " TODO: only show this with an existing build tree without api files
-        call s:logger.EchoError('Api response missing, run :CMakeGenerate')
-        call s:logger.LogError('Api response missing, run :CMakeGenerate')
+        " and when cmake version new enough
+        let l:warning =
+                    \ 'fileapi: Response from cmake-file-api(7) missing.'
+                    \ . ' Target completion will not work.'
+                    \ . ' Run :CMakeGenerate'
+        call s:logger.EchoWarn(l:warning)
+        call s:logger.LogWarn(l:warning)
         return 0
     elseif l:index_path ==# s:fileapi.last_index_name
         return 2
@@ -68,8 +73,12 @@ function! s:ParseIndex(build_dir) abort
     if l:reply.client.query.version != s:query_version
         " TODO: Regenerate to update queries or bail
         " bail for now 
-        call s:logger.EchoError('Api query out of date, run :CMakeGenerate')
-        call s:logger.LogError('Api query out of date, run :CMakeGenerate')
+        let l:warning =
+                    \ 'fileapi: Response from cmake-file-api(7) out of date.'
+                    \ . ' Some functionality may not work correctly.'
+                    \ . ' Run :CMakeGenerate'
+        call s:logger.EchoWarn(l:warning)
+        call s:logger.LogWarn(l:warning)
         return 0
     endif
     " Update response references
