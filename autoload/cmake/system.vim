@@ -292,11 +292,11 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
             call remove(s:stdout_partial_line, l:channel)
         endif
     else
-        " In Vim, data is a string, so we transform it to a list (consisting of
-        " a single element). Also, there aren't any such thing as unterminated
-        " lines in Vim.
-        let l:terminated_lines = [l:data]
+        " In Vim, data is a string, so we transform it to a list. Also, there
+        " aren't any such thing as unterminated lines in Vim, however raw lines
+        " can contain NL characters, which we use to delimit terminated lines.
         let l:raw_lines = [l:data]
+        let l:terminated_lines = split(l:data, '\n')
     endif
     let l:lines = {}
     let l:lines.raw_lines = l:raw_lines
