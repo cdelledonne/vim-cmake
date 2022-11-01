@@ -151,6 +151,8 @@ endfunction
 "
 function! s:fileapi.UpdateQueries(build_dir) abort
     let l:query_path = s:system.Path([a:build_dir] + s:query_path, v:false)
+    " FIX: this creates the build_dir and queries even if not in a cmake
+    " project
     call mkdir(fnamemodify(l:query_path, ':h'), 'p')
     call writefile([json_encode(s:query)], l:query_path)
 endf
