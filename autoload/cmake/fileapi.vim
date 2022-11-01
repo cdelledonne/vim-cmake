@@ -51,18 +51,16 @@ endfunction
 "         1: Updated
 "         2: No Update
 "
-function! s:ParseIndex(build_dir) abort
+function! s:ParseIndex(build_dir, throw) abort
     let l:index_path = s:FindIndexFile(a:build_dir)
     if l:index_path ==# ''
-        " TODO: only show this with an existing build tree without api files
+        " TODO: only throw this with an existing build tree without api files
         " and when cmake version new enough
-        let l:warning =
-                    \ 'fileapi: Response from cmake-file-api(7) missing.'
-                    \ . ' Target completion will not work.'
-                    \ . ' Run :CMakeGenerate'
-        call s:logger.EchoWarn(l:warning)
-        call s:logger.LogWarn(l:warning)
-        return 0
+        if a:throw
+            throw 'vim-cmake_fileapi_noindex'
+        else
+            return 0
+        endif
     elseif l:index_path ==# s:fileapi.last_index_name
         return 2
     endif
@@ -163,12 +161,12 @@ endf
 "     build_dir : String
 "         path to current build configuration
 "
-function! s:fileapi.Parse(build_dir) abort
+function! s:fileapi.Parse(build_dir, throw) abort
     if !l:self.cmake_version_supported
         return
     endif
 
-    let l:ret = s:ParseIndex(a:build_dir)
+    let l:ret = s:ParseIndex(a:build_dir, a:throw)
     " We only have to reparse if the index file changed
     if l:ret == 1
         call s:ParseCodemodel(a:build_dir)

@@ -9,6 +9,7 @@ let s:test = cmake#test#Get()
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:terminal = cmake#terminal#Get()
+let s:fileapi = cmake#fileapi#Get()
 
 " Print news of new Vim-CMake versions.
 call cmake#util#PrintNews(s:const.plugin_version, s:const.plugin_news)
@@ -129,7 +130,17 @@ endfunction
 "
 function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
     call s:logger.LogDebug('API invoked: cmake#GetBuildTargets()')
-    return join(s:buildsys.GetTargets(), "\n")
+    try
+        call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig(), v:true)
+    catch /vim-cmake_fileapi_noindex/
+        let l:warning =
+                    \ 'fileapi: Response from cmake-file-api(7) missing.'
+                    \ . ' Target completion will not work.'
+                    \ . ' Run :CMakeGenerate'
+        call s:logger.EchoWarn(l:warning)
+        call s:logger.LogWarn(l:warning)
+    endtry
+    return join(s:fileapi.GetTargets(), "\n")
 endfunction
 
 " API function for completion for :CMakeTest.
