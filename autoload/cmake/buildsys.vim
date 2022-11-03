@@ -25,7 +25,7 @@ let s:terminal = cmake#terminal#Get()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 function! s:GetCMakeVersionCb(...) abort
-    let l:lines = s:system.ExtractStdoutCallbackData(a:000).terminated_lines
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
     let l:index = match(l:lines, '\m\C^cmake\S* version')
     if l:index != -1
         let l:version_str = split(l:lines[l:index])[2]
@@ -54,7 +54,7 @@ function! s:GetCMakeVersion() abort
 endfunction
 
 function! s:FindGitRootCb(...) abort
-    let l:lines = s:system.ExtractStdoutCallbackData(a:000).terminated_lines
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
     for l:line in l:lines
         if isdirectory(l:line)
             let s:git_root = l:line
@@ -295,7 +295,7 @@ endfunction
 " Callback for RefreshTargets().
 "
 function! s:RefreshTargetsCb(...) abort
-    let l:lines = s:system.ExtractStdoutCallbackData(a:000).terminated_lines
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
     for l:line in l:lines
         if match(l:line, '\m\C\.\.\.\s') == 0
             let l:target = split(l:line)[1]
@@ -321,7 +321,7 @@ endfunction
 " Callback for RefreshTests().
 "
 function! s:RefreshTestsCb(...) abort
-    let l:lines = s:system.ExtractStdoutCallbackData(a:000).terminated_lines
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
     call extend(s:refresh_tests_output, l:lines)
 endfunction
 

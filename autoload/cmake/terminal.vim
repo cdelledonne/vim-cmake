@@ -27,10 +27,8 @@ let s:term_tty = ''
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
 
-let s:pre_filter_list = []
-let s:post_filter_list = []
-let s:post_rep_pat = ''
-let s:post_rep_sub = ''
+let s:raw_lines_filters = []
+let s:full_lines_filters = []
 
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
@@ -48,58 +46,54 @@ let s:ansi_esc = '\e'
 let s:ansi_csi = s:ansi_esc . '\['
 let s:ansi_st = '\(\%x07\|\\\)'
 
-" In ConPTY (MS-Windows), remove ANSI sequences that mess up the terminal before
-" echoing data to the terminal:
+" Remove/replace ANSI sequences from raw lines (these sequences would mess up
+" the terminal) and from full lines:
 "
-" | Sequence                  | Description               |
-" |---------------------------|---------------------------|
-" | CSI <n> J                 | Erase display             |
-" | CSI <y> ; <x> H           | Move cursor               |
-"
-if has('win32')
-    call add(s:pre_filter_list, s:ansi_csi . '\d*J')
-    call add(s:pre_filter_list, s:ansi_csi . '\(\d\+;\)*\d*H')
-endif
-
-" Remove ANSI sequences after echoing to the terminal:
-"
-" | Sequence                  | Description               |
-" |---------------------------|---------------------------|
-" | CR                        | Carriage return           |
-" | CSI <n> ; <o> m           | Text formatting           |
-" | CSI K                     | Erase from cursor to EOL  |
-"
-call add(s:post_filter_list, s:cr)
-call add(s:post_filter_list, s:ansi_csi . '\(\d\+;\)*\d*m')
-call add(s:post_filter_list, s:ansi_csi . 'K')
-
-" Remove additional ANSI sequences returened by ConPTY (MS-Windows) after
-" echoing to the terminal:
-"
-" | Sequence                  | Description               |
-" |---------------------------|---------------------------|
-" | CSI <n> X                 | Erase from cursor         |
-" | CSI ? 25 [h|l]            | Hide/show cursor          |
-" | ESC ] 0 ; <string> <ST>   | Console title             |
+" | Sequence             | Description                 | Replace with    |
+" |----------------------|-----------------------------|-----------------|
+" | CSI <n> J            | Erase display (Windows)     | ---             |
+" | CSI <y> ; <x> H      | Move cursor (Windows)       | Carriage return |
 "
 if has('win32')
-    call add(s:post_filter_list, s:ansi_csi . '\d*X')
-    call add(s:post_filter_list, s:ansi_csi . '?25[hl]')
-    call add(s:post_filter_list, s:ansi_esc . '\]' . '0;.*' . s:ansi_st)
+    let s:filter = {'pat': s:ansi_csi . '\d*J', 'sub': ''}
+    call add(s:raw_lines_filters, s:filter)
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {'pat': s:ansi_csi . '\(\d\+;\)*\d*H', 'sub': '\r'}
+    call add(s:raw_lines_filters, s:filter)
+    call add(s:full_lines_filters, s:filter)
 endif
 
-" Replace 'move forward' sequences with spaces in ConPTY (MS-Windows) after
-" echoing to the terminal.
+" Remove/replace remaining ANSI sequences from full lines:
+"
+" | Sequence             | Description                 | Replace with    |
+" |----------------------|-----------------------------|-----------------|
+" | CR                   | Carriage return             | ---             |
+" | CSI <n> ; <o> m      | Text formatting             | ---             |
+" | CSI K                | Erase from cursor to EOL    | ---             |
+" | CSI <n> X            | Erase from cursor (Windows) | ---             |
+" | CSI ? 25 [h|l]       | Hide/show cursor (Windows)  | ---             |
+" | ESC ] 0 ; <str> <ST> | Console title (Windows)     | ---             |
+" | CSI <n> C            | Move forward (Windows)      | Space           |
+"
+let s:filter = {'pat': s:cr, 'sub': ''}
+call add(s:full_lines_filters, s:filter)
+let s:filter = {'pat': s:ansi_csi . '\(\d\+;\)*\d*m', 'sub': ''}
+call add(s:full_lines_filters, s:filter)
+let s:filter = {'pat': s:ansi_csi . 'K', 'sub': ''}
+call add(s:full_lines_filters, s:filter)
 if has('win32')
-    let s:post_rep_pat .= s:ansi_csi . '\(\d*\)C'
-    let s:post_rep_sub .= '\=repeat('' '', submatch(1))'
+    let s:filter = {'pat': s:ansi_csi . '\d*X', 'sub': ''}
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {'pat': s:ansi_csi . '?25[hl]', 'sub': ''}
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {'pat': s:ansi_esc . '\]' . '0;.*' . s:ansi_st, 'sub': ''}
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {
+        \ 'pat': s:ansi_csi . '\(\d*\)C',
+        \ 'sub': '\=repeat('' '', submatch(1))'
+        \ }
+    call add(s:full_lines_filters, s:filter)
 endif
-
-" Transform filter lists into filter strings.
-call map(s:pre_filter_list, {_, val -> '\(' . val . '\)'})
-call map(s:post_filter_list, {_, val -> '\(' . val . '\)'})
-let s:pre_filter = join(s:pre_filter_list, '\|')
-let s:post_filter = join(s:post_filter_list, '\|')
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Private functions
@@ -110,14 +104,13 @@ let s:post_filter = join(s:post_filter_list, '\|')
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
     let l:raw_lines = l:data.raw_lines
-    let l:terminated_lines = l:data.terminated_lines
-    " Echo raw lines to terminal.
-    call s:FilterStdoutPreEcho(l:raw_lines)
+    let l:full_lines = l:data.full_lines
+    " Filter raw lines and echo them to the terminal
+    call map(l:raw_lines, {_, val -> s:FilterLine(val, s:raw_lines_filters)})
     call s:TermEcho(l:raw_lines, v:false)
-    " Save terminated lines to list.
-    call s:FilterStdoutPreEcho(l:terminated_lines)
-    call s:FilterStdoutPostEcho(l:terminated_lines)
-    let s:terminal.console_cmd_output += l:terminated_lines
+    " Filter full lines and save them in list of command output.
+    call map(l:full_lines, {_, val -> s:FilterLine(val, s:full_lines_filters)})
+    let s:terminal.console_cmd_output += l:full_lines
 endfunction
 
 " Callback for the end of the command running in the Vim-CMake console.
@@ -332,34 +325,24 @@ function! s:TermEcho(data, newline) abort
     endif
 endfunction
 
-" Filter stdout data to remove ANSI sequences that should not be sent to the
-" console terminal.
+" Filter stdout line to remove/replace ANSI sequences.
 "
 " Params:
-"     data : List
-"         list of stdout strings to filter (filtering is done in-place)
+"     line : String
+"         line to filter
+"     filters : List
+"         list of {'pat': <pattern>, 'rep': <replacement>}
 "
-function! s:FilterStdoutPreEcho(data) abort
-    if s:pre_filter !=# ''
-        call map(a:data, {_, val -> substitute(val, s:pre_filter, '', 'g')})
-    endif
-endfunction
-
-" Filter stdout data to remove remaining ANSI sequences after sending the data
-" to the console terminal.
+" Returns:
+"     String
+"         filtered line
 "
-" Params:
-"     data : List
-"         list of stdout strings to filter (filtering is done in-place)
-"
-function! s:FilterStdoutPostEcho(data) abort
-    if s:post_filter !=# ''
-        call map(a:data, {_, val -> substitute(val, s:post_filter, '', 'g')})
-    endif
-    if s:post_rep_pat !=# ''
-        call map(a:data, {_, val -> substitute(
-                \ val, s:post_rep_pat, s:post_rep_sub, 'g')})
-    endif
+function! s:FilterLine(line, filters) abort
+    let l:line = a:line
+    for l:filter in a:filters
+        let l:line = substitute(l:line, l:filter.pat, l:filter.sub, 'g')
+    endfor
+    return l:line
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

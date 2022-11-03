@@ -251,15 +251,15 @@ endfunction
 "     Dictionary
 "         raw_lines : List
 "             raw stdout lines, useful for echoing directly to the terminal
-"         terminated_lines : List
-"             only terminated stdout lines, useful for post-processing
+"         full_lines : List
+"             only full stdout lines, useful for post-processing
 "
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
     let l:channel = a:cb_arglist[0]
     let l:data = a:cb_arglist[1]
     if has('nvim')
         let l:raw_lines = l:data
-        let l:terminated_lines = []
+        let l:full_lines = []
         " A list only containing an empty string signals the EOF.
         let l:eof = (l:data == [''])
         " The first and the last lines may be partial lines, thus they need to
@@ -274,11 +274,11 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
         " If output data list contains more entries, the remaining entries are
         " all complete lines, except for the last entry. The saved parial line
         " (which is now complete), as well as all the other complete lines, can
-        " be added to the list of terminated lines. The last entry of the data
-        " list is saved to the partial line buffer.
+        " be added to the list of full lines. The last entry of the data list is
+        " saved to the partial line buffer.
         if len(l:data) > 1
-            call add(l:terminated_lines, s:stdout_partial_line[l:channel])
-            call extend(l:terminated_lines, l:data[1:-2])
+            call add(l:full_lines, s:stdout_partial_line[l:channel])
+            call extend(l:full_lines, l:data[1:-2])
             let s:stdout_partial_line[l:channel] = l:data[-1]
         endif
         " At the end of the stream of a channel, "flush" any leftover partial
@@ -287,20 +287,20 @@ function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
         " does not append a newline at the end of the stream.
         if l:eof
             if len(s:stdout_partial_line[l:channel]) > 0
-                call add(l:terminated_lines, s:stdout_partial_line[l:channel])
+                call add(l:full_lines, s:stdout_partial_line[l:channel])
             endif
             call remove(s:stdout_partial_line, l:channel)
         endif
     else
         " In Vim, data is a string, so we transform it to a list. Also, there
-        " aren't any such thing as unterminated lines in Vim, however raw lines
-        " can contain NL characters, which we use to delimit terminated lines.
+        " aren't any such thing as non-full lines in Vim, however raw lines can
+        " contain NL characters, which we use to delimit full lines.
         let l:raw_lines = [l:data]
-        let l:terminated_lines = split(l:data, '\n')
+        let l:full_lines = split(l:data, '\n')
     endif
     let l:lines = {}
     let l:lines.raw_lines = l:raw_lines
-    let l:lines.terminated_lines = l:terminated_lines
+    let l:lines.full_lines = l:full_lines
     return l:lines
 endfunction
 
