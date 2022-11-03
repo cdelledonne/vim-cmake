@@ -131,7 +131,7 @@ endfunction
 function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
     call s:logger.LogDebug('API invoked: cmake#GetBuildTargets()')
     try
-        call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig(), v:true)
+        call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
     catch /vim-cmake_fileapi_noindex/
         let l:warning =
                     \ 'fileapi: Response from cmake-file-api(7) missing.'

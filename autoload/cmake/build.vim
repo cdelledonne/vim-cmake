@@ -73,7 +73,10 @@ endfunction
 " Refresh list of available CMake targets.
 "
 function! s:RefreshTargets() abort
-    call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig(), v:false)
+    try
+        call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
+    catch
+    endtry
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

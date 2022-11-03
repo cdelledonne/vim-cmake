@@ -296,7 +296,10 @@ endfunction
 " Refresh list of available CMake targets.
 "
 function! s:RefreshTargets() abort
-    call s:fileapi.Parse(s:buildsys.path_to_current_config, v:false)
+    try
+        call s:fileapi.Parse(s:buildsys.path_to_current_config)
+    catch
+    endtry
 endfunction
 
 " Callback for RefreshTests().
