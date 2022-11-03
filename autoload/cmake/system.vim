@@ -155,7 +155,7 @@ function! s:system.JobRun(command, wait, options) abort
         endif
         " In some cases, the PTY in MS-Windows (ConPTY) uses ANSI escape
         " sequences to move the cursor position (ESC[<n>;<m>H) rather than
-        " inseting newline characters. Setting the width of the PTY to be very
+        " inserting newline characters. Setting the width of the PTY to be very
         " large and the height to be as small as possible (but larger than 1)
         " seems to circumvent this problem. Hacky, but it seems to work.
         if has('win32')
