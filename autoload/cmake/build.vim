@@ -41,7 +41,8 @@ function! s:GetBuildArgs(argstring) abort
     let l:argdict.native_build_options = []
     let l:arglist = split(a:argstring)
     " Search arguments for one that matches the name of a target.
-    for l:t in s:buildsys.GetTargets()
+    call s:RefreshTargets()
+    for l:t in s:fileapi.GetTargets()
         let l:match_res = match(l:arglist, '\m\C^' . l:t)
         if l:match_res != -1
             " If found, get target and remove from list of arguments.

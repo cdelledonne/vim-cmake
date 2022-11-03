@@ -493,17 +493,6 @@ function! s:buildsys.GetConfigs() abort
     return l:self.configs
 endfunction
 
-" Get list of available build targets.
-"
-" Returns:
-"     List
-"         list of available build targets
-"
-function! s:buildsys.GetTargets() abort
-    call s:RefreshTargets()
-    return s:fileapi.GetTargets()
-endfunction
-
 " Get list of available test names.
 "
 " Returns:
