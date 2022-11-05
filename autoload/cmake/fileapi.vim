@@ -30,8 +30,15 @@ let s:system = cmake#system#Get()
 " Private functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Find the current index file
+" Find the current response index file
 "
+" Params:
+"     build_dir : String
+"         path to the build directory in which to look for api responses
+"
+" Returns:
+"     String
+"         path to response index file or empty string if none is found
 function! s:FindIndexFile(build_dir) abort
     let l:glob = s:system.Path([a:build_dir] + s:reply_path + ['index'], v:false) . '-*.json'
     let l:indices = glob(l:glob, v:true, v:true)
@@ -44,11 +51,19 @@ endfunction
 
 " Parse api response index
 "
+" Params:
+"     build_dir : String
+"         path to the build directory in which to look for api responses
+"
+" Raises:
+"     vim-cmake_fileapi_noindex:
+"         no index file could be found
+"     vim-cmake_fileapi_oldindex:
+"         the found index file is for a different query version
+"
 " Returns:
-"     Number
-"         0: Failed
-"         1: Updated
-"         2: No Update
+"     Dict
+"       mapping from query kind to corresponding response file path
 "
 function! s:ParseIndex(build_dir) abort
     let l:index_path = s:FindIndexFile(a:build_dir)
@@ -77,10 +92,9 @@ endfunction
 
 " Parse codemodel api response
 "
-" Returns:
-"   Number
-"       0: Failed
-"       1: Updated
+" Params:
+"     codemodel:
+"         the path to the codemodel response file
 "
 function! s:ParseCodemodel(codemodel) abort
     let l:codemodel = json_decode(join(readfile(a:codemodel)))
