@@ -162,6 +162,10 @@ endfunction
 "     build_dir : String
 "         path to current build configuration
 "
+" Raises:
+"     vim-cmake_fileapi_noindex:
+"         no index file could be found
+"
 function! s:fileapi.Parse(build_dir) abort
     if !l:self.cmake_version_supported
         return
