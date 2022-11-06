@@ -6,6 +6,7 @@
 let s:build = {}
 
 let s:buildsys = cmake#buildsys#Get()
+let s:fileapi = cmake#fileapi#Get()
 let s:logger = cmake#logger#Get()
 let s:quickfix = cmake#quickfix#Get()
 let s:system = cmake#system#Get()
@@ -40,7 +41,8 @@ function! s:GetBuildArgs(argstring) abort
     let l:argdict.native_build_options = []
     let l:arglist = split(a:argstring)
     " Search arguments for one that matches the name of a target.
-    for l:t in s:buildsys.GetTargets()
+    call s:RefreshTargets()
+    for l:t in s:fileapi.GetTargets()
         let l:match_res = match(l:arglist, '\m\C^' . l:t)
         if l:match_res != -1
             " If found, get target and remove from list of arguments.
@@ -67,6 +69,15 @@ endfunction
 "
 function! s:GenerateQuickfix() abort
     call s:quickfix.Generate(s:terminal.GetOutput())
+endfunction
+
+" Refresh list of available CMake targets.
+"
+function! s:RefreshTargets() abort
+    try
+        call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
+    catch
+    endtry
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -105,10 +116,11 @@ function! s:build.Build(clean, argstring) abort
         let l:command += g:cmake_native_build_options
         let l:command += l:options.native_build_options
     endif
+    call s:fileapi.UpdateQueries(l:build_dir)
     " Run build command.
     let l:run_options = {}
-    let l:run_options.callbacks_succ = [function('s:GenerateQuickfix')]
-    let l:run_options.callbacks_err = [function('s:GenerateQuickfix')]
+    let l:run_options.callbacks_succ = [function('s:GenerateQuickfix'), function('s:RefreshTargets')]
+    let l:run_options.callbacks_err = [function('s:GenerateQuickfix'), function('s:RefreshTargets')]
     let l:run_options.autocmds_pre = ['CMakeBuildPre']
     let l:run_options.autocmds_succ = ['CMakeBuildSucceeded']
     let l:run_options.autocmds_err = ['CMakeBuildFailed']

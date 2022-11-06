@@ -46,6 +46,8 @@ Requirements~
 
 - Vim with `+terminal`, or Neovim >= 0.5
 - Under Windows, only Neovim is supported at the moment
+- Target completion uses the `cmake-file-api(7)`, which requires CMake 3.14 or
+  later
 
 ==============================================================================
 USAGE							*cmake-usage*
@@ -137,6 +139,9 @@ Vim-CMake provides autocompletion for build targets.  Just press <TAB> after
 >
 	:CMakeBuild <TAB>
 <
+This feature uses the `cmake-file-api(7)` to retrieve a list of targets which
+requires CMake 3.14 or later to work.
+
 							*:CMakeInstall*
 :CMakeInstall
 		Install a project from the current build configuration.

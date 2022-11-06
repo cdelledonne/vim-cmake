@@ -24,6 +24,7 @@ nice visual feedback.
 
 * Vim with `+terminal`, or Neovim >= 0.5
 * Under Windows, only Neovim is supported at the moment
+* Target completion uses the `cmake-file-api(7)`, which requires CMake 3.14 or later
 
 <!--=========================================================================-->
 
