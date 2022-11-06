@@ -153,15 +153,6 @@ function! s:system.JobRun(command, wait, options) abort
         if has_key(a:options, 'height')
             let l:job_options.height = a:options.height
         endif
-        " In some cases, the PTY in MS-Windows (ConPTY) uses ANSI escape
-        " sequences to move the cursor position (ESC[<n>;<m>H) rather than
-        " inserting newline characters. Setting the width of the PTY to be very
-        " large and the height to be as small as possible (but larger than 1)
-        " seems to circumvent this problem. Hacky, but it seems to work.
-        if has('win32')
-            let l:job_options.width = 10000
-            let l:job_options.height = 2
-        endif
         " Start job.
         let l:job_id = jobstart(l:command, l:job_options)
     else
