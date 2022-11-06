@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 * Dictionary returned by public API `cmake#GetInfo()` now includes a `version`
   entry (Vim-CMake's version).
 
+### Changed
+* Vim-CMake now uses the `cmake-file-api(7)` to retrieve the list of targets
+  used for `:CMakeBuild` completion. This allows Vim-CMake to reliably retrieve
+  a list of targets on CMake generators other than `Makefile`. The minimum
+  required CMake version for this feature is 3.14. You may need to run
+  `:CMakeGenerate` in existing projects to create the necessary files.
+
 <!--=========================================================================-->
 
 ## 0.11.1 &ndash; 2022-10-26

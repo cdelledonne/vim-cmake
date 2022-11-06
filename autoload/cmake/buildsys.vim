@@ -9,11 +9,11 @@ let s:buildsys.project_root = ''
 let s:buildsys.current_config = ''
 let s:buildsys.path_to_current_config = ''
 let s:buildsys.configs = []
-let s:buildsys.targets = []
 let s:buildsys.tests = []
 
 let s:refresh_tests_output = []
 
+let s:fileapi = cmake#fileapi#Get()
 let s:logger = cmake#logger#Get()
 let s:state = cmake#state#Get()
 let s:statusline = cmake#statusline#Get()
@@ -34,6 +34,7 @@ function! s:GetCMakeVersionCb(...) abort
         let s:cmake_version.minor = str2nr(l:version_parts[1])
         let s:cmake_version.patch = str2nr(l:version_parts[2])
         let s:cmake_version.string = l:version_str
+        call s:fileapi.CheckCMakeVersion(s:cmake_version)
     endif
 endfunction
 
@@ -292,30 +293,13 @@ function! s:RefreshConfigs() abort
     call s:logger.LogDebug('Build configs: %s', s:buildsys.configs)
 endfunction
 
-" Callback for RefreshTargets().
-"
-function! s:RefreshTargetsCb(...) abort
-    let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    for l:line in l:data
-        if match(l:line, '\m\C\.\.\.\s') == 0
-            let l:target = split(l:line)[1]
-            let s:buildsys.targets += [l:target]
-        endif
-    endfor
-endfunction
-
 " Refresh list of available CMake targets.
 "
 function! s:RefreshTargets() abort
-    let s:buildsys.targets = []
-    let l:build_dir = s:buildsys.path_to_current_config
-    let l:command = [
-        \ g:cmake_command,
-        \ '--build', l:build_dir,
-        \ '--target', 'help'
-    \ ]
-    call s:system.JobRun(
-            \ l:command, v:true, function('s:RefreshTargetsCb'), v:null, v:false)
+    try
+        call s:fileapi.Parse(s:buildsys.path_to_current_config)
+    catch
+    endtry
 endfunction
 
 " Callback for RefreshTests().
@@ -419,6 +403,7 @@ function! s:buildsys.Init() abort
     endif
 
     call s:RefreshConfigs()
+    call s:RefreshTargets()
 endfunction
 
 " Generate a buildsystem for the project using CMake.
@@ -450,6 +435,7 @@ function! s:buildsys.Generate(clean, argstring) abort
     if a:clean
         call l:self.Clean()
     endif
+    call s:fileapi.UpdateQueries(l:optdict.build_dir)
     " Run generate command.
     let l:run_options = {}
     let l:run_options.callbacks_succ = [
@@ -471,6 +457,7 @@ function! s:buildsys.Clean() abort
         call delete(l:self.path_to_current_config, 'rf')
     endif
     call s:RefreshConfigs()
+    call s:fileapi.Reset()
 endfunction
 
 " Set current build configuration after checking that the configuration exists.
@@ -493,6 +480,7 @@ function! s:buildsys.Switch(config) abort
     endif
     call s:SetCurrentConfig(a:config)
     call s:LinkCompileCommands()
+    call s:RefreshTargets()
 endfunction
 
 " Get list of configuration directories (containing a buildsystem).
@@ -503,19 +491,6 @@ endfunction
 "
 function! s:buildsys.GetConfigs() abort
     return l:self.configs
-endfunction
-
-" Get list of available build targets.
-"
-" Returns:
-"     List
-"         list of available build targets
-"
-function! s:buildsys.GetTargets() abort
-    if len(l:self.targets) == 0
-        call s:RefreshTargets()
-    endif
-    return l:self.targets
 endfunction
 
 " Get list of available test names.
