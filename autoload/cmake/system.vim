@@ -110,50 +110,75 @@ endfunction
 "         the command to be run, as a list of command and arguments
 "     wait : Boolean
 "         whether to wait for completion
-"     stdout_cb : Funcref
-"         stdout callback (can be v:null), which should take a variable number
-"         of arguments, and from which s:system.ExtractStdoutCallbackData(a:000)
-"         can be called to retrieve the stdout string
-"     exit_cb : Funcref
-"         exit callback (can be v:null), which should take a variable number of
-"         arguments, and from which s:system.ExtractExitCallbackData(a:000) can
-"         be called to retrieve the exit code
-"     pty : Boolean
-"         whether to allocate a pseudo terminal for the job
+"     options : Dictionary
+"         stdout_cb : Funcref
+"             stdout callback (can be left unset), which should take a variable
+"             number of arguments, and from which
+"             s:system.ExtractStdoutCallbackData(a:000) can be called to
+"             retrieve the stdout lines
+"         exit_cb : Funcref
+"             exit callback (can be left unset), which should take a variable
+"             number of arguments, and from which
+"             s:system.ExtractExitCallbackData(a:000) can be called to retrieve
+"             the exit code
+"         pty : Boolean
+"             whether to allocate a pseudo-terminal for the job (leaving this
+"             unset is the same as setting it to v:false)
+"         width : Number
+"             for PTY jobs, width of the pseudo-terminal (can be left unset)
+"         height : Number
+"             for PTY jobs, height of the pseudo-terminal (can be left unset)
+"         env : Dictionary
+"             environment variables to pass to the job (only in Vim)
 "
 " Return:
 "     Number
 "         job id
 "
-function! s:system.JobRun(command, wait, stdout_cb, exit_cb, pty) abort
-    let l:options = {}
-    let l:options.pty = a:pty
+function! s:system.JobRun(command, wait, options) abort
     let l:command = s:ManipulateCommand(a:command)
+    let l:job_options = {}
+    let l:job_options.pty = get(a:options, 'pty', v:false)
+    let l:job_options.env = get(a:options, 'env', {})
     if has('nvim')
-        if a:stdout_cb isnot# v:null
-            let l:options.on_stdout = a:stdout_cb
+        if has_key(a:options, 'stdout_cb')
+            let l:job_options.on_stdout = a:options.stdout_cb
         endif
-        if a:exit_cb isnot# v:null
-            let l:options.on_exit = a:exit_cb
+        if has_key(a:options, 'exit_cb')
+            let l:job_options.on_exit = a:options.exit_cb
         endif
-        " In some cases, the PTY in MS-Windows (ConPTY) uses ANSI escape
-        " sequences to move the cursor position (ESC[<n>;<m>H) rather than
-        " inseting newline characters. Setting the width of the PTY to be very
-        " large and the height to be as small as possible (but larger than 1)
-        " seems to circumvent this problem. Hacky, but it seems to work.
-        if has('win32')
-            let l:options.width = 10000
-            let l:options.height = 2
+        if has_key(a:options, 'width')
+            let l:job_options.width = a:options.width
         endif
-        let l:job_id = jobstart(l:command, l:options)
+        if has_key(a:options, 'height')
+            let l:job_options.height = a:options.height
+        endif
+        " Start job.
+        let l:job_id = jobstart(l:command, l:job_options)
     else
-        if a:stdout_cb isnot# v:null
-            let l:options.out_cb = a:stdout_cb
+        if has_key(a:options, 'stdout_cb')
+            let l:job_options.out_cb = a:options.stdout_cb
         endif
-        if a:exit_cb isnot# v:null
-            let l:options.exit_cb = a:exit_cb
+        if has_key(a:options, 'exit_cb')
+            let l:job_options.exit_cb = a:options.exit_cb
         endif
-        let l:job_id = job_start(l:command, l:options)
+        " NOTE: currently, this doesn't seem to work in Vim
+        " (https://github.com/cdelledonne/vim-cmake/issues/75).
+        if has_key(a:options, 'width')
+            let l:job_options.env.COLUMNS = a:options.width
+        endif
+        if l:job_options.pty
+            " When allocating a PTY, we need to use 'raw' stdout mode in Vim, so
+            " that the stdout stream is not buffered, and thus we don't have to
+            " wait for NL characters to receive outout.
+            let l:job_options.out_mode = 'raw'
+            " Moreover, we need to pass the 'TERM' environment variable
+            " explicitly, otherwise Vim sets it to 'dumb', which prevents some
+            " programs from producing some ANSI sequences.
+            let l:job_options.env.TERM = getenv('TERM')
+        endif
+        " Start job.
+        let l:job_id = job_start(l:command, l:job_options)
     endif
     " Wait for job to complete, if requested.
     if a:wait
@@ -219,50 +244,60 @@ endfunction
 "         differ between Neovim and Vim
 "
 " Returns:
-"     List
-"         stdout data, as a list of strings
+"     Dictionary
+"         raw_lines : List
+"             raw stdout lines, useful for echoing directly to the terminal
+"         full_lines : List
+"             only full stdout lines, useful for post-processing
 "
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
     let l:channel = a:cb_arglist[0]
     let l:data = a:cb_arglist[1]
     if has('nvim')
+        let l:raw_lines = l:data
+        let l:full_lines = []
+        " A list only containing an empty string signals the EOF.
         let l:eof = (l:data == [''])
-        " In Neovim, remove all the CR characters, which are returned when a
-        " pseudo terminal is allocated for the job.
-        call map(l:data, {_, val -> substitute(val, '\m\C\r', '', 'g')})
         " The first and the last lines may be partial lines, thus they need to
         " be joined on consecutive iterations. See :help channel-lines.
         " When this function is called for the first time for a particular
-        " channel, allocate an empty partial line for that channel.
+        " channel, allocate an empty partial line buffer for that channel.
         if !has_key(s:stdout_partial_line, l:channel)
             let s:stdout_partial_line[l:channel] = ''
         endif
-        " Append first entry of output list to partial line.
-        let s:stdout_partial_line[l:channel] .= remove(l:data, 0)
-        " If output list contains more entries, they are all complete lines
-        " except for the last entry. Return the saved partial line (which is now
-        " complete) and all the complete lines from the list, and save a new
-        " partial line (the last entry of the list).
-        if len(l:data) > 0
-            call insert(l:data, s:stdout_partial_line[l:channel])
-            let s:stdout_partial_line[l:channel] = remove(l:data, -1)
+        " Copy first entry of output data list to partial line buffer.
+        let s:stdout_partial_line[l:channel] .= l:data[0]
+        " If output data list contains more entries, the remaining entries are
+        " all complete lines, except for the last entry. The saved parial line
+        " (which is now complete), as well as all the other complete lines, can
+        " be added to the list of full lines. The last entry of the data list is
+        " saved to the partial line buffer.
+        if len(l:data) > 1
+            call add(l:full_lines, s:stdout_partial_line[l:channel])
+            call extend(l:full_lines, l:data[1:-2])
+            let s:stdout_partial_line[l:channel] = l:data[-1]
         endif
         " At the end of the stream of a channel, "flush" any leftover partial
-        " line and return it, and remove the dictionary entry for that channel.
-        " Leftover partial lines at the end of the stream occur when the job's
-        " command does not append a newline at the end of the stream.
+        " line, and remove the dictionary entry for that channel. Leftover
+        " partial lines at the end of the stream occur when the job's command
+        " does not append a newline at the end of the stream.
         if l:eof
             if len(s:stdout_partial_line[l:channel]) > 0
-                call insert(l:data, s:stdout_partial_line[l:channel])
+                call add(l:full_lines, s:stdout_partial_line[l:channel])
             endif
             call remove(s:stdout_partial_line, l:channel)
         endif
     else
-        " In Vim, l:data is a string, so we transform it to a list (consisting
-        " of a single element).
-        let l:data = [l:data]
+        " In Vim, data is a string, so we transform it to a list. Also, there
+        " aren't any such thing as non-full lines in Vim, however raw lines can
+        " contain NL characters, which we use to delimit full lines.
+        let l:raw_lines = [l:data]
+        let l:full_lines = split(l:data, '\n')
     endif
-    return l:data
+    let l:lines = {}
+    let l:lines.raw_lines = l:raw_lines
+    let l:lines.full_lines = l:full_lines
+    return l:lines
 endfunction
 
 " Extract data from a system's exit callback.

@@ -39,6 +39,7 @@ let s:system = cmake#system#Get()
 " Returns:
 "     String
 "         path to response index file or empty string if none is found
+"
 function! s:FindIndexFile(build_dir) abort
     let l:glob = s:system.Path([a:build_dir] + s:reply_path + ['index'], v:false) . '-*.json'
     let l:indices = glob(l:glob, v:true, v:true)
@@ -93,7 +94,7 @@ endfunction
 " Parse codemodel api response
 "
 " Params:
-"     codemodel:
+"     codemodel : String
 "         the path to the codemodel response file
 "
 function! s:ParseCodemodel(codemodel) abort

@@ -24,14 +24,11 @@ let s:terminal.console_cmd.autocmds_succ = []
 let s:terminal.console_cmd.autocmds_err = []
 
 let s:term_tty = ''
-let s:term_id = -1
 let s:term_chan_id = -1
 let s:exit_term_mode = 0
 
-let s:pre_filter_list = []
-let s:post_filter_list = []
-let s:post_rep_pat = ''
-let s:post_rep_sub = ''
+let s:raw_lines_filters = []
+let s:full_lines_filters = []
 
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
@@ -44,60 +41,59 @@ let s:system = cmake#system#Get()
 " https://en.wikipedia.org/wiki/ANSI_escape_code
 " https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
 
+let s:cr = '\r'
 let s:ansi_esc = '\e'
 let s:ansi_csi = s:ansi_esc . '\['
 let s:ansi_st = '\(\%x07\|\\\)'
 
-" In ConPTY (MS-Windows), remove ANSI sequences that mess up the terminal before
-" echoing data to the terminal:
+" Remove/replace ANSI sequences from raw lines (these sequences would mess up
+" the terminal) and from full lines:
 "
-" | Sequence                  | Description               |
-" |---------------------------|---------------------------|
-" | CSI <n> J                 | Erase display             |
-" | CSI <y> ; <x> H           | Move cursor               |
-"
-if has('win32')
-    call add(s:pre_filter_list, s:ansi_csi . '\d*J')
-    call add(s:pre_filter_list, s:ansi_csi . '\(\d\+;\)*\d*H')
-endif
-
-" Remove ANSI sequences after echoing to the terminal:
-"
-" | Sequence                  | Description               |
-" |---------------------------|---------------------------|
-" | CSI <n> ; <o> m           | Text formatting           |
-" | CSI K                     | Erase from cursor to EOL  |
-"
-call add(s:post_filter_list, s:ansi_csi . '\(\d\+;\)*\d*m')
-call add(s:post_filter_list, s:ansi_csi . 'K')
-
-" Remove additional ANSI sequences returened by ConPTY (MS-Windows) after
-" echoing to the terminal:
-"
-" | Sequence                  | Description               |
-" |---------------------------|---------------------------|
-" | CSI <n> X                 | Erase from cursor         |
-" | CSI ? 25 [h|l]            | Hide/show cursor          |
-" | ESC ] 0 ; <string> <ST>   | Console title             |
+" | Sequence             | Description                 | Replace with    |
+" |----------------------|-----------------------------|-----------------|
+" | CSI <n> J            | Erase display (Windows)     | ---             |
+" | CSI <y> ; <x> H      | Move cursor (Windows)       | Carriage return |
 "
 if has('win32')
-    call add(s:post_filter_list, s:ansi_csi . '\d*X')
-    call add(s:post_filter_list, s:ansi_csi . '?25[hl]')
-    call add(s:post_filter_list, s:ansi_esc . '\]' . '0;.*' . s:ansi_st)
+    let s:filter = {'pat': s:ansi_csi . '\d*J', 'sub': ''}
+    call add(s:raw_lines_filters, s:filter)
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {'pat': s:ansi_csi . '\(\d\+;\)*\d*H', 'sub': '\r'}
+    call add(s:raw_lines_filters, s:filter)
+    call add(s:full_lines_filters, s:filter)
 endif
 
-" Replace 'move forward' sequences with spaces in ConPTY (MS-Windows) after
-" echoing to the terminal.
+" Remove/replace remaining ANSI sequences from full lines:
+"
+" | Sequence             | Description                 | Replace with    |
+" |----------------------|-----------------------------|-----------------|
+" | CR                   | Carriage return             | ---             |
+" | CSI <n> ; <o> m      | Text formatting             | ---             |
+" | CSI K                | Erase from cursor to EOL    | ---             |
+" | CSI <n> X            | Erase from cursor (Windows) | ---             |
+" | CSI ? 25 [h|l]       | Hide/show cursor (Windows)  | ---             |
+" | ESC ] 0 ; <str> <ST> | Console title (Windows)     | ---             |
+" | CSI <n> C            | Move forward (Windows)      | Space           |
+"
+let s:filter = {'pat': s:cr, 'sub': ''}
+call add(s:full_lines_filters, s:filter)
+let s:filter = {'pat': s:ansi_csi . '\(\d\+;\)*\d*m', 'sub': ''}
+call add(s:full_lines_filters, s:filter)
+let s:filter = {'pat': s:ansi_csi . 'K', 'sub': ''}
+call add(s:full_lines_filters, s:filter)
 if has('win32')
-    let s:post_rep_pat .= s:ansi_csi . '\(\d*\)C'
-    let s:post_rep_sub .= '\=repeat('' '', submatch(1))'
+    let s:filter = {'pat': s:ansi_csi . '\d*X', 'sub': ''}
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {'pat': s:ansi_csi . '?25[hl]', 'sub': ''}
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {'pat': s:ansi_esc . '\]' . '0;.*' . s:ansi_st, 'sub': ''}
+    call add(s:full_lines_filters, s:filter)
+    let s:filter = {
+        \ 'pat': s:ansi_csi . '\(\d*\)C',
+        \ 'sub': '\=repeat('' '', submatch(1))'
+        \ }
+    call add(s:full_lines_filters, s:filter)
 endif
-
-" Transform filter lists into filter strings.
-call map(s:pre_filter_list, {_, val -> '\(' . val . '\)'})
-call map(s:post_filter_list, {_, val -> '\(' . val . '\)'})
-let s:pre_filter = join(s:pre_filter_list, '\|')
-let s:post_filter = join(s:post_filter_list, '\|')
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Private functions
@@ -107,11 +103,14 @@ let s:post_filter = join(s:post_filter_list, '\|')
 "
 function! s:ConsoleCmdStdoutCb(...) abort
     let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    call s:FilterStdoutPreEcho(l:data)
-    call s:TermEcho(l:data)
-    call s:FilterStdoutPostEcho(l:data)
-    " Save console output to list.
-    let s:terminal.console_cmd_output += l:data
+    let l:raw_lines = l:data.raw_lines
+    let l:full_lines = l:data.full_lines
+    " Filter raw lines and echo them to the terminal
+    call map(l:raw_lines, {_, val -> s:FilterLine(val, s:raw_lines_filters)})
+    call s:TermEcho(l:raw_lines, v:false)
+    " Filter full lines and save them in list of command output.
+    call map(l:full_lines, {_, val -> s:FilterLine(val, s:full_lines_filters)})
+    let s:terminal.console_cmd_output += l:full_lines
 endfunction
 
 " Callback for the end of the command running in the Vim-CMake console.
@@ -160,7 +159,7 @@ function! s:OnCompleteCommand(error, stopped) abort
     let s:terminal.console_cmd.autocmds_succ = []
     let s:terminal.console_cmd.autocmds_err = []
     " Append empty line to terminal.
-    call s:TermEcho([''])
+    call s:TermEcho([''], v:true)
     " Exit terminal mode if inside the Vim-CMake console window (useful for
     " Vim). Otherwise the terminal mode is exited after WinEnter event.
     if win_getid() == bufwinid(s:terminal.console_buffer)
@@ -225,9 +224,12 @@ function! s:ConsoleCmdStart(command) abort
         call win_execute(l:console_win_id, 'call s:EnterTermMode()', '')
     endif
     " Run command.
-    let l:job_id = s:system.JobRun(
-            \ a:command, v:false, function('s:ConsoleCmdStdoutCb'),
-            \ function('s:ConsoleCmdExitCb'), v:true)
+    let l:options = {}
+    let l:options.stdout_cb = function('s:ConsoleCmdStdoutCb')
+    let l:options.exit_cb = function('s:ConsoleCmdExitCb')
+    let l:options.pty = v:true
+    let l:options.width = winwidth(l:console_win_id)
+    let l:job_id = s:system.JobRun(a:command, v:false, l:options)
     " For Neovim, scroll manually to the end of the terminal buffer while the
     " command's output is being appended.
     if has('nvim')
@@ -294,8 +296,7 @@ function! s:TermSetup() abort
     else
         let l:options.curwin = 1
         let l:term = term_start('NONE', l:options)
-        let s:term_id = term_getjob(l:term)
-        let s:term_tty = job_info(s:term_id).tty_in
+        let s:term_tty = term_gettty(l:term, 1)
         call term_setkill(l:term, 'term')
     endif
 endfunction
@@ -305,46 +306,43 @@ endfunction
 " Params:
 "     data : List
 "         list of strings to echo
+"     newline : Boolean
+"         whether to terminate with newline
 "
-function! s:TermEcho(data) abort
+function! s:TermEcho(data, newline) abort
     if len(a:data) == 0
         return
     endif
+    if a:newline
+        call add(a:data, '')
+    endif
     if has('nvim')
-        call chansend(s:term_chan_id, join(a:data, "\r\n") . "\r\n")
+        call chansend(s:term_chan_id, a:data)
     else
-        call writefile(a:data, s:term_tty)
+        " Use binary mode 'b' such that there isn't a NL character at the end of
+        " the last line to write.
+        call writefile(a:data, s:term_tty, 'b')
     endif
 endfunction
 
-" Filter stdout data to remove ANSI sequences that should not be sent to the
-" console terminal.
+" Filter stdout line to remove/replace ANSI sequences.
 "
 " Params:
-"     data : List
-"         list of stdout strings to filter (filtering is done in-place)
+"     line : String
+"         line to filter
+"     filters : List
+"         list of {'pat': <pattern>, 'rep': <replacement>}
 "
-function! s:FilterStdoutPreEcho(data) abort
-    if s:pre_filter !=# ''
-        call map(a:data, {_, val -> substitute(val, s:pre_filter, '', 'g')})
-    endif
-endfunction
-
-" Filter stdout data to remove remaining ANSI sequences after sending the data
-" to the console terminal.
+" Returns:
+"     String
+"         filtered line
 "
-" Params:
-"     data : List
-"         list of stdout strings to filter (filtering is done in-place)
-"
-function! s:FilterStdoutPostEcho(data) abort
-    if s:post_filter !=# ''
-        call map(a:data, {_, val -> substitute(val, s:post_filter, '', 'g')})
-    endif
-    if s:post_rep_pat !=# ''
-        call map(a:data, {_, val -> substitute(
-                \ val, s:post_rep_pat, s:post_rep_sub, 'g')})
-    endif
+function! s:FilterLine(line, filters) abort
+    let l:line = a:line
+    for l:filter in a:filters
+        let l:line = substitute(l:line, l:filter.pat, l:filter.sub, 'g')
+    endfor
+    return l:line
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -465,12 +463,12 @@ function! s:terminal.Run(command, tag, options) abort
     endfor
     " Echo start message to terminal.
     if g:cmake_console_echo_cmd
-        call s:TermEcho([printf(
+        let l:msg = printf(
                 \ '%sRunning command: %s%s',
                 \ "\e[1;35m",
                 \ join(a:command),
                 \ "\e[0m")
-                \ ])
+        call s:TermEcho([l:msg . "\r"], v:true)
     endif
     " Run command.
     let s:terminal.cmd_info = l:self.console_cmd_info[a:tag]

@@ -25,10 +25,10 @@ let s:terminal = cmake#terminal#Get()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 function! s:GetCMakeVersionCb(...) abort
-    let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    let l:index = match(l:data, '\m\C^cmake\S* version')
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
+    let l:index = match(l:lines, '\m\C^cmake\S* version')
     if l:index != -1
-        let l:version_str = split(l:data[l:index])[2]
+        let l:version_str = split(l:lines[l:index])[2]
         let l:version_parts = split(l:version_str, '\.')
         let s:cmake_version.major = str2nr(l:version_parts[0])
         let s:cmake_version.minor = str2nr(l:version_parts[1])
@@ -50,13 +50,13 @@ function! s:GetCMakeVersion() abort
     let s:cmake_version = {}
     let l:command = [g:cmake_command, '--version']
     call s:system.JobRun(
-            \ l:command, v:true, function('s:GetCMakeVersionCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:GetCMakeVersionCb')})
     return s:cmake_version
 endfunction
 
 function! s:FindGitRootCb(...) abort
-    let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    for l:line in l:data
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
+    for l:line in l:lines
         if isdirectory(l:line)
             let s:git_root = l:line
             break
@@ -77,7 +77,7 @@ function! s:FindGitRoot() abort
     " this will result in the path to the root repo.
     let l:command = ['git', 'rev-parse', '--show-superproject-working-tree']
     call s:system.JobRun(
-            \ l:command, v:true, function('s:FindGitRootCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:FindGitRootCb')})
     if s:git_root !=# ''
         return s:git_root
     endif
@@ -89,7 +89,7 @@ function! s:FindGitRoot() abort
     " invoked only after `git rev-parse --show-superproject-working-tree`.
     let l:command = ['git', 'rev-parse', '--show-toplevel']
     call s:system.JobRun(
-            \ l:command, v:true, function('s:FindGitRootCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:FindGitRootCb')})
     if s:git_root !=# ''
         return s:git_root
     endif
@@ -305,8 +305,8 @@ endfunction
 " Callback for RefreshTests().
 "
 function! s:RefreshTestsCb(...) abort
-    let l:data = s:system.ExtractStdoutCallbackData(a:000)
-    call extend(s:refresh_tests_output, l:data)
+    let l:lines = s:system.ExtractStdoutCallbackData(a:000).full_lines
+    call extend(s:refresh_tests_output, l:lines)
 endfunction
 
 " Refresh list of available CTest tests.
@@ -321,7 +321,7 @@ function! s:RefreshTests() abort
         \ '--test-dir', l:build_dir
     \ ]
     call s:system.JobRun(
-            \ l:command, v:true, function('s:RefreshTestsCb'), v:null, v:false)
+            \ l:command, v:true, {'stdout_cb': function('s:RefreshTestsCb')})
     " Make list of tests from JSON data.
     let s:tests_data_json = json_decode(join(s:refresh_tests_output))
     let s:tests_data_list = s:tests_data_json.tests
@@ -379,7 +379,7 @@ function! s:LinkCompileCommands() abort
             \ v:true,
             \ )
     let l:command = [g:cmake_command, '-E', 'create_symlink', l:target, l:link]
-    call s:system.JobRun(l:command, v:true, v:null, v:null, v:false)
+    call s:system.JobRun(l:command, v:true, {})
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

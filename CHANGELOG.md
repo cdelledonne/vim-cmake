@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
   a list of targets on CMake generators other than `Makefile`. The minimum
   required CMake version for this feature is 3.14. You may need to run
   `:CMakeGenerate` in existing projects to create the necessary files.
+* The filtering of ANSI sequences on stdout produced by CMake commands is now
+  applied mostly after outputting lines to the Vim-CMake console, and before
+  parsing such lines for the Quickfix feature. This avoids unnecessary
+  processing of output lines, and defers such task to the terminal emulator.
 
 <!--=========================================================================-->
 
