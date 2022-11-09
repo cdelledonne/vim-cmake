@@ -162,6 +162,11 @@ function! s:system.JobRun(command, wait, options) abort
         if has_key(a:options, 'exit_cb')
             let l:job_options.exit_cb = a:options.exit_cb
         endif
+        " NOTE: currently, this doesn't seem to work in Vim
+        " (https://github.com/cdelledonne/vim-cmake/issues/75).
+        if has_key(a:options, 'width')
+            let l:job_options.env.COLUMNS = a:options.width
+        endif
         if l:job_options.pty
             " When allocating a PTY, we need to use 'raw' stdout mode in Vim, so
             " that the stdout stream is not buffered, and thus we don't have to
