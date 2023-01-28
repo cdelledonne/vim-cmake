@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Changed
+* `s:system.Path()` does not escape file paths, as it is unnecessary, and it
+  even causes issues in some cases (#78).
+
 <!--=========================================================================-->
 
 ## 0.12.0 &ndash; 2022-11-09
