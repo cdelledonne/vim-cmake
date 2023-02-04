@@ -71,9 +71,8 @@ function! s:system.Path(components, relative) abort
             let l:path = fnamemodify(l:path, ':.')
         endif
     endif
-    " Simplify and escape path.
+    " Simplify path.
     let l:path = simplify(l:path)
-    let l:path = fnameescape(l:path)
     return l:path
 endfunction
 
