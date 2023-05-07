@@ -413,6 +413,17 @@ function! s:terminal.Close() abort
     endif
 endfunction
 
+" Toggle Vim-CMake console window.
+"
+function! s:terminal.Toggle() abort
+    call s:logger.LogDebug('Invoked: terminal.Toggle()')
+    if bufexists(l:self.console_buffer)
+        call l:self.Close()
+    else
+        call l:self.Open(v:false)
+    endif
+endfunction
+
 " Run arbitrary command in the Vim-CMake console.
 "
 " Params:

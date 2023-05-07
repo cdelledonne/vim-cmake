@@ -4,6 +4,7 @@
 :CMakeGenerate	cmake.txt	/*:CMakeGenerate*
 :CMakeInstall	cmake.txt	/*:CMakeInstall*
 :CMakeOpen	cmake.txt	/*:CMakeOpen*
+:CMakeToggle	cmake.txt	/*:CMakeToggle*
 :CMakeStop	cmake.txt	/*:CMakeStop*
 :CMakeSwitch	cmake.txt	/*:CMakeSwitch*
 :CMakeTest	cmake.txt	/*:CMakeTest*

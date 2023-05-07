@@ -198,6 +198,10 @@ Opening and closing the CMake console~
 :CMakeClose
 		Close the CMake console window.
 
+							*:CMakeToggle*
+:CMakeToggle
+		Toggle the CMake console window.
+
 ------------------------------------------------------------------------------
 							*cmake-stop*
 Stopping the running command~
@@ -238,6 +242,8 @@ Global <Plug> mappings~
 <Plug>(CMakeOpen)	Equivalent to |:CMakeOpen|.
 
 <Plug>(CMakeClose)	Equivalent to |:CMakeClose|.
+
+<Plug>(CMakeToggle)	Equivalent to |:CMakeToggle|.
 
 <Plug>(CMakeStop)	Equivalent to |:CMakeStop|.
 

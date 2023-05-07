@@ -71,6 +71,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
 | `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
 | `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window            |
+| `:CMakeToggle`            | `(CMakeToggle)`   | Toggle CMake console window           |
 | `:CMakeStop`              | `(CMakeStop)`     | Stop running command                  |
 
 ### Additional `<Plug>` mappings
