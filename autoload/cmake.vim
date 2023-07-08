@@ -183,7 +183,7 @@ function! cmake#Close() abort
     call s:terminal.Close()
 endfunction
 
-" API function for :CMakeToggle
+" API function for :CMakeToggle.
 "
 function! cmake#Toggle() abort
     call s:logger.LogDebug('API invoked: cmake#Toggle()')
