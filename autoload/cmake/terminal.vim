@@ -411,7 +411,7 @@ endfunction
 "         inside of the console
 "
 function! s:terminal.Close(stop) abort
-    call s:logger.LogDebug('Invoked: terminal.Close()')
+    call s:logger.LogDebug('Invoked: terminal.Close(%s)', a:stop)
     if bufexists(l:self.console_buffer)
         let l:cmake_win_id = bufwinid(l:self.console_buffer)
         if l:cmake_win_id != -1
@@ -436,7 +436,7 @@ function! s:terminal.Toggle() abort
     if l:cmake_win_id == -1
         call l:self.Open(v:false)
     else
-        call l:self.Close()
+        call l:self.Close(0)
     endif
 endfunction
 

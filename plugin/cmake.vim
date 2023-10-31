@@ -93,7 +93,7 @@ nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
 nnoremap <silent> <Plug>(CMakeTest) :call cmake#Test()<CR>
 
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#Open()<CR>
-nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close()<CR>
+nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close(0)<CR>
 nnoremap <silent> <Plug>(CMakeToggle) :call cmake#Toggle()<CR>
 nnoremap <silent> <Plug>(CMakeStop) :call cmake#Stop()<CR>
 
