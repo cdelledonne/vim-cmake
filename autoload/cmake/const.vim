@@ -27,6 +27,19 @@ let s:const.plugin_news = {
     \ '0.13.0': ['Vim-CMake has new command `:CMakeToggle`, run `:help :CMakeToggle`'],
     \ }
 
+let s:const.errors = {
+    \ 'CANT_STOP_JOB': 'Cannot stop the CMake console job while a command is running',
+    \ 'COMMAND_RUNNING': 'Another CMake command is already running',
+    \ 'FILEAPI_RERUN': 'fileapi: Response from cmake-file-api(7) out of date. Some functionality may not work correctly. Run :CMakeGenerate',
+    \ 'FILEAPI_VERSION': 'fileapi: CMake version not supported. Certain functionality will not work correctly. (Minimum supported is CMake 3.14)',
+    \ 'NO_CMAKE': 'CMake binary ''%s'' not found in PATH',
+    \ 'NO_CONFIG': 'Build configuration ''%s'' not found, run '':CMakeGenerate %s''',
+    \ 'NO_CTEST': 'CTest binary ''%s'' not found in PATH',
+    \ 'NO_TERMINAL': 'Must run Neovim, or Vim with +terminal',
+    \ 'OLD_NEOVIM': 'Only Neovim versions >= 0.5 are supported',
+    \ 'VIM_WINDOWS': 'Under Windows, only Neovim is supported at the moment',
+    \ }
+
 let s:const.config_vars = {}
 let s:const.config_vars.cmake_command               = 'cmake'
 let s:const.config_vars.cmake_test_command          = 'ctest'

@@ -178,9 +178,9 @@ endfunction
 
 " API function for :CMakeClose.
 "
-function! cmake#Close() abort
+function! cmake#Close(stop) abort
     call s:logger.LogDebug('API invoked: cmake#Close()')
-    call s:terminal.Close()
+    call s:terminal.Close(a:stop)
 endfunction
 
 " API function for :CMakeToggle.

@@ -25,19 +25,19 @@ let s:logger = cmake#logger#Get()
 " Check required features.
 if has('nvim')
     if !has('nvim-0.5.0')
-        call s:logger.EchoError('Only Neovim versions >= 0.5 are supported')
-        call s:logger.LogError('Only Neovim versions >= 0.5 are supported')
+        call s:logger.EchoError(s:const.errors['OLD_NEOVIM'])
+        call s:logger.LogError(s:const.errors['OLD_NEOVIM'])
         finish
     endif
 else
     if has('win32')
-        call s:logger.EchoError('Under Windows, only Neovim is supported at the moment')
-        call s:logger.LogError('Under Windows, only Neovim is supported at the moment')
+        call s:logger.EchoError(s:const.errors['VIM_WINDOWS'])
+        call s:logger.LogError(s:const.errors['VIM_WINDOWS'])
         finish
     endif
     if !has('terminal')
-        call s:logger.EchoError('Must run Neovim, or Vim with +terminal')
-        call s:logger.LogError('Must run Neovim, or Vim with +terminal')
+        call s:logger.EchoError(s:const.errors['NO_TERMINAL'])
+        call s:logger.LogError(s:const.errors['NO_TERMINAL'])
         finish
     endif
 endif
@@ -46,15 +46,15 @@ call s:logger.LogInfo('Loading Vim-CMake')
 
 " Check if CMake executable exists.
 if !executable(g:cmake_command)
-    call s:logger.EchoError('CMake binary ''%s'' not found in PATH', g:cmake_command)
-    call s:logger.LogError('CMake binary ''%s'' not found in PATH', g:cmake_command)
+    call s:logger.EchoError(s:const.errors['NO_CMAKE'], g:cmake_command)
+    call s:logger.LogError(s:const.errors['NO_CMAKE'], g:cmake_command)
     finish
 endif
 
 " Check if CTest executable exists.
 if !executable(g:cmake_test_command)
-    call s:logger.EchoError('CTest binary ''%s'' not found in PATH', g:cmake_test_command)
-    call s:logger.LogError('CTest binary ''%s'' not found in PATH', g:cmake_test_command)
+    call s:logger.EchoError(s:const.errors['NO_CTEST'], g:cmake_test_command)
+    call s:logger.LogError(s:const.errors['NO_CTEST'], g:cmake_test_command)
     finish
 endif
 
@@ -72,7 +72,7 @@ command CMakeInstall call cmake#Install()
 command -nargs=? -complete=custom,cmake#GetTests CMakeTest call cmake#Test(<f-args>)
 
 command CMakeOpen call cmake#Open()
-command CMakeClose call cmake#Close()
+command -bang CMakeClose call cmake#Close(<bang>0)
 command CMakeToggle call cmake#Toggle()
 command CMakeStop call cmake#Stop()
 

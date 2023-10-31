@@ -23,6 +23,7 @@ let s:query = {
             \     },
             \ }
 
+let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:system = cmake#system#Get()
 
@@ -125,12 +126,8 @@ function! s:fileapi.CheckCMakeVersion(cmake_version) abort
                 \ a:cmake_version.major * 100 + a:cmake_version.minor
     let l:self.cmake_version_supported = l:cmake_version_comparable >= 314
     if !l:self.cmake_version_supported
-        let l:warning =
-                    \ 'fileapi: CMake version not supported.'
-                    \ . ' Certain functionality will not work correctly.'
-                    \ . ' (Minimum supported is CMake 3.14)'
-        call s:logger.EchoWarn(l:warning)
-        call s:logger.LogWarn(l:warning)
+        call s:logger.EchoWarn(s:const.errors['FILEAPI_VERSION'])
+        call s:logger.LogWarn(s:const.errors['FILEAPI_VERSION'])
     endif
 
     return l:self.cmake_version_supported
@@ -178,12 +175,8 @@ function! s:fileapi.Parse(build_dir) abort
     catch /vim-cmake_fileapi_oldindex/
         " TODO: Regenerate to update queries or bail
         " bail for now
-        let l:warning =
-                    \ 'fileapi: Response from cmake-file-api(7) out of date.'
-                    \ . ' Some functionality may not work correctly.'
-                    \ . ' Run :CMakeGenerate'
-        call s:logger.EchoWarn(l:warning)
-        call s:logger.LogWarn(l:warning)
+        call s:logger.EchoWarn(s:const.errors['FILEAPI_RERUN'])
+        call s:logger.LogWarn(s:const.errors['FILEAPI_RERUN'])
     endtry
 
     if l:response_files isnot v:null
