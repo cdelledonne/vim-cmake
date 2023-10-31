@@ -11,6 +11,7 @@ let s:terminal.console_cmd_info = {}
 let s:terminal.console_cmd_info.GENERATE = 'Generating buildsystem...'
 let s:terminal.console_cmd_info.BUILD = 'Building...'
 let s:terminal.console_cmd_info.INSTALL = 'Installing...'
+let s:terminal.console_cmd_info.RUN = 'Running executable...'
 let s:terminal.console_cmd_info.TEST = 'Running tests...'
 let s:terminal.console_cmd_info.NONE = ''
 

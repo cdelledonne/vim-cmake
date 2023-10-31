@@ -38,12 +38,14 @@ endif
 " Params:
 "     clean : Number
 "         whether to clean before generating
-"     a:1 : String
+"     a:000 : List
 "         (optional) build configuration and additional CMake options
 "
 function! cmake#Generate(clean, ...) abort
-    call s:logger.LogDebug('API invoked: cmake#Generate(%s, %s)', a:clean, a:000)
-    call s:buildsys.Generate(a:clean, join(a:000))
+    let l:args = split(join(a:000))
+    call s:logger.LogDebug(
+        \ 'API invoked: cmake#Generate(%s, %s)', a:clean, string(l:args))
+    call s:buildsys.Generate(a:clean, l:args)
 endfunction
 
 " API function for :CMakeClean and <Plug>(CMakeClean).
@@ -69,12 +71,14 @@ endfunction
 " Params:
 "     clean : Number
 "         whether to clean before building
-"     a:1 : String
+"     a:000 : List
 "         (optional) target and other build options
 "
 function! cmake#Build(clean, ...) abort
-    call s:logger.LogDebug('API invoked: cmake#Build(%s, %s)', a:clean, a:000)
-    call s:build.Build(a:clean, join(a:000))
+    let l:args = split(join(a:000))
+    call s:logger.LogDebug(
+        \ 'API invoked: cmake#Build(%s, %s)', a:clean, string(l:args))
+    call s:build.Build(a:clean, l:args)
 endfunction
 
 " API function for :CMakeInstall and <Plug>(CMakeInstall).
@@ -84,15 +88,31 @@ function! cmake#Install() abort
     call s:build.Install()
 endfunction
 
+" API function for :CMakeRun.
+"
+" Params:
+"     target : String
+"         executable target name and optional arguments
+"     a:000 : List
+"         (optional) program arguments
+"
+function! cmake#Run(target, ...) abort
+    let l:args = split(join(a:000))
+    call s:logger.LogDebug(
+        \ 'API invoked: cmake#Run(%s, %s)', a:target, string(l:args))
+    call s:buildsys.Run(a:target, l:args)
+endfunction
+
 " API function for :CMakeTest and <Plug>(CMakeTest).
 "
 " Params:
-"     a:1 : String
-"         (optional) test name and other test options
+"     a:000 : String
+"         (optional) test name(s) and other test options
 "
 function! cmake#Test(...) abort
-    call s:logger.LogDebug('API invoked: cmake#Test(%s)', a:000)
-    call s:test.Test(join(a:000))
+    let l:args = split(join(a:000))
+    call s:logger.LogDebug('API invoked: cmake#Test(%s)', string(l:args))
+    call s:test.Test(l:args)
 endfunction
 
 " API function for completion for :CMakeSwitch.
@@ -132,15 +152,36 @@ function! cmake#GetBuildTargets(arg_lead, cmd_line, cursor_pos) abort
     call s:logger.LogDebug('API invoked: cmake#GetBuildTargets()')
     try
         call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
-    catch /vim-cmake_fileapi_noindex/
-        let l:warning =
-                    \ 'fileapi: Response from cmake-file-api(7) missing.'
-                    \ . ' Target completion will not work.'
-                    \ . ' Run :CMakeGenerate'
-        call s:logger.EchoWarn(l:warning)
-        call s:logger.LogWarn(l:warning)
+    catch /vim-cmake-fileapi-noindex/
+        call s:logger.EchoWarn(s:const.errors['FILEAPI_NORESP'])
+        call s:logger.LogWarn(s:const.errors['FILEAPI_NORESP'])
     endtry
-    return join(s:fileapi.GetTargets(), "\n")
+    return join(s:fileapi.GetBuildTargets(), "\n")
+endfunction
+
+" API function for completion for :CMakeRun.
+"
+" Params:
+"     arg_lead : String
+"         the leading portion of the argument currently being completed
+"     cmd_line : String
+"         the entire command line
+"     cursor_pos : Number
+"         the cursor position in the command line (byte index)
+"
+" Returns:
+"     String
+"         available executable targets, one per line
+"
+function! cmake#GetExecTargets(arg_lead, cmd_line, cursor_pos) abort
+    call s:logger.LogDebug('API invoked: cmake#GetExecTargets()')
+    try
+        call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
+    catch /vim-cmake-fileapi-noindex/
+        call s:logger.EchoWarn(s:const.errors['FILEAPI_NORESP'])
+        call s:logger.LogWarn(s:const.errors['FILEAPI_NORESP'])
+    endtry
+    return join(sort(keys(s:fileapi.GetExecTargets())), "\n")
 endfunction
 
 " API function for completion for :CMakeTest.

@@ -14,7 +14,7 @@ nice visual feedback.
 
 * Visual experience, shows CMake output in a console-like window
 * Slick management of build configurations
-* Autocompletion for build targets, build configurations and tests
+* Autocompletion for build targets, configurations, executables and tests
 * Quickfix list population after each build
 * Airline/statusline status information, including current build configuration
 * Plug-and-play, but configurable
@@ -24,7 +24,10 @@ nice visual feedback.
 
 * Vim with `+terminal`, or Neovim >= 0.5
 * Under Windows, only Neovim is supported at the moment
-* Target completion uses the `cmake-file-api(7)`, which requires CMake 3.14 or later
+* Target completion uses the `cmake-file-api(7)`, which requires CMake 3.14 or
+  later
+* Running executables also requires the `cmake-file-api(7)`, and thus CMake 3.14
+  or later
 
 <!--=========================================================================-->
 
@@ -52,7 +55,8 @@ Run `:CMakeGenerate` from the top-level CMake source directory to generate a
 build system for the project.  Then, run `:CMakeBuild` to build the project.
 The built files will end up in the binary directory ([out-of-source
 build][oos]).  To switch between build configurations, run `:CMakeSwitch
-<config>`.  To run CMake-generated tests with CTest, run `:CMakeTest`.
+<config>`.  To run executable targets, run `:CMakeRun <target>`.  To run
+CMake-generated tests with CTest, run `:CMakeTest`.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
 etc.), build specific targets and control build options, and fix errors using
@@ -67,6 +71,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files   |
 | `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                       |
 | `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                  |
+| `:CMakeRun <target>`      | `(CMakeRun)`      | Run executable target                 |
 | `:CMakeTest`              | `(CMakeTest)`     | Run CMake-generated tests with CTest  |
 | `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
 | `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |

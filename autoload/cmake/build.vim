@@ -19,7 +19,7 @@ let s:terminal = cmake#terminal#Get()
 " Get dictionary of build arguments from command-line string.
 "
 " Params:
-"     argstring : String
+"     args : List
 "         command-line arguments, like target and additional build options
 "
 " Returns:
@@ -27,22 +27,22 @@ let s:terminal = cmake#terminal#Get()
 "         CMake build options, target and native options
 "
 " Example:
-"     argstring = --parallel 4 all -- VERBOSE=1
+"     args = ['--parallel', '4', 'all', '--', 'VERBOSE=1']
 "     return = {
 "         \ 'cmake_build_options': ['--parallel', '4'],
 "         \ 'target': ['--target', 'all'],
 "         \ 'native_build_options': ['VERBOSE=1']
 "     \ }
 "
-function! s:GetBuildArgs(argstring) abort
+function! s:GetBuildArgs(args) abort
     let l:argdict = {}
     let l:argdict.cmake_build_options = []
     let l:argdict.target = []
     let l:argdict.native_build_options = []
-    let l:arglist = split(a:argstring)
+    let l:arglist = deepcopy(a:args)
     " Search arguments for one that matches the name of a target.
     call s:RefreshTargets()
-    for l:t in s:fileapi.GetTargets()
+    for l:t in s:fileapi.GetBuildTargets()
         let l:match_res = match(l:arglist, '\m\C^' . l:t)
         if l:match_res != -1
             " If found, get target and remove from list of arguments.
@@ -71,7 +71,7 @@ function! s:GenerateQuickfix() abort
     call s:quickfix.Generate(s:terminal.GetOutput())
 endfunction
 
-" Refresh list of available CMake targets.
+" Refresh list of available CMake build targets.
 "
 function! s:RefreshTargets() abort
     try
@@ -89,18 +89,18 @@ endfunction
 " Params:
 "     clean : Boolean
 "         whether to clean before building
-"     argstring : String
+"     args : List
 "         build target and other options
 "
-function! s:build.Build(clean, argstring) abort
+function! s:build.Build(clean, args) abort
     call s:logger.LogDebug('Invoked: build.Build(%s, %s)',
-            \ a:clean, string(a:argstring))
+            \ a:clean, string(a:args))
     let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
     let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_command, '--build', l:build_dir]
     let l:options = {}
     " Parse additional options.
-    let l:options = s:GetBuildArgs(a:argstring)
+    let l:options = s:GetBuildArgs(a:args)
     " Add CMake build options to the command.
     let l:command += g:cmake_build_options
     let l:command += l:options.cmake_build_options
@@ -119,8 +119,14 @@ function! s:build.Build(clean, argstring) abort
     call s:fileapi.UpdateQueries(l:build_dir)
     " Run build command.
     let l:run_options = {}
-    let l:run_options.callbacks_succ = [function('s:GenerateQuickfix'), function('s:RefreshTargets')]
-    let l:run_options.callbacks_err = [function('s:GenerateQuickfix'), function('s:RefreshTargets')]
+    let l:run_options.callbacks_succ = [
+        \ function('s:GenerateQuickfix'),
+        \ function('s:RefreshTargets'),
+        \ ]
+    let l:run_options.callbacks_err = [
+        \ function('s:GenerateQuickfix'),
+        \  function('s:RefreshTargets'),
+        \ ]
     let l:run_options.autocmds_pre = ['CMakeBuildPre']
     let l:run_options.autocmds_succ = ['CMakeBuildSucceeded']
     let l:run_options.autocmds_err = ['CMakeBuildFailed']

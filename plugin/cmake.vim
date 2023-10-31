@@ -69,6 +69,8 @@ command -nargs=1 -complete=custom,cmake#GetConfigs CMakeSwitch call cmake#Switch
 command -nargs=? -bang -complete=custom,cmake#GetBuildTargets CMakeBuild call cmake#Build(<bang>0, <f-args>)
 command CMakeInstall call cmake#Install()
 
+command -nargs=+ -complete=custom,cmake#GetExecTargets CMakeRun call cmake#Run(<f-args>)
+
 command -nargs=? -complete=custom,cmake#GetTests CMakeTest call cmake#Test(<f-args>)
 
 command CMakeOpen call cmake#Open()
@@ -89,6 +91,8 @@ nnoremap <Plug>(CMakeSwitch) :CMakeSwitch<Space>
 nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0)<CR>
 nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Install()<CR>
 nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
+
+nnoremap <Plug>(CMakeRun) :CMakeRun<Space>
 
 nnoremap <silent> <Plug>(CMakeTest) :call cmake#Test()<CR>
 

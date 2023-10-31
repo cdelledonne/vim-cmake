@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+* `:CMakeRun` command to run executable targets ([#49][#49]).
 
 <!--=========================================================================-->
 
@@ -285,6 +288,7 @@ Vim-CMake window ([#83][#83]).
 
 First version.
 
+[#49]: https://github.com/cdelledonne/vim-cmake/issues/49
 [#78]: https://github.com/cdelledonne/vim-cmake/issues/78
 [#81]: https://github.com/cdelledonne/vim-cmake/issues/81
 [#83]: https://github.com/cdelledonne/vim-cmake/issues/83
