@@ -5,14 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-<!-- ## Unreleased -->
-
-<!--=========================================================================-->
-
-## 0.12.2 &ndash; 2023-07-08
+## Unreleased
 
 ### Added
-* Add `:CMakeToggle` command ([#83](#83)).
+* `:CMakeToggle` command, and `<Plug>(CMakeToggle)` mapping, to toggle the
+Vim-CMake window ([#83](#83)).
 
 <!--=========================================================================-->
 
@@ -20,7 +17,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Changed
 * `s:system.Path()` does not escape file paths, as it is unnecessary, and it
-  even causes issues in some cases ([#78][#78]).
+  even causes issues in some cases ([#78](#78)).
 
 <!--=========================================================================-->
 
@@ -279,4 +276,3 @@ First version.
 
 [format]: https://keepachangelog.com/en/1.0.0/
 [semver]: https://semver.org/spec/v2.0.0.html
-[#78]: https://github.com/cdelledonne/vim-cmake/issues/78

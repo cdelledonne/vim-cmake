@@ -2,7 +2,7 @@
 " File:        cmake.vim
 " Description: Vim-CMake, a Vim/Neovim plugin for working with CMake projects
 " Maintainer:  Carlo Delle Donne <https://github.com/cdelledonne>
-" Version:     0.12.2
+" Version:     0.12.1
 " License:     MIT
 " ==============================================================================
 
