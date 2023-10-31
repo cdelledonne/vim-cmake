@@ -73,6 +73,7 @@ command -nargs=? -complete=custom,cmake#GetTests CMakeTest call cmake#Test(<f-ar
 
 command CMakeOpen call cmake#Open()
 command CMakeClose call cmake#Close()
+command CMakeToggle call cmake#Toggle()
 command CMakeStop call cmake#Stop()
 
 call s:logger.LogInfo('Commands defined')
@@ -93,6 +94,7 @@ nnoremap <silent> <Plug>(CMakeTest) :call cmake#Test()<CR>
 
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#Open()<CR>
 nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close()<CR>
+nnoremap <silent> <Plug>(CMakeToggle) :call cmake#Toggle()<CR>
 nnoremap <silent> <Plug>(CMakeStop) :call cmake#Stop()<CR>
 
 call s:logger.LogInfo('Mappings defined')
