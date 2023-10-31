@@ -282,8 +282,8 @@ function! s:CreateConsoleBuffer() abort
     augroup vimcmake
         autocmd WinEnter <buffer> call s:OnEnterConsoleWindow()
     augroup END
-    return bufnr()
     call s:logger.LogDebug('Created console buffer')
+    return bufnr()
 endfunction
 
 " Setup Vim-CMake console terminal.
