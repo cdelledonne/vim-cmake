@@ -417,15 +417,11 @@ endfunction
 "
 function! s:terminal.Toggle() abort
     call s:logger.LogDebug('Invoked: terminal.Toggle()')
-    if bufexists(l:self.console_buffer)
-        let l:cmake_win_id = bufwinid(l:self.console_buffer)
-        if l:cmake_win_id != -1
-            call l:self.Close()
-        else
-            call l:self.Open(v:false)
-        endif
+    let l:cmake_win_id = bufwinid(l:self.console_buffer)
+    if l:cmake_win_id == -1
+        call l:self.Open(v:false)
     else
-        call l:self.Open(v:true)
+        call l:self.Close()
     endif
 endfunction
 
