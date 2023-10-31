@@ -30,6 +30,7 @@ let s:exit_term_mode = 0
 let s:raw_lines_filters = []
 let s:full_lines_filters = []
 
+let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
 let s:statusline = cmake#statusline#Get()
 let s:system = cmake#system#Get()
@@ -403,12 +404,26 @@ endfunction
 
 " Close Vim-CMake console window.
 "
-function! s:terminal.Close() abort
+" Params:
+"     stop : Boolean
+"         if set, the console job is stopped (the console buffer is deleted) -
+"         stopping the console job fails if there is still a command running
+"         inside of the console
+"
+function! s:terminal.Close(stop) abort
     call s:logger.LogDebug('Invoked: terminal.Close()')
     if bufexists(l:self.console_buffer)
         let l:cmake_win_id = bufwinid(l:self.console_buffer)
         if l:cmake_win_id != -1
             execute win_id2win(l:cmake_win_id) . 'wincmd q'
+        endif
+        if a:stop
+            if l:self.console_cmd.running
+                call s:logger.EchoError(s:const.errors['CANT_STOP_JOB'])
+                call s:logger.LogError(s:const.errors['CANT_STOP_JOB'])
+                return
+            endif
+            execute 'bd! ' . l:self.console_buffer
         endif
     endif
 endfunction
@@ -454,8 +469,8 @@ function! s:terminal.Run(command, tag, options) abort
     call assert_notequal(index(keys(l:self.console_cmd_info), a:tag), -1)
     " Prevent executing this function when a command is already running
     if l:self.console_cmd.running
-        call s:logger.EchoError('Another CMake command is already running')
-        call s:logger.LogError('Another CMake command is already running')
+        call s:logger.EchoError(s:const.errors['COMMAND_RUNNING'])
+        call s:logger.LogError(s:const.errors['COMMAND_RUNNING'])
         return
     endif
     let l:self.console_cmd.running = v:true

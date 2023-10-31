@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Added
+* `:CMakeClose` can take the `!` modifier to stop the console job ([#81][#81]).
 
 <!--=========================================================================-->
 
@@ -13,7 +16,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Added
 * `:CMakeToggle` command, and `<Plug>(CMakeToggle)` mapping, to toggle the
-Vim-CMake window ([#83](#83)).
+Vim-CMake window ([#83][#83]).
 
 <!--=========================================================================-->
 
@@ -21,7 +24,7 @@ Vim-CMake window ([#83](#83)).
 
 ### Changed
 * `s:system.Path()` does not escape file paths, as it is unnecessary, and it
-  even causes issues in some cases ([#78](#78)).
+  even causes issues in some cases ([#78][#78]).
 
 <!--=========================================================================-->
 
@@ -278,5 +281,8 @@ Vim-CMake window ([#83](#83)).
 
 First version.
 
+[#78]: https://github.com/cdelledonne/vim-cmake/issues/78
+[#81]: https://github.com/cdelledonne/vim-cmake/issues/81
+[#83]: https://github.com/cdelledonne/vim-cmake/issues/83
 [format]: https://keepachangelog.com/en/1.0.0/
 [semver]: https://semver.org/spec/v2.0.0.html

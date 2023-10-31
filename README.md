@@ -70,7 +70,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeTest`              | `(CMakeTest)`     | Run CMake-generated tests with CTest  |
 | `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
 | `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
-| `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window            |
+| `:CMakeClose[!]`          | `(CMakeClose)`    | Close CMake console window            |
 | `:CMakeToggle`            | `(CMakeToggle)`   | Toggle CMake console window           |
 | `:CMakeStop`              | `(CMakeStop)`     | Stop running command                  |
 
@@ -88,7 +88,7 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `cb`        | Run `:CMakeBuild`          |
 | `ci`        | Run `:CMakeInstall`        |
 | `ct`        | Run `:CMakeTest`           |
-| `cq`        | Close CMake console window |
+| `cq`        | Run `:CMakeClose`          |
 | `<C-C>`     | Stop running command       |
 
 ### Events

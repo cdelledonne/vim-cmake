@@ -13,6 +13,7 @@ let s:buildsys.tests = []
 
 let s:refresh_tests_output = []
 
+let s:const = cmake#const#Get()
 let s:fileapi = cmake#fileapi#Get()
 let s:logger = cmake#logger#Get()
 let s:state = cmake#state#Get()
@@ -470,12 +471,8 @@ function! s:buildsys.Switch(config) abort
     call s:logger.LogDebug('Invoked: buildsys.Switch(%s)', a:config)
     " Check that config exists.
     if !s:ConfigExists(a:config)
-        call s:logger.EchoError(
-                \ "Build configuration '%s' not found, run ':CMakeGenerate %s'",
-                \ a:config, a:config)
-        call s:logger.LogError(
-                \ "Build configuration '%s' not found, run ':CMakeGenerate %s'",
-                \ a:config, a:config)
+        call s:logger.EchoError(s:const.errors['NO_CONFIG'], a:config, a:config)
+        call s:logger.LogError(s:const.errors['NO_CONFIG'], a:config, a:config)
         return
     endif
     call s:SetCurrentConfig(a:config)

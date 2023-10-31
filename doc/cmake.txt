@@ -195,8 +195,10 @@ Opening and closing the CMake console~
 		Open the CMake console window.
 
 							*:CMakeClose*
-:CMakeClose
-		Close the CMake console window.
+:CMakeClose[!]
+		Close the CMake console window.  If [!] is supplied, the
+		console job is stopped. Stopping the console job fails if
+		there is still a command running inside of the console.
 
 							*:CMakeToggle*
 :CMakeToggle
@@ -267,7 +269,7 @@ ci			Run |:CMakeInstall|.
 
 ct			Run |:CMakeTest|.
 
-cq			Close the CMake console window.
+cq			Run |:CMakeClose|.
 
 <C-C>			Stop the running command.
 
