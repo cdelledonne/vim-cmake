@@ -1,6 +1,7 @@
 :CMakeBuild	cmake.txt	/*:CMakeBuild*
 :CMakeClean	cmake.txt	/*:CMakeClean*
 :CMakeClose	cmake.txt	/*:CMakeClose*
+:CMakeCloseOverlay	cmake.txt	/*:CMakeCloseOverlay*
 :CMakeGenerate	cmake.txt	/*:CMakeGenerate*
 :CMakeInstall	cmake.txt	/*:CMakeInstall*
 :CMakeOpen	cmake.txt	/*:CMakeOpen*

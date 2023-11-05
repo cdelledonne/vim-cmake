@@ -214,7 +214,7 @@ endfunction
 "
 function! cmake#Open() abort
     call s:logger.LogDebug('API invoked: cmake#Open()')
-    call s:terminal.Open(v:false)
+    call s:terminal.Open(v:false, v:false)
 endfunction
 
 " API function for :CMakeClose.
@@ -229,6 +229,13 @@ endfunction
 function! cmake#Toggle() abort
     call s:logger.LogDebug('API invoked: cmake#Toggle()')
     call s:terminal.Toggle()
+endfunction
+
+" API function for :CMakeCloseOverlay.
+"
+function! cmake#CloseOverlay() abort
+    call s:logger.LogDebug('API invoked: cmake#CloseOverlay()')
+    call s:terminal.CloseOverlay()
 endfunction
 
 " API function for third-party plugins to query information

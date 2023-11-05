@@ -59,8 +59,8 @@ Run |:CMakeGenerate| from the top-level CMake source directory to generate a
 build system for the project.  Then, run |:CMakeBuild| to build the project.
 The built files will end up in the binary directory (out-of-source build).  To
 switch between build configurations, run |:CMakeSwitch| {config}.  To run
-executable targets, run |:CMakeRun| {target}.  To run CMake-generated tests
-with CTest, run |:CMakeTest|.
+executable targets in an overlay window, run |:CMakeRun| {target}.  To run
+CMake-generated tests with CTest, run |:CMakeTest|.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
 etc.), build specific targets and control build options, and fix errors using
@@ -164,6 +164,10 @@ after `:CMakeRun` in the command line to trigger autocompletion, i.e.
 >
 	:CMakeRun <TAB>
 <
+The executable is run in an "overlay" window that takes over the console
+window.  Use |:CMakeCloseOverlay| (or just the mapping `cq` from within the
+overlay window) to close the overlay and switch back to the console window.
+
 ------------------------------------------------------------------------------
 							*cmake-test*
 Running CMake-generated tests with CTest~
@@ -222,6 +226,12 @@ Opening and closing the CMake console~
 :CMakeToggle
 		Toggle the CMake console window.
 
+							*:CMakeCloseOverlay*
+:CMakeCloseOverlay
+		Close the CMake overlay window and return to the console
+		window.  The overlay window is opened when running an
+		executable target with |:CMakeRun|.
+
 ------------------------------------------------------------------------------
 							*cmake-stop*
 Stopping the running command~
@@ -268,6 +278,9 @@ Global <Plug> mappings~
 
 <Plug>(CMakeToggle)	Equivalent to |:CMakeToggle|.
 
+<Plug>(CMakeCloseOverlay)
+			Equivalent to |:CMakeCloseOverlay|.
+
 <Plug>(CMakeStop)	Equivalent to |:CMakeStop|.
 
 Example usage of the <Plug> mappings:
@@ -293,6 +306,10 @@ ct			Run |:CMakeTest|.
 cq			Run |:CMakeClose|.
 
 <C-C>			Stop the running command.
+
+CMake overlay window key mappings~
+
+cq			Run |:CMakeCloseOverlay|.
 
 ==============================================================================
 EVENTS							*cmake-events*

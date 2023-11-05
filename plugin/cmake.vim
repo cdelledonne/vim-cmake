@@ -76,6 +76,7 @@ command -nargs=? -complete=custom,cmake#GetTests CMakeTest call cmake#Test(<f-ar
 command CMakeOpen call cmake#Open()
 command -bang CMakeClose call cmake#Close(<bang>0)
 command CMakeToggle call cmake#Toggle()
+command CMakeCloseOverlay call cmake#CloseOverlay()
 command CMakeStop call cmake#Stop()
 
 call s:logger.LogInfo('Commands defined')
@@ -84,11 +85,11 @@ call s:logger.LogInfo('Commands defined')
 " Mappings
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-nnoremap <silent> <Plug>(CMakeGenerate) :call cmake#Generate(0)<CR>
+nnoremap <silent> <Plug>(CMakeGenerate) :call cmake#Generate(v:false)<CR>
 nnoremap <silent> <Plug>(CMakeClean) :call cmake#Clean()<CR>
 nnoremap <Plug>(CMakeSwitch) :CMakeSwitch<Space>
 
-nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(0)<CR>
+nnoremap <silent> <Plug>(CMakeBuild) :call cmake#Build(v:false)<CR>
 nnoremap <silent> <Plug>(CMakeInstall) :call cmake#Install()<CR>
 nnoremap <Plug>(CMakeBuildTarget) :CMakeBuild<Space>
 
@@ -97,8 +98,9 @@ nnoremap <Plug>(CMakeRun) :CMakeRun<Space>
 nnoremap <silent> <Plug>(CMakeTest) :call cmake#Test()<CR>
 
 nnoremap <silent> <Plug>(CMakeOpen) :call cmake#Open()<CR>
-nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close(0)<CR>
+nnoremap <silent> <Plug>(CMakeClose) :call cmake#Close(v:false)<CR>
 nnoremap <silent> <Plug>(CMakeToggle) :call cmake#Toggle()<CR>
+nnoremap <silent> <Plug>(CMakeCloseOverlay) :call cmake#CloseOverlay()<CR>
 nnoremap <silent> <Plug>(CMakeStop) :call cmake#Stop()<CR>
 
 call s:logger.LogInfo('Mappings defined')

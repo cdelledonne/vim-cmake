@@ -33,9 +33,338 @@ function! s:ManipulateCommand(command) abort
     return l:ret_command
 endfunction
 
+function! s:OptPairToString(name, value) abort
+    if a:value is v:true
+        return a:name
+    elseif a:value is v:false
+        return 'no' . a:name
+    else
+        return a:name . '=' . a:value
+    endif
+endfunction
+
+function! s:BufferExecute(buffer, commands) abort
+    let l:buffer = a:buffer != 0 ? a:buffer : bufnr()
+    let l:original_buf_id = bufnr()
+    if l:original_buf_id != l:buffer
+        noautocmd execute 'b ' . l:buffer
+    endif
+    for l:command in a:commands
+        execute l:command
+    endfor
+    if l:original_buf_id != l:buffer
+        noautocmd execute 'b ' . l:original_buf_id
+    endif
+endfunction
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Create new buffer in a certain window.
+"
+" Params:
+"     window : Number
+"         ID of the window to create a buffer inside of
+"     echo_term : Bool
+"         whether the new buffer must be an echo terminal (job-less terminal to
+"         echo data to)
+"
+" Returns:
+"     Dictionary
+"         buffer_id : Number
+"             ID of the new buffer
+"         term_id : Number
+"             ID of the new echo terminal, if applicable
+"
+function! s:system.BufferCreate(window, echo_term) abort
+    let l:original_win_id = win_getid()
+    if l:original_win_id != a:window
+        noautocmd call win_gotoid(a:window)
+    endif
+    execute 'enew'
+    if a:echo_term
+        let l:term_id = l:self.EchoTermOpen()
+    else
+        let l:term_id = -1
+    endif
+    let l:buffer_id = bufnr()
+    if l:original_win_id != a:window
+        noautocmd call win_gotoid(l:original_win_id)
+    endif
+    return {'buffer_id': l:buffer_id, 'term_id': l:term_id}
+endfunction
+
+" Set option values for a buffer.
+"
+" Params:
+"     buffer : Number
+"         buffer ID, or 0 for current buffer
+"     options : Dictionary
+"         dictionary of {name, value} pairs
+"
+function! s:system.BufferSetOptions(buffer, options) abort
+    for [l:name, l:value] in items(a:options)
+        if has('nvim')
+            call nvim_buf_set_option(a:buffer, l:name, l:value)
+        else
+            call s:BufferExecute(a:buffer, [
+                \ 'setlocal ' . s:OptPairToString(l:name, l:value)
+                \ ])
+        endif
+    endfor
+endfunction
+
+" Set keymaps for a buffer. The keymap is always non-recursive (noremap) and
+" won't be echoed to the command line (silent).
+"
+" Params:
+"     buffer : Number
+"         buffer ID, or 0 for current buffer
+"     mode : String
+"         mode short name, e.g. 'n', 'i', 'x', etc.
+"     keymaps : Dictionary
+"         dictionary of {lhs, rhs} pairs
+"
+function! s:system.BufferSetKeymaps(buffer, mode, keymaps) abort
+    for [l:lhs, l:rhs] in items(a:keymaps)
+        if has('nvim')
+            let l:opts = {'noremap': v:true, 'silent': v:true}
+            call nvim_buf_set_keymap(a:buffer, a:mode, l:lhs, l:rhs, l:opts)
+        else
+            call s:BufferExecute(a:buffer, [
+                \ printf('nnoremap <buffer> <silent> %s %s', l:lhs, l:rhs)
+                \ ])
+        endif
+    endfor
+endfunction
+
+" Set autocommands for a buffer.
+"
+" Params:
+"     buffer : Number
+"         buffer ID, or 0 for current buffer
+"     group : String
+"         autocommand group
+"     autocmds : List
+"     autocmds : Dictionary
+"         dictionary of {event, function} pairs
+"
+function! s:system.BufferSetAutocmds(buffer, group, autocmds) abort
+    for [l:event, l:Function] in items(a:autocmds)
+        call s:BufferExecute(a:buffer, [
+            \ 'augroup ' . a:group,
+            \ printf('autocmd %s <buffer> call %s()', l:event, l:Function),
+            \ 'augroup END',
+            \ ])
+    endfor
+endfunction
+
+" Get window ID where a certain buffer is displayed.
+"
+" Params:
+"     buffer : Number
+"         ID of buffer to get window ID of
+"
+" Returns:
+"     Number
+"         window ID, or -1 if the buffer doesn't exist or it is not displayed in
+"         any window
+"
+function! s:system.BufferGetWindowID(buffer) abort
+    return bufwinid(a:buffer)
+endfunction
+
+" Check whether a certain buffer exists.
+"
+" Params:
+"     buffer : Number
+"         ID of the buffer to check
+"
+" Returns:
+"     Boolean
+"         whether the buffer exists
+"
+function! s:system.BufferExists(buffer) abort
+    return bufexists(a:buffer)
+endfunction
+
+" Delete a buffer.
+"
+" Params:
+"     buffer : Number
+"         ID of the buffer to delete
+"
+function! s:system.BufferDelete(buffer) abort
+    if has('nvim')
+        call nvim_buf_delete(a:buffer, {'force': v:true})
+    else
+        execute 'bwipeout! ' . a:buffer
+    endif
+endfunction
+
+" Scroll to end of a buffer if this is displayed in a window. Only implemented
+" for Neovim at the moment.
+"
+" Params:
+"     buffer : Number
+"         buffer ID
+"
+function! s:system.BufferScrollToEnd(buffer) abort
+    if !has('nvim')
+        return
+    endif
+    let l:win_id = bufwinid(a:buffer)
+    let l:buffer_length = nvim_buf_line_count(a:buffer)
+    call nvim_win_set_cursor(l:win_id, [l:buffer_length, 0])
+endfunction
+
+" Create window split.
+"
+" Params:
+"     position : String
+"         position command, e.g. 'botright' or 'topleft'
+"     size : Number
+"         size of the window (number of columns or rows)
+"     options : List
+"         list of options to set for the created window
+"
+" Returns:
+"     Number
+"         ID of the new window
+"
+function! s:system.WindowCreate(position, size, options) abort
+    let l:original_win_id = win_getid()
+    execute join([a:position, a:size . 'split'])
+    let l:new_win_id = win_getid()
+    for l:option in a:options
+        execute join(['setlocal', l:option])
+    endfor
+    if l:original_win_id != l:new_win_id
+        call win_gotoid(l:original_win_id)
+    endif
+    return l:new_win_id
+endfunction
+
+" Close window.
+"
+" Params:
+"     window : Number
+"         ID of the window to be closed
+"
+function! s:system.WindowClose(window) abort
+    if has('nvim')
+        call nvim_win_close(a:window, v:false)
+    else
+        call win_execute(a:window, 'quit')
+    endif
+endfunction
+
+" Set the current buffer in a window.
+"
+" Params:
+"     window : Number
+"         ID of the window to set the buffer for
+"     buffer : Number
+"         ID of the buffer
+"
+" Returns:
+"     Boolean
+"         v:false if buffer of window do not exist, otherwise v:true
+"
+function! s:system.WindowSetBuffer(window, buffer) abort
+    let l:original_win_id = win_getid()
+    if !bufexists(a:buffer) || getwininfo(a:window) == []
+        return v:false
+    endif
+    if l:original_win_id != a:window
+        noautocmd call win_gotoid(a:window)
+    endif
+    execute 'b ' . a:buffer
+    if l:original_win_id != a:window
+        noautocmd call win_gotoid(l:original_win_id)
+    endif
+    return v:true
+endfunction
+
+" Set option values for a window.
+"
+" Params:
+"     window : Number
+"         window ID, or 0 for current window
+"     options : Dictionary
+"         dictionary of {name, value} pairs
+"
+function! s:system.WindowSetOptions(window, options) abort
+    for [l:name, l:value] in items(a:options)
+        if has('nvim')
+            call nvim_win_set_option(a:window, l:name, l:value)
+        else
+            let l:window = a:window != 0 ? a:window : win_getid()
+            let l:command = 'setlocal ' . s:OptPairToString(l:name, l:value)
+            call win_execute(l:window, l:command)
+        endif
+    endfor
+endfunction
+
+" A version of win_execute() for functions, which works in both Vim and Neovim,
+" and whose return type is the same as that of the function being executed.
+"
+" Params:
+"     window : Number
+"         ID of the window to run the function in
+"     function : Funcref
+"         function to run
+"
+" Returns:
+"     type(function)
+"         the object returned by the function passed as an argument
+"
+function! s:system.WindowRun(window, function) abort
+    let l:original_win_id = win_getid()
+    if l:original_win_id != a:window
+        noautocmd call win_gotoid(a:window)
+    endif
+    let l:return = a:function()
+    if l:original_win_id != a:window
+        noautocmd call win_gotoid(l:original_win_id)
+    endif
+    return l:return
+endfunction
+
+" Get width of a window.
+"
+" Params:
+"     window : Number
+"         window ID to get the width of
+"
+" Returns:
+"     Number
+"         width of the window, or -1 if the window does not exist
+"
+function! s:system.WindowGetWidth(window) abort
+    return winwidth(a:window)
+endfunction
+
+" Get ID of current window.
+"
+" Returns:
+"     Number
+"         window ID
+"
+function! s:system.WindowGetID() abort
+    return win_getid()
+endfunction
+
+" Go to a certain window.
+"
+" Params:
+"     window : Number
+"         ID of the window to go to
+"
+function! s:system.WindowGoToID(window) abort
+    return win_gotoid(a:window)
+endfunction
 
 " Generate escaped path string from list of components.
 "
@@ -184,6 +513,119 @@ function! s:system.JobRun(command, wait, options) abort
         call l:self.JobWait(l:job_id)
     endif
     return l:job_id
+endfunction
+
+" Open job-less terminal to echo data to. This terminal can be used to properly
+" format ANSI sequences and in general a job's output.
+"
+" Returns:
+"     Number (Neovim) or String (Vim)
+"         ID of the terminal, can be used to send data to this terminal
+"
+function! s:system.EchoTermOpen() abort
+    let l:options = {}
+    if has('nvim')
+        let l:term_id = nvim_open_term(bufnr(''), l:options)
+    else
+        let l:options.curwin = v:true
+        let l:term = term_start('NONE', l:options)
+        let l:term_id = term_gettty(l:term, 1)
+        call term_setkill(l:term, 'term')
+    endif
+    return l:term_id
+endfunction
+
+" Run arbitrary job in a terminal.
+"
+" Params:
+"     command : List
+"         the command to be run, as a list of command and arguments
+"     options : Dictionary
+"         exit_cb : Funcref
+"             exit callback (can be left unset), which should take a variable
+"             number of arguments, and from which
+"             s:system.ExtractExitCallbackData(a:000) can be called to retrieve
+"             the exit code
+"     window : Number
+"         the window to open the terminal in, or 0 for the current window
+"
+" Return:
+"     Number
+"         job id
+"
+function! s:system.TermRun(command, options, window) abort
+    let l:command = s:ManipulateCommand(a:command)
+    let l:window = a:window != 0 ? a:window : win_getid()
+    let l:job_options = {}
+    if has('nvim')
+        if has_key(a:options, 'exit_cb')
+            let l:job_options.on_exit = a:options.exit_cb
+        endif
+        let l:Function = function('termopen', [l:command, l:job_options])
+    else
+        if has_key(a:options, 'exit_cb')
+            let l:job_options.exit_cb = a:options.exit_cb
+        endif
+        let l:job_options.curwin = v:true
+        let l:Function = function('term_start', [l:command, l:job_options])
+    endif
+    " Start terminal job.
+    let l:job_id = l:self.WindowRun(l:window, l:Function)
+    return l:job_id
+endfunction
+
+" Echo data to terminal.
+"
+" Params:
+"     term_id : Number (Neovim) or String (Vim)
+"         ID of the terminal to echo data to
+"     data : List
+"         list of strings to echo
+"     newline : Boolean
+"         whether to terminate with newline
+"
+function! s:system.TermEcho(term_id, data, newline) abort
+    if len(a:data) == 0
+        return
+    endif
+    if a:newline
+        call add(a:data, '')
+    endif
+    if has('nvim')
+        call chansend(a:term_id, a:data)
+    else
+        " Use binary mode 'b' such that there isn't a NL character at the end of
+        " the last line to write.
+        call writefile(a:data, a:term_id, 'b')
+    endif
+endfunction
+
+" Enter terminal mode.
+"
+function! s:system.TermModeEnter() abort
+    if mode() !=# 't'
+        execute 'normal! i'
+    endif
+endfunction
+
+" Exit terminal mode.
+"
+function! s:system.TermModeExit() abort
+    if mode() ==# 't'
+        call feedkeys("\<C-\>\<C-N>", 'n')
+    endif
+endfunction
+
+" Run user autocommand.
+"
+" Params:
+"     autocmd : String
+"         the autocommand to run
+"
+function! s:system.AutocmdRun(autocmd) abort
+    if exists('#User' . '#' . a:autocmd)
+        execute 'doautocmd <nomodeline> User ' . a:autocmd
+    endif
 endfunction
 
 " Wait for job to complete.

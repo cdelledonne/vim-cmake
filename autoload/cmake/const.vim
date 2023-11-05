@@ -28,8 +28,10 @@ let s:const.plugin_news = {
     \ }
 
 let s:const.errors = {
-    \ 'CANT_STOP_JOB': 'Cannot stop the CMake console job while a command is running',
+    \ 'CANT_STOP_CONSOLE_JOB': 'Cannot stop the CMake console job while a command is running',
+    \ 'CANT_STOP_OVERLAY_JOB': 'Cannot stop the CMake overlay job while a command is running',
     \ 'COMMAND_RUNNING': 'Another CMake command is already running',
+    \ 'COMMAND_RUNNING_OVERLAY': 'Another command is already running',
     \ 'FILEAPI_NORESP': 'fileapi: Response from cmake-file-api(7) missing. Target completion will not work. Run :CMakeGenerate',
     \ 'FILEAPI_RERUN': 'fileapi: Response from cmake-file-api(7) out of date. Some functionality may not work correctly. Run :CMakeGenerate',
     \ 'FILEAPI_VERSION': 'fileapi: CMake version not supported. Certain functionality will not work correctly. (Minimum supported is CMake 3.14)',

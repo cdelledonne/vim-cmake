@@ -512,7 +512,7 @@ function! s:buildsys.Run(target, args) abort
     endif
     " Run executable.
     let l:command = [l:exec_path] + a:args
-    call s:terminal.Run(l:command, 'RUN', {})
+    call s:terminal.RunOverlay(l:command)
 endfunction
 
 " Get list of configuration directories (containing a buildsystem).

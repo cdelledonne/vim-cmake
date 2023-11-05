@@ -55,8 +55,8 @@ Run `:CMakeGenerate` from the top-level CMake source directory to generate a
 build system for the project.  Then, run `:CMakeBuild` to build the project.
 The built files will end up in the binary directory ([out-of-source
 build][oos]).  To switch between build configurations, run `:CMakeSwitch
-<config>`.  To run executable targets, run `:CMakeRun <target>`.  To run
-CMake-generated tests with CTest, run `:CMakeTest`.
+<config>`.  To run executable targets in an overlay window, run `:CMakeRun
+<target>`.  To run CMake-generated tests with CTest, run `:CMakeTest`.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
 etc.), build specific targets and control build options, and fix errors using
@@ -65,19 +65,20 @@ functionalities run `:help cmake`.  A quick overview follows.
 
 ### Commands and `<Plug>` mappings
 
-| Command                   | `<Plug>` mapping  | Description                           |
-|:--------------------------|:------------------|:--------------------------------------|
-| `:CMakeGenerate[!]`       | `(CMakeGenerate)` | Generate build system                 |
-| `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files   |
-| `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                       |
-| `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                  |
-| `:CMakeRun <target>`      | `(CMakeRun)`      | Run executable target                 |
-| `:CMakeTest`              | `(CMakeTest)`     | Run CMake-generated tests with CTest  |
-| `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
-| `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
-| `:CMakeClose[!]`          | `(CMakeClose)`    | Close CMake console window            |
-| `:CMakeToggle`            | `(CMakeToggle)`   | Toggle CMake console window           |
-| `:CMakeStop`              | `(CMakeStop)`     | Stop running command                  |
+| Command                   | `<Plug>` mapping      | Description                           |
+|:--------------------------|:----------------------|:--------------------------------------|
+| `:CMakeGenerate[!]`       | `(CMakeGenerate)`     | Generate build system                 |
+| `:CMakeClean`             | `(CMakeClean)`        | Remove build system and build files   |
+| `:CMakeBuild[!] [target]` | `(CMakeBuild)`        | Build a project                       |
+| `:CMakeInstall`           | `(CMakeInstall)`      | Install build output                  |
+| `:CMakeRun <target>`      | `(CMakeRun)`          | Run executable target                 |
+| `:CMakeTest`              | `(CMakeTest)`         | Run CMake-generated tests with CTest  |
+| `:CMakeSwitch <config>`   | `(CMakeSwitch)`       | Switch to another build configuration |
+| `:CMakeOpen`              | `(CMakeOpen)`         | Open CMake console window             |
+| `:CMakeClose[!]`          | `(CMakeClose)`        | Close CMake console window            |
+| `:CMakeToggle`            | `(CMakeToggle)`       | Toggle CMake console window           |
+| `:CMakeCloseOverlay`      | `(CMakeCloseOverlay)` | Close overlay window                  |
+| `:CMakeStop`              | `(CMakeStop)`         | Stop running command                  |
 
 ### Additional `<Plug>` mappings
 
@@ -85,7 +86,9 @@ functionalities run `:help cmake`.  A quick overview follows.
 |:---------------------|:------------------------------------------------------|
 | `(CMakeBuildTarget)` | `(CMakeBuild)`, but leaves cursor in the command line |
 
-### Key mappings in the CMake console window
+### Key mappings
+
+Mappings in the CMake console window:
 
 | Key mapping | Description                |
 |:------------|:---------------------------|
@@ -95,6 +98,12 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `ct`        | Run `:CMakeTest`           |
 | `cq`        | Run `:CMakeClose`          |
 | `<C-C>`     | Stop running command       |
+
+Mappings in the overlay window:
+
+| Key mapping | Description                |
+|:------------|:---------------------------|
+| `cq`        | Run `:CMakeCloseOverlay`   |
 
 ### Events
 
