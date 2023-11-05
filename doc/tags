@@ -1,9 +1,11 @@
 :CMakeBuild	cmake.txt	/*:CMakeBuild*
 :CMakeClean	cmake.txt	/*:CMakeClean*
 :CMakeClose	cmake.txt	/*:CMakeClose*
+:CMakeCloseOverlay	cmake.txt	/*:CMakeCloseOverlay*
 :CMakeGenerate	cmake.txt	/*:CMakeGenerate*
 :CMakeInstall	cmake.txt	/*:CMakeInstall*
 :CMakeOpen	cmake.txt	/*:CMakeOpen*
+:CMakeRun	cmake.txt	/*:CMakeRun*
 :CMakeStop	cmake.txt	/*:CMakeStop*
 :CMakeSwitch	cmake.txt	/*:CMakeSwitch*
 :CMakeTest	cmake.txt	/*:CMakeTest*
@@ -25,6 +27,7 @@ cmake-license	cmake.txt	/*cmake-license*
 cmake-mappings	cmake.txt	/*cmake-mappings*
 cmake-plug-mappings	cmake.txt	/*cmake-plug-mappings*
 cmake-quickfix	cmake.txt	/*cmake-quickfix*
+cmake-run	cmake.txt	/*cmake-run*
 cmake-stop	cmake.txt	/*cmake-stop*
 cmake-switch	cmake.txt	/*cmake-switch*
 cmake-test	cmake.txt	/*cmake-test*

@@ -1,10 +1,12 @@
 " ==============================================================================
 " Location:    autoload/cmake/terminal.vim
-" Description: Terminal abstraction layer
+" Description: Terminal and console handling
 " ==============================================================================
 
 let s:terminal = {}
+let s:terminal.term_id = v:null
 let s:terminal.console_buffer = -1
+let s:terminal.overlay_buffer = -1
 
 let s:terminal.cmd_info = ''
 let s:terminal.console_cmd_info = {}
@@ -23,12 +25,41 @@ let s:terminal.console_cmd.callbacks_err = []
 let s:terminal.console_cmd.autocmds_succ = []
 let s:terminal.console_cmd.autocmds_err = []
 
-let s:term_tty = ''
-let s:term_chan_id = -1
-let s:exit_term_mode = 0
+let s:terminal.overlay_cmd = {}
+let s:terminal.overlay_cmd.id = -1
+let s:terminal.overlay_cmd.running = v:false
 
 let s:raw_lines_filters = []
 let s:full_lines_filters = []
+
+let s:buffer_options = {
+    \ 'bufhidden': 'hide',
+    \ 'buflisted': v:false,
+    \ 'filetype': 'vimcmake',
+    \ }
+
+let s:window_options = {
+    \ 'number': v:false,
+    \ 'relativenumber': v:false,
+    \ 'signcolumn': 'auto',
+    \ }
+
+let s:statusline_option = {
+    \ 'statusline': '[CMake]\ [%{cmake#GetInfo().config}]\ %{cmake#GetInfo().status}',
+    \ }
+
+let s:console_buffer_keymaps = {
+    \ 'cg': ':CMakeGenerate<CR>',
+    \ 'cb': ':CMakeBuild<CR>',
+    \ 'ci': ':CMakeInstall<CR>',
+    \ 'ct': ':CMakeTest<CR>',
+    \ 'cq': ':CMakeClose<CR>',
+    \ '<C-C>': ':CMakeStop<CR>',
+    \ }
+
+let s:overlay_buffer_keymaps = {
+    \ 'cq': ':CMakeCloseOverlay<CR>',
+    \ }
 
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
@@ -108,7 +139,7 @@ function! s:ConsoleCmdStdoutCb(...) abort
     let l:full_lines = l:data.full_lines
     " Filter raw lines and echo them to the terminal
     call map(l:raw_lines, {_, val -> s:FilterLine(val, s:raw_lines_filters)})
-    call s:TermEcho(l:raw_lines, v:false)
+    call s:system.TermEcho(s:terminal.term_id, l:raw_lines, v:false)
     " Filter full lines and save them in list of command output.
     call map(l:full_lines, {_, val -> s:FilterLine(val, s:full_lines_filters)})
     let s:terminal.console_cmd_output += l:full_lines
@@ -123,28 +154,20 @@ function! s:ConsoleCmdExitCb(...) abort
     " come in after entering this function.
     call s:system.ChannelWait(s:terminal.console_cmd.id)
     let l:error = s:system.ExtractExitCallbackData(a:000)
-    call s:OnCompleteCommand(l:error, v:false)
+    call s:OnCompleteConsoleCommand(l:error, v:false)
 endfunction
 
-" Enter terminal mode.
+" Callback for the end of the command running in the overlay window.
 "
-function! s:EnterTermMode() abort
-    if mode() !=# 't'
-        execute 'normal! i'
-    endif
+function! s:OverlayCmdExitCb(...) abort
+    call s:logger.LogDebug('Invoked overlay exit callback')
+    let l:error = s:system.ExtractExitCallbackData(a:000)
+    call s:OnCompleteOverlayCommand()
 endfunction
 
-" Exit terminal mode.
+" Define actions to perform when completing/stopping a console command.
 "
-function! s:ExitTermMode() abort
-    if mode() ==# 't'
-        call feedkeys("\<C-\>\<C-N>", 'n')
-    endif
-endfunction
-
-" Define actions to perform when completing/stopping a command.
-"
-function! s:OnCompleteCommand(error, stopped) abort
+function! s:OnCompleteConsoleCommand(error, stopped) abort
     if a:error == 0
         let l:callbacks = s:terminal.console_cmd.callbacks_succ
         let l:autocmds = s:terminal.console_cmd.autocmds_succ
@@ -160,14 +183,9 @@ function! s:OnCompleteCommand(error, stopped) abort
     let s:terminal.console_cmd.autocmds_succ = []
     let s:terminal.console_cmd.autocmds_err = []
     " Append empty line to terminal.
-    call s:TermEcho([''], v:true)
-    " Exit terminal mode if inside the Vim-CMake console window (useful for
-    " Vim). Otherwise the terminal mode is exited after WinEnter event.
-    if win_getid() == bufwinid(s:terminal.console_buffer)
-        call s:ExitTermMode()
-    else
-        let s:exit_term_mode = 1
-    endif
+    call s:system.TermEcho(s:terminal.term_id, [''], v:true)
+    " Exit terminal mode if inside the console window (useful for Vim).
+    call s:TermModeExit()
     " Update statusline.
     let s:terminal.cmd_info = s:terminal.console_cmd_info.NONE
     call s:statusline.Refresh()
@@ -192,19 +210,46 @@ function! s:OnCompleteCommand(error, stopped) abort
     endfor
     for l:autocmd in l:autocmds
         call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
-        if exists('#User' . '#' . l:autocmd)
-            execute 'doautocmd <nomodeline> User ' . l:autocmd
-        endif
+        call s:system.AutocmdRun(l:autocmd)
     endfor
 endfunction
 
-" Define actions to perform when entering the Vim-CMake console window.
+" Define actions to perform when completing/stopping an overlay command.
 "
-function! s:OnEnterConsoleWindow() abort
-    if winnr() == bufwinnr(s:terminal.console_buffer) && s:exit_term_mode
-        let s:exit_term_mode = 0
-        call s:ExitTermMode()
+function! s:OnCompleteOverlayCommand() abort
+    " Reset state
+    let s:terminal.overlay_cmd.id = -1
+    let s:terminal.overlay_cmd.running = v:false
+    " Exit terminal mode if inside the overlay window (useful for Vim).
+    call s:TermModeExit()
+    " Update statusline.
+    let s:terminal.cmd_info = s:terminal.console_cmd_info.NONE
+    call s:statusline.Refresh()
+endfunction
+
+" Wrapper for s:system.TermModeEnter().
+"
+function! s:TermModeEnter() abort
+    call s:system.TermModeEnter()
+endfunction
+
+" Wrapper for s:system.TermModeExit().
+"
+function! s:TermModeExit() abort
+    if s:system.WindowGetID() ==
+        \ s:system.BufferGetWindowID(s:terminal.console_buffer)
+        if s:terminal.console_cmd.running
+            return
+        endif
+    elseif s:system.WindowGetID() ==
+        \ s:system.BufferGetWindowID(s:terminal.overlay_buffer)
+        if s:terminal.overlay_cmd.running
+            return
+        endif
+    else
+        return
     endif
+    call s:system.TermModeExit()
 endfunction
 
 " Start arbitrary command with output to be displayed in Vim-CMake console.
@@ -218,112 +263,122 @@ endfunction
 "         job id
 "
 function! s:ConsoleCmdStart(command) abort
-    let l:console_win_id = bufwinid(s:terminal.console_buffer)
+    let l:console_win_id = s:system.BufferGetWindowID(s:terminal.console_buffer)
     " For Vim, must go back into Terminal-Job mode for the command's output to
     " be appended to the buffer.
     if !has('nvim')
-        call win_execute(l:console_win_id, 'call s:EnterTermMode()', '')
+        call s:system.WindowRun(l:console_win_id, function('s:TermModeEnter'))
     endif
     " Run command.
     let l:options = {}
     let l:options.stdout_cb = function('s:ConsoleCmdStdoutCb')
     let l:options.exit_cb = function('s:ConsoleCmdExitCb')
     let l:options.pty = v:true
-    let l:options.width = winwidth(l:console_win_id)
+    let l:options.width = s:system.WindowGetWidth(l:console_win_id)
     let l:job_id = s:system.JobRun(a:command, v:false, l:options)
     " For Neovim, scroll manually to the end of the terminal buffer while the
     " command's output is being appended.
-    if has('nvim')
-        let l:buffer_length = nvim_buf_line_count(s:terminal.console_buffer)
-        call nvim_win_set_cursor(l:console_win_id, [l:buffer_length, 0])
-    endif
+    call s:system.BufferScrollToEnd(s:terminal.console_buffer)
     return l:job_id
 endfunction
 
-" Create Vim-CMake window.
+" Start arbitrary command in the overlay buffer.
 "
-" Returns:
+" Params:
+"     command : List
+"         the command to be run, as a list of command and arguments
+"
+" Return:
 "     Number
-"         number of the created window
+"         job id
 "
-function! s:CreateConsoleWindow() abort
-    execute join([g:cmake_console_position, g:cmake_console_size . 'split'])
-    setlocal winfixheight
-    setlocal winfixwidth
-    call s:logger.LogDebug('Created console window')
+function! s:OverlayCmdStart(command) abort
+    let l:overlay_win_id = s:system.BufferGetWindowID(s:terminal.overlay_buffer)
+    " For Vim, must go back into Terminal-Job mode for the command's output to
+    " be appended to the buffer.
+    if !has('nvim')
+        call s:system.WindowRun(l:overlay_win_id, function('s:TermModeEnter'))
+    endif
+    " Run command.
+    let l:options = {}
+    let l:options.exit_cb = function('s:OverlayCmdExitCb')
+    let l:job_id = s:system.TermRun(a:command, l:options, l:overlay_win_id)
+    " Apply buffer options, mappings and autocommands.
+    call s:system.BufferSetOptions(s:terminal.overlay_buffer, s:buffer_options)
+    call s:system.BufferSetKeymaps(
+        \ s:terminal.overlay_buffer, 'n', s:overlay_buffer_keymaps)
+    call s:system.BufferSetAutocmds(
+        \ s:terminal.overlay_buffer,
+        \ 'vimcmake_overlay',
+        \ s:overlay_buffer_autocmds
+        \ )
+    " For Neovim, scroll manually to the end of the terminal buffer while the
+    " command's output is being appended.
+    call s:system.BufferScrollToEnd(s:terminal.overlay_buffer)
+    return l:job_id
 endfunction
 
 " Create Vim-CMake buffer and apply local settings.
 "
+" Params:
+"     echo_term : Boolean
+"         whether the new buffer must be an echo terminal (job-less terminal to
+"         echo data to)
+"
 " Returns:
 "     Number
-"         number of the created buffer
+"         ID of the created buffer
 "
-function! s:CreateConsoleBuffer() abort
-    execute 'enew'
-    call s:TermSetup()
-    nnoremap <buffer> <silent> cg :CMakeGenerate<CR>
-    nnoremap <buffer> <silent> cb :CMakeBuild<CR>
-    nnoremap <buffer> <silent> ci :CMakeInstall<CR>
-    nnoremap <buffer> <silent> ct :CMakeTest<CR>
-    nnoremap <buffer> <silent> cq :CMakeClose<CR>
-    nnoremap <buffer> <silent> <C-C> :CMakeStop<CR>
-    setlocal nonumber
-    setlocal norelativenumber
-    setlocal signcolumn=auto
-    setlocal nobuflisted
-    setlocal filetype=vimcmake
+function! s:CreateBuffer(window, echo_term) abort
+    let l:ids = s:system.BufferCreate(a:window, a:echo_term)
+    let l:buffer_id = l:ids['buffer_id']
+    if a:echo_term
+        let s:terminal.term_id = l:ids['term_id']
+        " For console (non-overlay) buffers, the new terminal buffer is spawned
+        " above (with s:system.BufferCreate()), thus we can immediately apply
+        " buffer options, keymaps and autocommands. For overlay buffers, these
+        " buffer-local settings will be applied after spawning the terminal in
+        " the overlay window (with OverlayCmdStart()).
+        call s:system.BufferSetOptions(l:buffer_id, s:buffer_options)
+        call s:system.BufferSetKeymaps(l:buffer_id, 'n', s:console_buffer_keymaps)
+        call s:system.BufferSetAutocmds(
+            \ l:buffer_id, 'vimcmake_console', s:console_buffer_autocmds)
+    endif
+    call s:system.WindowSetOptions(a:window, s:window_options)
     if g:cmake_statusline
-        setlocal statusline=[CMake]
-        setlocal statusline+=\ [%{cmake#GetInfo().config}]
-        setlocal statusline+=\ %{cmake#GetInfo().status}
+        call s:system.WindowSetOptions(a:window, s:statusline_option)
     endif
-    " Avoid error E37 on :CMakeClose in some Vim instances.
-    setlocal bufhidden=hide
-    augroup vimcmake
-        autocmd WinEnter <buffer> call s:OnEnterConsoleWindow()
-    augroup END
-    call s:logger.LogDebug('Created console buffer')
-    return bufnr()
+    let l:type = a:echo_term ? 'console' : 'overlay'
+    call s:logger.LogDebug('Created %s buffer', l:type)
+    return l:ids['buffer_id']
 endfunction
 
-" Setup Vim-CMake console terminal.
+" Delete Vim-CMake console buffer.
 "
-function! s:TermSetup() abort
-    " Open job-less terminal to echo command outputs to.
-    let l:options = {}
-    if has('nvim')
-        let s:term_chan_id = nvim_open_term(bufnr(''), l:options)
-    else
-        let l:options.curwin = 1
-        let l:term = term_start('NONE', l:options)
-        let s:term_tty = term_gettty(l:term, 1)
-        call term_setkill(l:term, 'term')
+function! s:DeleteConsoleBuffer() abort
+    if s:system.BufferExists(s:terminal.console_buffer)
+        if s:terminal.console_cmd.running
+            call s:logger.EchoError(s:const.errors['CANT_STOP_CONSOLE_JOB'])
+            call s:logger.LogError(s:const.errors['CANT_STOP_CONSOLE_JOB'])
+            return
+        endif
+        call s:system.BufferDelete(s:terminal.console_buffer)
     endif
+    let s:terminal.console_buffer = -1
 endfunction
 
-" Echo strings to terminal.
+" Delete Vim-CMake overlay buffer.
 "
-" Params:
-"     data : List
-"         list of strings to echo
-"     newline : Boolean
-"         whether to terminate with newline
-"
-function! s:TermEcho(data, newline) abort
-    if len(a:data) == 0
-        return
+function! s:DeleteOverlayBuffer() abort
+    if s:system.BufferExists(s:terminal.overlay_buffer)
+        if s:terminal.overlay_cmd.running
+            call s:logger.EchoError(s:const.errors['CANT_STOP_OVERLAY_JOB'])
+            call s:logger.LogError(s:const.errors['CANT_STOP_OVERLAY_JOB'])
+            return
+        endif
+        call s:system.BufferDelete(s:terminal.overlay_buffer)
     endif
-    if a:newline
-        call add(a:data, '')
-    endif
-    if has('nvim')
-        call chansend(s:term_chan_id, a:data)
-    else
-        " Use binary mode 'b' such that there isn't a NL character at the end of
-        " the last line to write.
-        call writefile(a:data, s:term_tty, 'b')
-    endif
+    let s:terminal.overlay_buffer = -1
 endfunction
 
 " Filter stdout line to remove/replace ANSI sequences.
@@ -347,51 +402,60 @@ function! s:FilterLine(line, filters) abort
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Autocommands for buffer events, must be defined after defining the target
+" functions themselves.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let s:console_buffer_autocmds = {
+    \ 'BufEnter': function('s:TermModeExit'),
+    \ }
+
+let s:overlay_buffer_autocmds = {
+    \ 'BufEnter': function('s:TermModeExit'),
+    \ }
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Open Vim-CMake console window.
 "
 " Params:
-"     clear : Boolean
+"     new_buf : Boolean
 "         if set, a new buffer is created and the old one is deleted
+"     new_overlay : Boolean
+"         if set, a new overlay buffer is created
 "
-function! s:terminal.Open(clear) abort
-    call s:logger.LogDebug('Invoked: terminal.Open(%s)', a:clear)
-    let l:original_win_id = win_getid()
-    let l:cmake_win_id = bufwinid(l:self.console_buffer)
-    if l:cmake_win_id == -1
-        " If a Vim-CMake window does not exist, create it.
-        call s:CreateConsoleWindow()
-        if bufexists(l:self.console_buffer)
-            " If a Vim-CMake buffer exists, open it in the Vim-CMake window, or
-            " delete it if a:clear is set.
-            if !a:clear
-                execute 'b ' . l:self.console_buffer
-                call win_gotoid(l:original_win_id)
-                return
-            else
-                execute 'bd! ' . l:self.console_buffer
-            endif
-        endif
-        " Create Vim-CMake buffer if none exist, or if the old one was deleted.
-        let l:self.console_buffer = s:CreateConsoleBuffer()
+function! s:terminal.Open(new_buf, new_overlay) abort
+    call s:logger.LogDebug('Invoked: terminal.Open(%s, %s)',
+        \  a:new_buf, a:new_overlay)
+    " If a Vim-CMake window does not exist, create it.
+    if s:system.BufferGetWindowID(l:self.console_buffer) != -1
+        let l:cmake_win_id = s:system.BufferGetWindowID(l:self.console_buffer)
+    elseif s:system.BufferGetWindowID(l:self.overlay_buffer) != -1
+        let l:cmake_win_id = s:system.BufferGetWindowID(l:self.overlay_buffer)
     else
-        " If a Vim-CMake window exists, and a:clear is set, create a new
-        " Vim-CMake buffer and delete the old one.
-        if a:clear
-            let l:old_buffer = l:self.console_buffer
-            call l:self.Focus()
-            let l:self.console_buffer = s:CreateConsoleBuffer()
-            if bufexists(l:old_buffer) && l:old_buffer != l:self.console_buffer
-                execute 'bd! ' . l:old_buffer
-            endif
-        endif
+        let l:cmake_win_id = s:system.WindowCreate(
+            \ g:cmake_console_position,
+            \ g:cmake_console_size,
+            \ ['winfixheight', 'winfixwidth'],
+            \ )
     endif
-    if !g:cmake_jump
-        if l:original_win_id != win_getid()
-            call win_gotoid(l:original_win_id)
-        endif
+    " Create a console buffer if none exist or if a new buffer is requested.
+    if l:self.console_buffer == -1 || a:new_buf
+        let l:buffer = s:CreateBuffer(l:cmake_win_id, v:true)
+        call s:DeleteConsoleBuffer()
+        let l:self.console_buffer = l:buffer
+    endif
+    " Create an overlay buffer if requested.
+    if a:new_overlay
+        let l:buffer = s:CreateBuffer(l:cmake_win_id, v:false)
+        call s:DeleteOverlayBuffer()
+        let l:self.overlay_buffer = l:buffer
+    endif
+    " Show overlay buffer if it exists, otherwise show console buffer.
+    if !s:system.WindowSetBuffer(l:cmake_win_id, l:self.overlay_buffer)
+        call s:system.WindowSetBuffer(l:cmake_win_id, l:self.console_buffer)
     endif
 endfunction
 
@@ -399,32 +463,35 @@ endfunction
 "
 function! s:terminal.Focus() abort
     call s:logger.LogDebug('Invoked: terminal.Focus()')
-    call win_gotoid(bufwinid(l:self.console_buffer))
+    if s:system.BufferExists(l:self.overlay_buffer)
+        call s:system.WindowGoToID(
+            \ s:system.BufferGetWindowID(l:self.overlay_buffer))
+    else
+        call s:system.WindowGoToID(
+            \ s:system.BufferGetWindowID(l:self.console_buffer))
+    endif
 endfunction
 
 " Close Vim-CMake console window.
 "
 " Params:
 "     stop : Boolean
-"         if set, the console job is stopped (the console buffer is deleted) -
-"         stopping the console job fails if there is still a command running
-"         inside of the console
+"         if set, the console job and the overlay job are stopped - stopping
+"         these jobs fails if there is still a command running inside of the
+"         console or overlay
 "
 function! s:terminal.Close(stop) abort
     call s:logger.LogDebug('Invoked: terminal.Close(%s)', a:stop)
-    if bufexists(l:self.console_buffer)
-        let l:cmake_win_id = bufwinid(l:self.console_buffer)
-        if l:cmake_win_id != -1
-            execute win_id2win(l:cmake_win_id) . 'wincmd q'
-        endif
-        if a:stop
-            if l:self.console_cmd.running
-                call s:logger.EchoError(s:const.errors['CANT_STOP_JOB'])
-                call s:logger.LogError(s:const.errors['CANT_STOP_JOB'])
-                return
-            endif
-            execute 'bd! ' . l:self.console_buffer
-        endif
+    if s:system.BufferGetWindowID(l:self.console_buffer) != -1
+        call s:system.WindowClose(
+            \ s:system.BufferGetWindowID(l:self.console_buffer))
+    elseif s:system.BufferGetWindowID(l:self.overlay_buffer) != -1
+        call s:system.WindowClose(
+            \ s:system.BufferGetWindowID(l:self.overlay_buffer))
+    endif
+    if a:stop
+        call s:DeleteConsoleBuffer()
+        call s:DeleteOverlayBuffer()
     endif
 endfunction
 
@@ -432,11 +499,33 @@ endfunction
 "
 function! s:terminal.Toggle() abort
     call s:logger.LogDebug('Invoked: terminal.Toggle()')
-    let l:cmake_win_id = bufwinid(l:self.console_buffer)
-    if l:cmake_win_id == -1
-        call l:self.Open(v:false)
+    if s:system.BufferGetWindowID(l:self.console_buffer) == -1 &&
+        \ s:system.BufferGetWindowID(l:self.overlay_buffer) == -1
+        call l:self.Open(v:false, v:false)
     else
-        call l:self.Close(0)
+        call l:self.Close(v:false)
+    endif
+endfunction
+
+" Close Vim-CMake overlay window.
+"
+function! s:terminal.CloseOverlay() abort
+    call s:logger.LogDebug('Invoked: terminal.CloseOverlay()')
+    let l:original_win_id = s:system.WindowGetID()
+    " Focus overlay window.
+    if s:system.BufferGetWindowID(l:self.overlay_buffer) != -1
+        call s:system.WindowGoToID(
+            \ s:system.BufferGetWindowID(l:self.overlay_buffer))
+    endif
+    " Switch to Vim-CMake console buffer.
+    if s:system.BufferExists(l:self.console_buffer)
+        execute 'b ' . l:self.console_buffer
+    endif
+    " Delete overlay buffer.
+    call s:DeleteOverlayBuffer()
+    " Go back to previous window if necessary.
+    if l:original_win_id != s:system.WindowGetID()
+        call s:system.WindowGoToID(l:original_win_id)
     endif
 endfunction
 
@@ -473,20 +562,18 @@ function! s:terminal.Run(command, tag, options) abort
         call s:logger.LogError(s:const.errors['COMMAND_RUNNING'])
         return
     endif
-    let l:self.console_cmd.running = v:true
     let l:self.console_cmd.callbacks_succ = get(a:options, 'callbacks_succ', [])
     let l:self.console_cmd.callbacks_err = get(a:options, 'callbacks_err', [])
     let l:self.console_cmd.autocmds_succ = get(a:options, 'autocmds_succ', [])
     let l:self.console_cmd.autocmds_err = get(a:options, 'autocmds_err', [])
     let l:self.console_cmd_output = []
     " Open Vim-CMake console window.
-    call l:self.Open(v:false)
+    call l:self.Open(v:false, v:false)
+    let l:self.console_cmd.running = v:true
     " Invoke pre-run autocommands.
     for l:autocmd in get(a:options, 'autocmds_pre', [])
         call s:logger.LogDebug('Executing autocmd %s', l:autocmd)
-        if exists('#User' . '#' . l:autocmd)
-            execute 'doautocmd <nomodeline> User ' . l:autocmd
-        endif
+        call s:system.AutocmdRun(l:autocmd)
     endfor
     " Echo start message to terminal.
     if g:cmake_console_echo_cmd
@@ -495,23 +582,53 @@ function! s:terminal.Run(command, tag, options) abort
                 \ "\e[1;35m",
                 \ join(a:command),
                 \ "\e[0m")
-        call s:TermEcho([l:msg . "\r"], v:true)
+        call s:system.TermEcho(l:self.term_id, [l:msg . "\r"], v:true)
     endif
     " Run command.
     let s:terminal.cmd_info = l:self.console_cmd_info[a:tag]
     let l:self.console_cmd.id = s:ConsoleCmdStart(a:command)
-    " Jump to Vim-CMake console window if requested.
+    " Go to Vim-CMake window if requested.
     if g:cmake_jump
         call l:self.Focus()
     endif
 endfunction
 
-" Stop command currently running in the Vim-CMake console.
+" Run arbitrary command in an overlay window. The overlay is displayed in the
+" same windows as the Vim-CMake console, and is deleted after the completion of
+" the command.
+"
+" Params:
+"     command : List
+"         the command to be run, as a list of command and arguments
+"
+function! s:terminal.RunOverlay(command) abort
+    call s:logger.LogDebug('Invoked: terminal.RunOverlay(%s)', a:command)
+    " Prevent executing this function when a command is already running
+    if l:self.overlay_cmd.running
+        call s:logger.EchoError(s:const.errors['COMMAND_RUNNING_OVERLAY'])
+        call s:logger.LogError(s:const.errors['COMMAND_RUNNING_OVERLAY'])
+        return
+    endif
+    " Open overlay window.
+    call l:self.Open(v:false, v:true)
+    let l:self.overlay_cmd.running = v:true
+    " Run command.
+    let s:terminal.cmd_info = 'Running command...'
+    let l:self.overlay_cmd.id = s:OverlayCmdStart(a:command)
+    " Go to Vim-CMake window if requested.
+    if g:cmake_jump
+        call l:self.Focus()
+    endif
+endfunction
+
+" Stop command currently running in the Vim-CMake console and in the overlay.
 "
 function! s:terminal.Stop() abort
     call s:logger.LogDebug('Invoked: terminal.Stop()')
     call s:system.JobStop(l:self.console_cmd.id)
-    call s:OnCompleteCommand(0, v:true)
+    call s:system.JobStop(l:self.overlay_cmd.id)
+    call s:OnCompleteConsoleCommand(0, v:true)
+    call s:OnCompleteOverlayCommand()
 endfunction
 
 " Get output from the last command run.

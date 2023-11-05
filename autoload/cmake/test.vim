@@ -17,7 +17,7 @@ let s:terminal = cmake#terminal#Get()
 " Get dictionary of test arguments from command-line string.
 "
 " Params:
-"     argstring : String
+"     args : List
 "         command-line arguments, like test names and additional test options
 "
 " Returns:
@@ -25,17 +25,17 @@ let s:terminal = cmake#terminal#Get()
 "         CMake test options and test names
 "
 " Example:
-"     argstring = --parallel 4 TestOne TestTwo
+"     args = ['--parallel', '4', 'TestOne', 'TestTwo']
 "     return = {
 "         \ 'cmake_test_options': ['--parallel', '4'],
 "         \ 'test_names': ['-R', 'TestOne|TestTwo'],
 "     \ }
 "
-function! s:GetTestArgs(argstring) abort
+function! s:GetTestArgs(args) abort
     let l:argdict = {}
     let l:argdict.cmake_test_options = []
     let l:argdict.test_names = []
-    let l:arglist = split(a:argstring)
+    let l:arglist = deepcopy(a:args)
     " Search arguments for those that match the name of a test.
     let l:test_names = []
     for l:t in s:buildsys.GetTests()
@@ -62,17 +62,17 @@ endfunction
 " Run CMake-generated tests using CTest.
 "
 " Params:
-"     argstring : String
-"         test name and other options
+"     args : List
+"         test name(s) and other options
 "
-function! s:test.Test(argstring) abort
-    call s:logger.LogDebug('Invoked: test.Test(%s)', string(a:argstring))
+function! s:test.Test(args) abort
+    call s:logger.LogDebug('Invoked: test.Test(%s)', string(a:args))
     let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
     let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
     let l:command = [g:cmake_test_command, '--test-dir', l:build_dir]
     let l:options = {}
     " Parse additional options.
-    let l:options = s:GetTestArgs(a:argstring)
+    let l:options = s:GetTestArgs(a:args)
     " Add CMake test options to the command.
     let l:command += g:cmake_test_options
     let l:command += get(l:options, 'cmake_test_options', [])

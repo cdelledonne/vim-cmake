@@ -210,8 +210,8 @@ endfunction
 " Get list of command-line options from string of arguments.
 "
 " Params:
-"     argstring : String
-"         string containing command-line arguments
+"     args : List
+"         command-line arguments
 "
 " Returns:
 "     List
@@ -223,9 +223,9 @@ endfunction
 "     results in a list of options like the following
 "         ['Debug', '-D VAR_A=1', '-DVAR_B=0', '-Wdev', '-U VAR_C']
 "
-function! s:ArgStringToOptList(argstring) abort
+function! s:ArgsToOptList(args) abort
     let l:opts = []
-    for l:arg in split(a:argstring)
+    for l:arg in a:args
         " If list of options is empty, append first argument.
         if len(l:opts) == 0
             call add(l:opts, l:arg)
@@ -244,8 +244,8 @@ endfunction
 " Process string of arguments and return parsed options.
 "
 " Params:
-"     argstring : String
-"         string containing command-line arguments
+"     args : List
+"         command-line arguments
 "
 " Returns:
 "     Dictionary
@@ -256,8 +256,8 @@ endfunction
 "         build_dir : String
 "             path to build directory
 "
-function! s:ProcessArgString(argstring) abort
-    let l:opts = s:ArgStringToOptList(a:argstring)
+function! s:ProcessArgString(args) abort
+    let l:opts = s:ArgsToOptList(a:args)
     call s:ProcessBuildConfig(l:opts)
     " If compile commands are to be exported, and the
     " 'CMAKE_EXPORT_COMPILE_COMMANDS' variable is not set, set it.
@@ -294,7 +294,7 @@ function! s:RefreshConfigs() abort
     call s:logger.LogDebug('Build configs: %s', s:buildsys.configs)
 endfunction
 
-" Refresh list of available CMake targets.
+" Refresh list of available CMake build targets.
 "
 function! s:RefreshTargets() abort
     try
@@ -412,14 +412,14 @@ endfunction
 " Params:
 "     clean : Boolean
 "         whether to clean before generating
-"     argstring : String
+"     args : List
 "         build configuration and additional CMake options
 "
-function! s:buildsys.Generate(clean, argstring) abort
+function! s:buildsys.Generate(clean, args) abort
     call s:logger.LogDebug('Invoked: buildsys.Generate(%s, %s)',
-            \ a:clean, string(a:argstring))
+            \ a:clean, string(a:args))
     let l:command = [g:cmake_command]
-    let l:optdict = s:ProcessArgString(a:argstring)
+    let l:optdict = s:ProcessArgString(a:args)
     " Construct command.
     call extend(l:command, g:cmake_generate_options)
     call extend(l:command, l:optdict.opts)
@@ -478,6 +478,41 @@ function! s:buildsys.Switch(config) abort
     call s:SetCurrentConfig(a:config)
     call s:LinkCompileCommands()
     call s:RefreshTargets()
+endfunction
+
+" Run executable target after checking that the target exists.
+"
+" Params:
+"     target : String
+"         executable target name
+"     args : List
+"         program arguments
+"
+function! s:buildsys.Run(target, args) abort
+    call s:logger.LogDebug('Invoked: buildsys.Run(%s)', a:target)
+    call s:RefreshTargets()
+    let l:exec_targets = s:fileapi.GetExecTargets()
+    " Check that target exists.
+    if !has_key(l:exec_targets, a:target)
+        call s:logger.EchoError(s:const.errors['NO_EXEC_TARGET'], a:target)
+        call s:logger.LogError(s:const.errors['NO_EXEC_TARGET'], a:target)
+        return
+    endif
+    " Also check that actual executable file exists.
+    let l:exec_path = l:exec_targets[a:target]
+    if !filereadable(l:exec_path)
+        call s:logger.EchoError(s:const.errors['NO_EXEC_PATH'], l:exec_path)
+        call s:logger.LogError(s:const.errors['NO_EXEC_PATH'], l:exec_path)
+        return
+    endif
+    if !executable(l:exec_path)
+        call s:logger.EchoError(s:const.errors['NOT_EXECUTABLE'], l:exec_path)
+        call s:logger.LogError(s:const.errors['NOT_EXECUTABLE'], l:exec_path)
+        return
+    endif
+    " Run executable.
+    let l:command = [l:exec_path] + a:args
+    call s:terminal.RunOverlay(l:command)
 endfunction
 
 " Get list of configuration directories (containing a buildsystem).

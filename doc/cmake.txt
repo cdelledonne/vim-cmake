@@ -12,10 +12,11 @@ CONTENTS						*cmake-contents*
  3. Commands .......................................... |cmake-commands|
     3.1 Generating a project build system ............. |cmake-generate|
     3.2 Building and installing a project ............. |cmake-build|
-    3.3 Running CMake-generated tests with CTest ...... |cmake-test|
-    3.4 Switch between build configurations............ |cmake-switch|
-    3.5 Opening and closing the CMake console ......... |cmake-console|
-    3.6 Stopping the running command .................. |cmake-stop|
+    3.3 Running executable targets .................... |cmake-run|
+    3.4 Running CMake-generated tests with CTest ...... |cmake-test|
+    3.5 Switch between build configurations............ |cmake-switch|
+    3.6 Opening and closing the CMake console ......... |cmake-console|
+    3.7 Stopping the running command .................. |cmake-stop|
  4. Mappings .......................................... |cmake-mappings|
     4.1 Global <Plug> mappings ........................ |cmake-plug-mappings|
     4.2 CMake console window key mappings ............. |cmake-key-mappings|
@@ -36,7 +37,7 @@ Features~
 
 - Visual experience, shows CMake output in a console-like window
 - Slick management of build configurations
-- Autocompletion for build targets, build configurations and tests
+- Autocompletion for build targets, configurations, executables and tests
 - Quickfix list population after each build
 - Airline/statusline status information, including current build configuration
 - Plug-and-play, but configurable
@@ -48,6 +49,8 @@ Requirements~
 - Under Windows, only Neovim is supported at the moment
 - Target completion uses the `cmake-file-api(7)`, which requires CMake 3.14 or
   later
+- Running executables also requires the `cmake-file-api(7)`, and thus CMake
+  3.14 or later
 
 ==============================================================================
 USAGE							*cmake-usage*
@@ -56,6 +59,7 @@ Run |:CMakeGenerate| from the top-level CMake source directory to generate a
 build system for the project.  Then, run |:CMakeBuild| to build the project.
 The built files will end up in the binary directory (out-of-source build).  To
 switch between build configurations, run |:CMakeSwitch| {config}.  To run
+executable targets in an overlay window, run |:CMakeRun| {target}.  To run
 CMake-generated tests with CTest, run |:CMakeTest|.
 
 With Vim-CMake, you can easily manage build configurations (Debug, Release,
@@ -127,7 +131,7 @@ Building and installing a project~
 		before building the project.  [target] is the target to build
 		instead of the default (multiple targets can be passed,
 		separated by spaces).  [opts] are passed to the CMake command
-		as arguments. [nativeopts] are passed to the native tool.
+		as arguments.  [nativeopts] are passed to the native tool.
 
 For instance, to build the target `mytarget` using a maximum of 4 processes
 and passing the `VERBOSE=1` option to the native tool, run
@@ -147,6 +151,24 @@ requires CMake 3.14 or later to work.
 		Install a project from the current build configuration.
 
 ------------------------------------------------------------------------------
+							*cmake-run*
+Running executable targets~
+							*:CMakeRun*
+:CMakeRun {target} [opts]
+		Run an executable target {target} produced with the
+		`add_executable()` CMake command.  [opts] are passed to the
+		executable program.
+
+Vim-CMake provides autocompletion for executable targets.  Just press <TAB>
+after `:CMakeRun` in the command line to trigger autocompletion, i.e.
+>
+	:CMakeRun <TAB>
+<
+The executable is run in an "overlay" window that takes over the console
+window.  Use |:CMakeCloseOverlay| (or just the mapping `cq` from within the
+overlay window) to close the overlay and switch back to the console window.
+
+------------------------------------------------------------------------------
 							*cmake-test*
 Running CMake-generated tests with CTest~
 							*:CMakeTest*
@@ -154,7 +176,7 @@ Running CMake-generated tests with CTest~
 		Run all CMake-generated tests from the current build
 		configuration using CTest.  [testname] can be used to specify
 		a single test instead of all (multiple test names can be
-		passed, separated by spaces). [opts] are passed to the CTest
+		passed, separated by spaces).  [opts] are passed to the CTest
 		command as arguments.
 
 For instance, to run the test `MyUnitTest` in verbose mode, run
@@ -197,12 +219,18 @@ Opening and closing the CMake console~
 							*:CMakeClose*
 :CMakeClose[!]
 		Close the CMake console window.  If [!] is supplied, the
-		console job is stopped. Stopping the console job fails if
+		console job is stopped.  Stopping the console job fails if
 		there is still a command running inside of the console.
 
 							*:CMakeToggle*
 :CMakeToggle
 		Toggle the CMake console window.
+
+							*:CMakeCloseOverlay*
+:CMakeCloseOverlay
+		Close the CMake overlay window and return to the console
+		window.  The overlay window is opened when running an
+		executable target with |:CMakeRun|.
 
 ------------------------------------------------------------------------------
 							*cmake-stop*
@@ -236,6 +264,9 @@ Global <Plug> mappings~
 
 <Plug>(CMakeInstall)	Equivalent to |:CMakeInstall|.
 
+<Plug>(CMakeRun)	Inserts |:CMakeRun| in the command line, and leaves
+			the cursor there.
+
 <Plug>(CMakeTest)	Equivalent to |:CMakeTest|.
 
 <Plug>(CMakeSwitch)	Inserts |:CMakeSwitch| in the command line, and leaves
@@ -246,6 +277,9 @@ Global <Plug> mappings~
 <Plug>(CMakeClose)	Equivalent to |:CMakeClose|.
 
 <Plug>(CMakeToggle)	Equivalent to |:CMakeToggle|.
+
+<Plug>(CMakeCloseOverlay)
+			Equivalent to |:CMakeCloseOverlay|.
 
 <Plug>(CMakeStop)	Equivalent to |:CMakeStop|.
 
@@ -272,6 +306,10 @@ ct			Run |:CMakeTest|.
 cq			Run |:CMakeClose|.
 
 <C-C>			Stop the running command.
+
+CMake overlay window key mappings~
+
+cq			Run |:CMakeCloseOverlay|.
 
 ==============================================================================
 EVENTS							*cmake-events*
@@ -386,11 +424,11 @@ g:cmake_root_markers (default: `['.git', '.svn']`)
 		if the CWD is a Git submodule.
 
 g:cmake_log_file (default: `''`)
-		Path to a file where to store the log of Vim-CMake. An empty
+		Path to a file where to store the log of Vim-CMake.  An empty
 		value disables logging.
 
 g:cmake_log_level (default: `'INFO'`)
-		Level for logging. Valid values are: `'ERROR'`, `'WARN'`,
+		Level for logging.  Valid values are: `'ERROR'`, `'WARN'`,
 		`'INFO'`, `'DEBUG'`, `'TRACE'`.
 
 g:cmake_statusline (default: `0`)
@@ -413,7 +451,7 @@ Vim-CMake exposes a public API.
 							*cmake-api-getinfo*
 cmake#GetInfo()
 		Query information about the CMake environment as well as
-		plugin state. This is intended to be used for statusline
+		plugin state.  This is intended to be used for statusline
 		configuration and third-party plugin integration.
 
                 Return: ~
