@@ -5,10 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-## Unreleased
+<!-- ## Unreleased -->
+
+<!--=========================================================================-->
+
+## 0.14.0 &ndash; 2023-11-05
 
 ### Added
 * `:CMakeRun` command to run executable targets ([#49][#49]).
+
+### Changed
+* All platform calls were moved to system.vim
 
 <!--=========================================================================-->
 
