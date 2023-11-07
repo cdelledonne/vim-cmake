@@ -44,21 +44,17 @@ function! s:OptPairToString(name, value) abort
 endfunction
 
 function! s:BufferExecute(buffer, commands) abort
-    if bufexists(a:buffer) && bufwinid(a:buffer) == -1
+    if !bufexists(a:buffer)
+        throw 'vim-cmake-system-buffer-not-existing'
+    endif
+    if bufwinid(a:buffer) == -1
         throw 'vim-cmake-system-buffer-not-displayed'
     endif
     let l:buffer = a:buffer != 0 ? a:buffer : bufnr()
-    let l:original_win_id = win_getid()
     let l:target_win_id = bufwinid(l:buffer)
-    if l:target_win_id != l:original_win_id
-        noautocmd call win_gotoid(l:target_win_id)
-    endif
     for l:command in a:commands
-        execute l:command
+        call win_execute(l:target_win_id, l:command)
     endfor
-    if l:target_win_id != l:original_win_id
-        noautocmd call win_gotoid(l:original_win_id)
-    endif
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -109,6 +105,8 @@ endfunction
 "         dictionary of {name, value} pairs
 "
 " Throws:
+"     vim-cmake-system-buffer-not-existing
+"         when the buffer doesn't exist
 "     vim-cmake-system-buffer-not-displayed
 "         when the buffer is not displayed in a window
 "
@@ -137,6 +135,8 @@ endfunction
 "         dictionary of {lhs, rhs} pairs
 "
 " Throws:
+"     vim-cmake-system-buffer-not-existing
+"         when the buffer doesn't exist
 "     vim-cmake-system-buffer-not-displayed
 "         when the buffer is not displayed in a window
 "
@@ -166,6 +166,8 @@ endfunction
 "         dictionary of {event, function} pairs
 "
 " Throws:
+"     vim-cmake-system-buffer-not-existing
+"         when the buffer doesn't exist
 "     vim-cmake-system-buffer-not-displayed
 "         when the buffer is not displayed in a window
 "
