@@ -5,7 +5,7 @@
 
 let s:const = {}
 
-let s:const.plugin_version = '0.14.0'
+let s:const.plugin_version = '0.14.1'
 
 let s:const.plugin_news = {
     \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],

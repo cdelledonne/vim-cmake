@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-## Unreleased
+<!-- ## Unreleased -->
+
+<!--=========================================================================-->
+
+## 0.14.1 &ndash; 2023-11-07
 
 ### Changed
 * Buffer options are set by switching to buffer's window, not by loading the
