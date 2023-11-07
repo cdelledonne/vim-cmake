@@ -44,16 +44,20 @@ function! s:OptPairToString(name, value) abort
 endfunction
 
 function! s:BufferExecute(buffer, commands) abort
+    if bufexists(a:buffer) && bufwinid(a:buffer) == -1
+        throw 'vim-cmake-system-buffer-not-displayed'
+    endif
     let l:buffer = a:buffer != 0 ? a:buffer : bufnr()
-    let l:original_buf_id = bufnr()
-    if l:original_buf_id != l:buffer
-        noautocmd execute 'b ' . l:buffer
+    let l:original_win_id = win_getid()
+    let l:target_win_id = bufwinid(l:buffer)
+    if l:target_win_id != l:original_win_id
+        noautocmd call win_gotoid(l:target_win_id)
     endif
     for l:command in a:commands
         execute l:command
     endfor
-    if l:original_buf_id != l:buffer
-        noautocmd execute 'b ' . l:original_buf_id
+    if l:target_win_id != l:original_win_id
+        noautocmd call win_gotoid(l:original_win_id)
     endif
 endfunction
 
@@ -95,13 +99,18 @@ function! s:system.BufferCreate(window, echo_term) abort
     return {'buffer_id': l:buffer_id, 'term_id': l:term_id}
 endfunction
 
-" Set option values for a buffer.
+" Set option values for a buffer. In Vim, this only works for a buffer which is
+" displayed in a window, otherwise throws an exception.
 "
 " Params:
 "     buffer : Number
 "         buffer ID, or 0 for current buffer
 "     options : Dictionary
 "         dictionary of {name, value} pairs
+"
+" Throws:
+"     vim-cmake-system-buffer-not-displayed
+"         when the buffer is not displayed in a window
 "
 function! s:system.BufferSetOptions(buffer, options) abort
     for [l:name, l:value] in items(a:options)
@@ -116,7 +125,8 @@ function! s:system.BufferSetOptions(buffer, options) abort
 endfunction
 
 " Set keymaps for a buffer. The keymap is always non-recursive (noremap) and
-" won't be echoed to the command line (silent).
+" won't be echoed to the command line (silent). In Vim, this only works for a
+" buffer which is displayed in a window, otherwise throws an exception.
 "
 " Params:
 "     buffer : Number
@@ -125,6 +135,10 @@ endfunction
 "         mode short name, e.g. 'n', 'i', 'x', etc.
 "     keymaps : Dictionary
 "         dictionary of {lhs, rhs} pairs
+"
+" Throws:
+"     vim-cmake-system-buffer-not-displayed
+"         when the buffer is not displayed in a window
 "
 function! s:system.BufferSetKeymaps(buffer, mode, keymaps) abort
     for [l:lhs, l:rhs] in items(a:keymaps)
@@ -139,7 +153,8 @@ function! s:system.BufferSetKeymaps(buffer, mode, keymaps) abort
     endfor
 endfunction
 
-" Set autocommands for a buffer.
+" Set autocommands for a buffer. In Vim, this only works for a buffer which is
+" displayed in a window, otherwise throws an exception.
 "
 " Params:
 "     buffer : Number
@@ -149,6 +164,10 @@ endfunction
 "     autocmds : List
 "     autocmds : Dictionary
 "         dictionary of {event, function} pairs
+"
+" Throws:
+"     vim-cmake-system-buffer-not-displayed
+"         when the buffer is not displayed in a window
 "
 function! s:system.BufferSetAutocmds(buffer, group, autocmds) abort
     for [l:event, l:Function] in items(a:autocmds)
