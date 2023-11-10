@@ -511,12 +511,13 @@ endfunction
 "
 function! s:terminal.CloseOverlay() abort
     call s:logger.LogDebug('Invoked: terminal.CloseOverlay()')
+    if s:system.BufferGetWindowID(l:self.overlay_buffer) == -1
+        return
+    endif
     let l:original_win_id = s:system.WindowGetID()
     " Focus overlay window.
-    if s:system.BufferGetWindowID(l:self.overlay_buffer) != -1
-        call s:system.WindowGoToID(
-            \ s:system.BufferGetWindowID(l:self.overlay_buffer))
-    endif
+    call s:system.WindowGoToID(
+        \ s:system.BufferGetWindowID(l:self.overlay_buffer))
     " Switch to Vim-CMake console buffer.
     if s:system.BufferExists(l:self.console_buffer)
         execute 'b ' . l:self.console_buffer
@@ -567,7 +568,8 @@ function! s:terminal.Run(command, tag, options) abort
     let l:self.console_cmd.autocmds_succ = get(a:options, 'autocmds_succ', [])
     let l:self.console_cmd.autocmds_err = get(a:options, 'autocmds_err', [])
     let l:self.console_cmd_output = []
-    " Open Vim-CMake console window.
+    " Open Vim-CMake console window, but close overlay first (if it exists).
+    call l:self.CloseOverlay()
     call l:self.Open(v:false, v:false)
     let l:self.console_cmd.running = v:true
     " Invoke pre-run autocommands.

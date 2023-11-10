@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+* Fixed behavior of `s:terminal.CloseOverlay()`.
 
 <!--=========================================================================-->
 
