@@ -107,8 +107,8 @@ Mappings in the overlay window:
 
 ### Events
 
-Vim-CMake provides a set of custom events to trigger further actions. Run `:help
-cmake` for an extensive documentation of all configuration options and examples.
+Vim-CMake provides a set of custom events to trigger further actions.  Run
+`:help cmake` for full documentation on all configuration options and examples.
 
 | Event                      | Description                                |
 |:---------------------------|:-------------------------------------------|
@@ -129,8 +129,8 @@ to open the list of errors (e.g. `:copen`) and jump between errors (e.g.
 
 ## Configuration
 
-Vim-CMake has sensible defaults. Again, run `:help cmake` for an extensive
-documentation of all the configuration options.  A list of default values
+Vim-CMake has sensible defaults.  Again, run `:help cmake` for full
+documentation on all the configuration options.  A list of default values
 follows.
 
 | Options                         | Default            |
@@ -162,8 +162,8 @@ follows.
 ## Public API
 
 Vim-CMake provides a public API to query information about the CMake environment
-as well as plugin state. The public API consists of a single function
-`cmake#GetInfo()` which returns a dictionary containing the information. For
+as well as plugin state.  The public API consists of a single function
+`cmake#GetInfo()` which returns a dictionary containing the information.  For
 extensive information run `:help cmake-api`.
 
 To show the CMake version in your statusline you could do:
