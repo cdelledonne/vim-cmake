@@ -95,8 +95,7 @@ function! s:system.BufferCreate(window, echo_term) abort
     return {'buffer_id': l:buffer_id, 'term_id': l:term_id}
 endfunction
 
-" Set option values for a buffer. In Vim, this only works for a buffer which is
-" displayed in a window, otherwise throws an exception.
+" Set option values for a buffer.
 "
 " Params:
 "     buffer : Number
@@ -104,20 +103,12 @@ endfunction
 "     options : Dictionary
 "         dictionary of {name, value} pairs
 "
-" Throws:
-"     vim-cmake-system-buffer-not-existing
-"         when the buffer doesn't exist
-"     vim-cmake-system-buffer-not-displayed
-"         when the buffer is not displayed in a window
-"
 function! s:system.BufferSetOptions(buffer, options) abort
     for [l:name, l:value] in items(a:options)
         if has('nvim')
             call nvim_buf_set_option(a:buffer, l:name, l:value)
         else
-            call s:BufferExecute(a:buffer, [
-                \ 'setlocal ' . s:OptPairToString(l:name, l:value)
-                \ ])
+            call setbufvar(a:buffer, '&' . l:name, l:value)
         endif
     endfor
 endfunction
