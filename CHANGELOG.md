@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-## Unreleased
+<!-- ## Unreleased -->
+
+<!--=========================================================================-->
+
+## 0.15.0 &ndash; 2023-11-25
 
 ### Added
 * Echo and log warning if the executable run with `:CMakeRun` quits unexpectedly

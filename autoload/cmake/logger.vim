@@ -12,10 +12,14 @@ let s:levels.INFO = 3
 let s:levels.DEBUG = 4
 let s:levels.TRACE = 5
 
-function! s:Echo(fmt, arglist) abort
-    " Trick to convert list (a:arglist) into arguments for printf().
-    let l:PrintfPartial = function('printf', [a:fmt] + a:arglist)
-    echomsg '[Vim-CMake] ' . l:PrintfPartial()
+function! s:Echo(fmt, arglist, ...) abort
+    let l:prefix = exists('a:1') ? a:1 : '[Vim-CMake] '
+    if has('vim_starting')
+        " Vim silent/batch mode needs verbose to echo to stdout.
+        verbose echomsg l:prefix . call('printf', [a:fmt] + a:arglist)
+    else
+        echomsg l:prefix . call('printf', [a:fmt] + a:arglist)
+    endif
 endfunction
 
 function! s:Log(fmt, level, arglist) abort
@@ -23,13 +27,11 @@ function! s:Log(fmt, level, arglist) abort
             \ (s:levels[a:level] > s:levels[g:cmake_log_level])
         return
     endif
-    " Trick to convert list (a:arglist) into arguments for printf().
-    let l:PrintfPartial = function('printf', [a:fmt] + a:arglist)
     let l:logstring = printf(
             \ '[%s] [%5s] %s',
             \ strftime('%Y-%m-%d %T'),
             \ a:level,
-            \ l:PrintfPartial()
+            \ call('printf', [a:fmt] + a:arglist)
             \ )
     call writefile([l:logstring], g:cmake_log_file, 'a')
 endfunction
@@ -96,6 +98,18 @@ endfunction
 "
 function! s:logger.LogError(fmt, ...) abort
     call s:Log(a:fmt, 'ERROR', a:000)
+endfunction
+
+" Echo an unformatted message.
+"
+" Params:
+"     fmt : String
+"         printf-like format string (see :help printf())
+"     ... :
+"         list of arguments to replace placeholders in format string
+"
+function! s:logger.Echo(fmt, ...) abort
+    call s:Echo(a:fmt, a:000, '')
 endfunction
 
 " Echo an information message.
