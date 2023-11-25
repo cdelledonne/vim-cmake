@@ -238,7 +238,7 @@ function! cmake#CloseOverlay() abort
     call s:terminal.CloseOverlay()
 endfunction
 
-" API function for third-party plugins to query information
+" API function for third-party plugins to query information.
 "
 " Returns:
 "     Dictionary
@@ -261,6 +261,7 @@ endfunction
 "             absolute path to detected project root (see g:cmake_root_markers)
 "         build_dir : String
 "             absolute path to the build directory for the set configuration
+"
 function! cmake#GetInfo() abort
     let l:info = {}
     let l:info.version = s:const.plugin_version
