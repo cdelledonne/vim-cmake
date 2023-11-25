@@ -130,7 +130,6 @@ endfunction
 "         existing configuration directories, one per line
 "
 function! cmake#GetConfigs(arg_lead, cmd_line, cursor_pos) abort
-    call s:logger.LogDebug('API invoked: cmake#GetConfigs()')
     return join(s:buildsys.GetConfigs(), "\n")
 endfunction
 
@@ -174,7 +173,6 @@ endfunction
 "         available executable targets, one per line
 "
 function! cmake#GetExecTargets(arg_lead, cmd_line, cursor_pos) abort
-    call s:logger.LogDebug('API invoked: cmake#GetExecTargets()')
     try
         call s:fileapi.Parse(s:buildsys.GetPathToCurrentConfig())
     catch /vim-cmake-fileapi-noindex/
@@ -199,7 +197,6 @@ endfunction
 "         available tests, one per line
 "
 function! cmake#GetTests(arg_lead, cmd_line, cursor_pos) abort
-    call s:logger.LogDebug('API invoked: cmake#GetTests()')
     return join(s:buildsys.GetTests(), "\n")
 endfunction
 
