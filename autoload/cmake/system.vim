@@ -44,12 +44,6 @@ function! s:OptPairToString(name, value) abort
 endfunction
 
 function! s:BufferExecute(buffer, commands) abort
-    if !bufexists(a:buffer)
-        throw 'vim-cmake-system-buffer-not-existing'
-    endif
-    if bufwinid(a:buffer) == -1
-        throw 'vim-cmake-system-buffer-not-displayed'
-    endif
     let l:buffer = a:buffer != 0 ? a:buffer : bufnr()
     let l:target_win_id = bufwinid(l:buffer)
     for l:command in a:commands
@@ -137,6 +131,12 @@ function! s:system.BufferSetKeymaps(buffer, mode, keymaps) abort
             let l:opts = {'noremap': v:true, 'silent': v:true}
             call nvim_buf_set_keymap(a:buffer, a:mode, l:lhs, l:rhs, l:opts)
         else
+            if !bufexists(a:buffer)
+                throw 'vim-cmake-system-buffer-not-existing'
+            endif
+            if bufwinid(a:buffer) == -1
+                throw 'vim-cmake-system-buffer-not-displayed'
+            endif
             call s:BufferExecute(a:buffer, [
                 \ printf('nnoremap <buffer> <silent> %s %s', l:lhs, l:rhs)
                 \ ])
@@ -163,6 +163,12 @@ endfunction
 "         when the buffer is not displayed in a window
 "
 function! s:system.BufferSetAutocmds(buffer, group, autocmds) abort
+    if !bufexists(a:buffer)
+        throw 'vim-cmake-system-buffer-not-existing'
+    endif
+    if bufwinid(a:buffer) == -1
+        throw 'vim-cmake-system-buffer-not-displayed'
+    endif
     for [l:event, l:Function] in items(a:autocmds)
         call s:BufferExecute(a:buffer, [
             \ 'augroup ' . a:group,
