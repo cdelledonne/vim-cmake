@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* Echo and log warning if the executable run with `:CMakeRun` quits unexpectedly
+with an fatal error ([#90][#90]).
+
 ### Changed
 * Fixed behavior of `s:terminal.CloseOverlay()`.
 
@@ -16,7 +20,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Changed
 * Buffer options are set by switching to buffer's window, not by loading the
-  buffer in current window ([#86](#86)).
+  buffer in current window ([#86][#86]).
 
 <!--=========================================================================-->
 
@@ -311,5 +315,6 @@ First version.
 [#81]: https://github.com/cdelledonne/vim-cmake/issues/81
 [#83]: https://github.com/cdelledonne/vim-cmake/issues/83
 [#86]: https://github.com/cdelledonne/vim-cmake/issues/86
+[#90]: https://github.com/cdelledonne/vim-cmake/issues/90
 [format]: https://keepachangelog.com/en/1.0.0/
 [semver]: https://semver.org/spec/v2.0.0.html
