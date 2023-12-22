@@ -612,9 +612,18 @@ function! s:system.TermEcho(term_id, data, newline) abort
     if has('nvim')
         call chansend(a:term_id, a:data)
     else
-        " Use binary mode 'b' such that there isn't a NL character at the end of
-        " the last line to write.
-        call writefile(a:data, a:term_id, 'b')
+        if !has('mac')
+            " Use binary mode 'b' such that there isn't a NL character at the
+            " end of the last line to write.
+            call writefile(a:data, a:term_id, 'b')
+        else
+            " On macOS, it seems that using writefile() to write to a PTY does
+            " not work - more precisely, no output can be seen on the PTY.
+            call job_start(
+                \ ['echo', '-n', join(a:data, "\n")],
+                \ {'out_io': 'file', 'out_name': a:term_id}
+                \ )
+        endif
     endif
 endfunction
 
