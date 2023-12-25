@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!-- ## Unreleased -->
 
+### Changed
+* Remove local variable prefix `:l`.
+
 <!--=========================================================================-->
 
 ## 0.15.1 &ndash; 2023-12-22

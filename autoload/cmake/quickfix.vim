@@ -12,7 +12,7 @@ let s:quickfix.id = -1
 let s:filters = [
     \ 'v:val.valid == 1',
     \ 'filereadable(bufname(v:val.bufnr))',
-\ ]
+    \ ]
 
 let s:logger = cmake#logger#Get()
 
@@ -29,26 +29,26 @@ let s:logger = cmake#logger#Get()
 function! s:quickfix.Generate(lines_to_parse) abort
     call s:logger.LogDebug('Invoked: s:quickfix.Generate()')
     " Create a list of quickfix items from the output of the last command.
-    let l:list = getqflist({'lines': a:lines_to_parse})
-    let l:self.list.items = filter(l:list.items, join(s:filters, ' && '))
+    let list = getqflist({'lines': a:lines_to_parse})
+    let self.list.items = filter(list.items, join(s:filters, ' && '))
     " If a quickfix list for Vim-CMake exists, make that list active and replace
     " its items with the new ones.
-    if getqflist({'id': l:self.id}).id == l:self.id
-        let l:current = getqflist({'nr': 0}).nr
-        let l:target = getqflist({'id': l:self.id, 'nr': 0}).nr
-        if l:current > l:target
-            execute 'silent colder ' . (l:current - l:target)
-        elseif l:current < l:target
-            execute 'silent cnewer ' . (l:target - l:current)
+    if getqflist({'id': self.id}).id == self.id
+        let current = getqflist({'nr': 0}).nr
+        let target = getqflist({'id': self.id, 'nr': 0}).nr
+        if current > target
+            execute 'silent colder ' . (current - target)
+        elseif current < target
+            execute 'silent cnewer ' . (target - current)
         endif
-        call setqflist([], 'r', {'items': l:self.list.items})
+        call setqflist([], 'r', {'items': self.list.items})
         call s:logger.LogDebug('Replaced existing Quickfix list')
     " Otherwise, create a new quickfix list.
     else
-        call setqflist([], ' ', l:self.list)
+        call setqflist([], ' ', self.list)
         call s:logger.LogDebug('Created new Quickfix list')
     endif
-    let l:self.id = getqflist({'nr': 0, 'id': 0}).id
+    let self.id = getqflist({'nr': 0, 'id': 0}).id
 endfunction
 
 function! cmake#quickfix#Get() abort

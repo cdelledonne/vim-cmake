@@ -32,27 +32,27 @@ let s:terminal = cmake#terminal#Get()
 "     \ }
 "
 function! s:GetTestArgs(args) abort
-    let l:argdict = {}
-    let l:argdict.cmake_test_options = []
-    let l:argdict.test_names = []
-    let l:arglist = deepcopy(a:args)
+    let argdict = {}
+    let argdict.cmake_test_options = []
+    let argdict.test_names = []
+    let arglist = deepcopy(a:args)
     " Search arguments for those that match the name of a test.
-    let l:test_names = []
-    for l:t in s:buildsys.GetTests()
-        let l:match_res = match(l:arglist, '\m\C^' . l:t)
-        if l:match_res != -1
+    let test_names = []
+    for t in s:buildsys.GetTests()
+        let match_res = match(arglist, '\m\C^' . t)
+        if match_res != -1
             " If found, get test name and remove from list of arguments.
-            let l:test_name = l:arglist[l:match_res]
-            let l:test_names += [l:test_name]
-            call remove(l:arglist, l:match_res)
+            let test_name = arglist[match_res]
+            let test_names += [test_name]
+            call remove(arglist, match_res)
         endif
     endfor
-    if len(l:test_names) > 0
-        let l:argdict.test_names = ['-R', join(l:test_names, '|')]
+    if len(test_names) > 0
+        let argdict.test_names = ['-R', join(test_names, '|')]
     endif
     " Get command-line CMake arguments.
-    let l:argdict.cmake_test_options = l:arglist
-    return l:argdict
+    let argdict.cmake_test_options = arglist
+    return argdict
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -67,20 +67,20 @@ endfunction
 "
 function! s:test.Test(args) abort
     call s:logger.LogDebug('Invoked: test.Test(%s)', string(a:args))
-    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
-    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
-    let l:command = [g:cmake_test_command, '--test-dir', l:build_dir]
-    let l:options = {}
+    let path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let build_dir = s:system.Path([path_to_current_config], v:true)
+    let command = [g:cmake_test_command, '--test-dir', build_dir]
+    let options = {}
     " Parse additional options.
-    let l:options = s:GetTestArgs(a:args)
+    let options = s:GetTestArgs(a:args)
     " Add CMake test options to the command.
-    let l:command += g:cmake_test_options
-    let l:command += get(l:options, 'cmake_test_options', [])
+    let command += g:cmake_test_options
+    let command += get(options, 'cmake_test_options', [])
     " Add test names to the command, if any were provided.
-    let l:command += get(l:options, 'test_names', [])
+    let command += get(options, 'test_names', [])
     " Run test command.
-    " echo l:command
-    call s:terminal.Run(l:command, 'TEST', {})
+    " echo command
+    call s:terminal.Run(command, 'TEST', {})
 endfunction
 
 " Get test 'object'.

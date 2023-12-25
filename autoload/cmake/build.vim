@@ -35,34 +35,34 @@ let s:terminal = cmake#terminal#Get()
 "     \ }
 "
 function! s:GetBuildArgs(args) abort
-    let l:argdict = {}
-    let l:argdict.cmake_build_options = []
-    let l:argdict.target = []
-    let l:argdict.native_build_options = []
-    let l:arglist = deepcopy(a:args)
+    let argdict = {}
+    let argdict.cmake_build_options = []
+    let argdict.target = []
+    let argdict.native_build_options = []
+    let arglist = deepcopy(a:args)
     " Search arguments for one that matches the name of a target.
     call s:RefreshTargets()
-    for l:t in s:fileapi.GetBuildTargets()
-        let l:match_res = match(l:arglist, '\m\C^' . l:t)
-        if l:match_res != -1
+    for target in s:fileapi.GetBuildTargets()
+        let match_res = match(arglist, '\m\C^' . target)
+        if match_res != -1
             " If found, get target and remove from list of arguments.
-            let l:target = l:arglist[l:match_res]
-            let l:argdict.target = ['--target', l:target]
-            call remove(l:arglist, l:match_res)
+            let target = arglist[match_res]
+            let argdict.target = ['--target', target]
+            call remove(arglist, match_res)
             break
         endif
     endfor
     " Search for command-line native build tool arguments.
-    let l:match_res = match(l:arglist, '\m\C^--$')
-    if l:match_res != -1
+    let match_res = match(arglist, '\m\C^--$')
+    if match_res != -1
         " Get command-line native build tool arguments and remove from list.
-        let l:argdict.native_build_options = l:arglist[l:match_res+1:]
+        let argdict.native_build_options = arglist[match_res+1:]
         " Remove from list of other arguments.
-        call remove(l:arglist, l:match_res, -1)
+        call remove(arglist, match_res, -1)
     endif
     " Get command-line CMake arguments.
-    let l:argdict.cmake_build_options = l:arglist
-    return l:argdict
+    let argdict.cmake_build_options = arglist
+    return argdict
 endfunction
 
 " Generate quickfix list after running build command.
@@ -95,52 +95,52 @@ endfunction
 function! s:build.Build(clean, args) abort
     call s:logger.LogDebug('Invoked: build.Build(%s, %s)',
             \ a:clean, string(a:args))
-    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
-    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
-    let l:command = [g:cmake_command, '--build', l:build_dir]
-    let l:options = {}
+    let path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let build_dir = s:system.Path([path_to_current_config], v:true)
+    let command = [g:cmake_command, '--build', build_dir]
+    let options = {}
     " Parse additional options.
-    let l:options = s:GetBuildArgs(a:args)
+    let options = s:GetBuildArgs(a:args)
     " Add CMake build options to the command.
-    let l:command += g:cmake_build_options
-    let l:command += l:options.cmake_build_options
+    let command += g:cmake_build_options
+    let command += options.cmake_build_options
     if a:clean
-        let l:command += ['--clean-first']
+        let command += ['--clean-first']
     endif
     " Add target to the command, if any was provided.
-    let l:command += l:options.target
+    let command += options.target
     " Add native build tool options to the command.
     if len(g:cmake_native_build_options) > 0 ||
-            \ len(l:options.native_build_options) > 0
-        let l:command += ['--']
-        let l:command += g:cmake_native_build_options
-        let l:command += l:options.native_build_options
+        \ len(options.native_build_options) > 0
+        let command += ['--']
+        let command += g:cmake_native_build_options
+        let command += options.native_build_options
     endif
-    call s:fileapi.UpdateQueries(l:build_dir)
+    call s:fileapi.UpdateQueries(build_dir)
     " Run build command.
-    let l:run_options = {}
-    let l:run_options.callbacks_succ = [
+    let run_options = {}
+    let run_options.callbacks_succ = [
         \ function('s:GenerateQuickfix'),
         \ function('s:RefreshTargets'),
         \ ]
-    let l:run_options.callbacks_err = [
+    let run_options.callbacks_err = [
         \ function('s:GenerateQuickfix'),
         \  function('s:RefreshTargets'),
         \ ]
-    let l:run_options.autocmds_pre = ['CMakeBuildPre']
-    let l:run_options.autocmds_succ = ['CMakeBuildSucceeded']
-    let l:run_options.autocmds_err = ['CMakeBuildFailed']
-    call s:terminal.Run(l:command, 'BUILD', l:run_options)
+    let run_options.autocmds_pre = ['CMakeBuildPre']
+    let run_options.autocmds_succ = ['CMakeBuildSucceeded']
+    let run_options.autocmds_err = ['CMakeBuildFailed']
+    call s:terminal.Run(command, 'BUILD', run_options)
 endfunction
 
 " Install a project.
 "
 function! s:build.Install() abort
     call s:logger.LogDebug('Invoked: build.Install()')
-    let l:path_to_current_config = s:buildsys.GetPathToCurrentConfig()
-    let l:build_dir = s:system.Path([l:path_to_current_config], v:true)
-    let l:command = [g:cmake_command, '--install', l:build_dir]
-    call s:terminal.Run(l:command, 'INSTALL', {})
+    let path_to_current_config = s:buildsys.GetPathToCurrentConfig()
+    let build_dir = s:system.Path([path_to_current_config], v:true)
+    let command = [g:cmake_command, '--install', build_dir]
+    call s:terminal.Run(command, 'INSTALL', {})
 endfunction
 
 " Get build 'object'.

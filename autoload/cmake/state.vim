@@ -16,16 +16,16 @@ let s:system = cmake#system#Get()
 "         global state
 "
 function! s:state.ReadGlobalState() abort
-    let l:data_dir = s:system.GetDataDir()
-    let l:state_file = s:system.Path([l:data_dir, s:state_file_name], v:false)
+    let data_dir = s:system.GetDataDir()
+    let state_file = s:system.Path([data_dir, s:state_file_name], v:false)
     " Try to read JSON state file, otherwise return empty dict.
-    let l:state = {}
+    let state = {}
     try
-        let l:state_data = join(readfile(l:state_file))
-        let l:state = json_decode(l:state_data)
+        let state_data = join(readfile(state_file))
+        let state = json_decode(state_data)
     catch
     endtry
-    return l:state
+    return state
 endfunction
 
 " Read Vim-CMake project-specific state from disk.
@@ -40,10 +40,10 @@ endfunction
 "
 function! s:state.ReadProjectState(project) abort
     " Global state is of the form {..., 'projects', {p1: {...}, p2: {...}}}.
-    let l:global_state = l:self.ReadGlobalState()
-    let l:projects = get(l:global_state, 'projects', {})
-    let l:project_state = get(l:projects, a:project, {})
-    return l:project_state
+    let global_state = self.ReadGlobalState()
+    let projects = get(global_state, 'projects', {})
+    let project_state = get(projects, a:project, {})
+    return project_state
 endfunction
 
 " Write Vim-CMake global state to disk.
@@ -53,14 +53,14 @@ endfunction
 "         global state to write
 "
 function! s:state.WriteGlobalState(state) abort
-    let l:data_dir = s:system.GetDataDir()
-    let l:state_file = s:system.Path([l:data_dir, s:state_file_name], v:false)
-    let l:global_state = l:self.ReadGlobalState()
+    let data_dir = s:system.GetDataDir()
+    let state_file = s:system.Path([data_dir, s:state_file_name], v:false)
+    let global_state = self.ReadGlobalState()
     " Update the global state to include the new state.
-    call extend(l:global_state, a:state, 'force')
+    call extend(global_state, a:state, 'force')
     try
-        call mkdir(l:data_dir, 'p')
-        call writefile([json_encode(l:global_state)], l:state_file)
+        call mkdir(data_dir, 'p')
+        call writefile([json_encode(global_state)], state_file)
     catch
     endtry
 endfunction
@@ -74,20 +74,20 @@ endfunction
 "         project-specific state to write
 "
 function! s:state.WriteProjectState(project, state) abort
-    let l:data_dir = s:system.GetDataDir()
-    let l:state_file = s:system.Path([l:data_dir, s:state_file_name], v:false)
-    let l:global_state = l:self.ReadGlobalState()
-    let l:project_state = l:self.ReadProjectState(a:project)
+    let data_dir = s:system.GetDataDir()
+    let state_file = s:system.Path([data_dir, s:state_file_name], v:false)
+    let global_state = self.ReadGlobalState()
+    let project_state = self.ReadProjectState(a:project)
     " Add state passed as argument to the (possibly not existing) project state.
-    call extend(l:project_state, a:state, 'force')
+    call extend(project_state, a:state, 'force')
     " Update the global state to include the new project state.
-    if !has_key(l:global_state, 'projects')
-        let l:global_state.projects = {}
+    if !has_key(global_state, 'projects')
+        let global_state.projects = {}
     endif
-    let l:global_state.projects[a:project] = l:project_state
+    let global_state.projects[a:project] = project_state
     try
-        call mkdir(l:data_dir, 'p')
-        call writefile([json_encode(l:global_state)], l:state_file)
+        call mkdir(data_dir, 'p')
+        call writefile([json_encode(global_state)], state_file)
     catch
     endtry
 endfunction

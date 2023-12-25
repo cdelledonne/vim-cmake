@@ -13,27 +13,27 @@ let s:levels.DEBUG = 4
 let s:levels.TRACE = 5
 
 function! s:Echo(fmt, arglist, ...) abort
-    let l:prefix = exists('a:1') ? a:1 : '[Vim-CMake] '
+    let prefix = exists('a:1') ? a:1 : '[Vim-CMake] '
     if has('vim_starting')
         " Vim silent/batch mode needs verbose to echo to stdout.
-        verbose echomsg l:prefix . call('printf', [a:fmt] + a:arglist)
+        verbose echomsg prefix . call('printf', [a:fmt] + a:arglist)
     else
-        echomsg l:prefix . call('printf', [a:fmt] + a:arglist)
+        echomsg prefix . call('printf', [a:fmt] + a:arglist)
     endif
 endfunction
 
 function! s:Log(fmt, level, arglist) abort
     if (g:cmake_log_file ==# '') ||
-            \ (s:levels[a:level] > s:levels[g:cmake_log_level])
+        \ (s:levels[a:level] > s:levels[g:cmake_log_level])
         return
     endif
-    let l:logstring = printf(
-            \ '[%s] [%5s] %s',
-            \ strftime('%Y-%m-%d %T'),
-            \ a:level,
-            \ call('printf', [a:fmt] + a:arglist)
-            \ )
-    call writefile([l:logstring], g:cmake_log_file, 'a')
+    let logstring = printf(
+        \ '[%s] [%5s] %s',
+        \ strftime('%Y-%m-%d %T'),
+        \ a:level,
+        \ call('printf', [a:fmt] + a:arglist)
+        \ )
+    call writefile([logstring], g:cmake_log_file, 'a')
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

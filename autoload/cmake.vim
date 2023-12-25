@@ -42,10 +42,10 @@ endif
 "         (optional) build configuration and additional CMake options
 "
 function! cmake#Generate(clean, ...) abort
-    let l:args = split(join(a:000))
+    let args = split(join(a:000))
     call s:logger.LogDebug(
-        \ 'API invoked: cmake#Generate(%s, %s)', a:clean, string(l:args))
-    call s:buildsys.Generate(a:clean, l:args)
+        \ 'API invoked: cmake#Generate(%s, %s)', a:clean, string(args))
+    call s:buildsys.Generate(a:clean, args)
 endfunction
 
 " API function for :CMakeClean and <Plug>(CMakeClean).
@@ -75,10 +75,10 @@ endfunction
 "         (optional) target and other build options
 "
 function! cmake#Build(clean, ...) abort
-    let l:args = split(join(a:000))
+    let args = split(join(a:000))
     call s:logger.LogDebug(
-        \ 'API invoked: cmake#Build(%s, %s)', a:clean, string(l:args))
-    call s:build.Build(a:clean, l:args)
+        \ 'API invoked: cmake#Build(%s, %s)', a:clean, string(args))
+    call s:build.Build(a:clean, args)
 endfunction
 
 " API function for :CMakeInstall and <Plug>(CMakeInstall).
@@ -97,10 +97,10 @@ endfunction
 "         (optional) program arguments
 "
 function! cmake#Run(target, ...) abort
-    let l:args = split(join(a:000))
+    let args = split(join(a:000))
     call s:logger.LogDebug(
-        \ 'API invoked: cmake#Run(%s, %s)', a:target, string(l:args))
-    call s:buildsys.Run(a:target, l:args)
+        \ 'API invoked: cmake#Run(%s, %s)', a:target, string(args))
+    call s:buildsys.Run(a:target, args)
 endfunction
 
 " API function for :CMakeTest and <Plug>(CMakeTest).
@@ -110,9 +110,9 @@ endfunction
 "         (optional) test name(s) and other test options
 "
 function! cmake#Test(...) abort
-    let l:args = split(join(a:000))
-    call s:logger.LogDebug('API invoked: cmake#Test(%s)', string(l:args))
-    call s:test.Test(l:args)
+    let args = split(join(a:000))
+    call s:logger.LogDebug('API invoked: cmake#Test(%s)', string(args))
+    call s:test.Test(args)
 endfunction
 
 " API function for completion for :CMakeSwitch.
@@ -260,12 +260,12 @@ endfunction
 "             absolute path to the build directory for the set configuration
 "
 function! cmake#GetInfo() abort
-    let l:info = {}
-    let l:info.version = s:const.plugin_version
-    let l:info.status = s:terminal.GetCmdInfo()
-    let l:info.config = s:buildsys.GetCurrentConfig()
-    let l:info.cmake_version = s:buildsys.GetCMakeVersion()
-    let l:info.project_dir = s:buildsys.GetSourceDir()
-    let l:info.build_dir = s:buildsys.GetPathToCurrentConfig()
-    return l:info
+    let info = {}
+    let info.version = s:const.plugin_version
+    let info.status = s:terminal.GetCmdInfo()
+    let info.config = s:buildsys.GetCurrentConfig()
+    let info.cmake_version = s:buildsys.GetCMakeVersion()
+    let info.project_dir = s:buildsys.GetSourceDir()
+    let info.build_dir = s:buildsys.GetPathToCurrentConfig()
+    return info
 endfunction

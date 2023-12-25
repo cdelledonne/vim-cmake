@@ -12,25 +12,25 @@ let s:stdout_partial_line = {}
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 function! s:ManipulateCommand(command) abort
-    let l:ret_command = []
-    for l:arg in a:command
+    let ret_command = []
+    for arg in a:command
         " Remove double quotes around argument that are quoted. For instance,
         " '-G "Unix Makefiles"' results in '-G Unix Makefiles'.
-        let l:quotes_regex = '\m\C\(^\|[^"\\]\)"\([^"]\|$\)'
-        let l:arg = substitute(l:arg, l:quotes_regex, '\1\2', 'g')
+        let quotes_regex = '\m\C\(^\|[^"\\]\)"\([^"]\|$\)'
+        let arg = substitute(arg, quotes_regex, '\1\2', 'g')
         " Split arguments that are composed of an option (short '-O' or long
         " '--option') and a follow-up string, where the option and the string
         " are separated by a space.
-        let l:split_regex = '\m\C^\(-\w\|--\w\+\)\s\(.\+\)'
-        let l:match_list = matchlist(l:arg, l:split_regex)
-        if len(l:match_list) > 0
-            call add(l:ret_command, l:match_list[1])
-            call add(l:ret_command, l:match_list[2])
+        let split_regex = '\m\C^\(-\w\|--\w\+\)\s\(.\+\)'
+        let match_list = matchlist(arg, split_regex)
+        if len(match_list) > 0
+            call add(ret_command, match_list[1])
+            call add(ret_command, match_list[2])
         else
-            call add(l:ret_command, l:arg)
+            call add(ret_command, arg)
         endif
     endfor
-    return l:ret_command
+    return ret_command
 endfunction
 
 function! s:OptPairToString(name, value) abort
@@ -44,10 +44,10 @@ function! s:OptPairToString(name, value) abort
 endfunction
 
 function! s:BufferExecute(buffer, commands) abort
-    let l:buffer = a:buffer != 0 ? a:buffer : bufnr()
-    let l:target_win_id = bufwinid(l:buffer)
-    for l:command in a:commands
-        call win_execute(l:target_win_id, l:command)
+    let buffer = a:buffer != 0 ? a:buffer : bufnr()
+    let target_win_id = bufwinid(buffer)
+    for command in a:commands
+        call win_execute(target_win_id, command)
     endfor
 endfunction
 
@@ -72,21 +72,21 @@ endfunction
 "             ID of the new echo terminal, if applicable
 "
 function! s:system.BufferCreate(window, echo_term) abort
-    let l:original_win_id = win_getid()
-    if l:original_win_id != a:window
+    let original_win_id = win_getid()
+    if original_win_id != a:window
         noautocmd call win_gotoid(a:window)
     endif
     execute 'enew'
     if a:echo_term
-        let l:term_id = l:self.EchoTermOpen()
+        let term_id = self.EchoTermOpen()
     else
-        let l:term_id = -1
+        let term_id = -1
     endif
-    let l:buffer_id = bufnr()
-    if l:original_win_id != a:window
-        noautocmd call win_gotoid(l:original_win_id)
+    let buffer_id = bufnr()
+    if original_win_id != a:window
+        noautocmd call win_gotoid(original_win_id)
     endif
-    return {'buffer_id': l:buffer_id, 'term_id': l:term_id}
+    return {'buffer_id': buffer_id, 'term_id': term_id}
 endfunction
 
 " Set option values for a buffer.
@@ -98,11 +98,11 @@ endfunction
 "         dictionary of {name, value} pairs
 "
 function! s:system.BufferSetOptions(buffer, options) abort
-    for [l:name, l:value] in items(a:options)
+    for [name, value] in items(a:options)
         if has('nvim')
-            call nvim_buf_set_option(a:buffer, l:name, l:value)
+            call nvim_buf_set_option(a:buffer, name, value)
         else
-            call setbufvar(a:buffer, '&' . l:name, l:value)
+            call setbufvar(a:buffer, '&' . name, value)
         endif
     endfor
 endfunction
@@ -126,10 +126,10 @@ endfunction
 "         when the buffer is not displayed in a window
 "
 function! s:system.BufferSetKeymaps(buffer, mode, keymaps) abort
-    for [l:lhs, l:rhs] in items(a:keymaps)
+    for [lhs, rhs] in items(a:keymaps)
         if has('nvim')
-            let l:opts = {'noremap': v:true, 'silent': v:true}
-            call nvim_buf_set_keymap(a:buffer, a:mode, l:lhs, l:rhs, l:opts)
+            let opts = {'noremap': v:true, 'silent': v:true}
+            call nvim_buf_set_keymap(a:buffer, a:mode, lhs, rhs, opts)
         else
             if !bufexists(a:buffer)
                 throw 'vim-cmake-system-buffer-not-existing'
@@ -138,7 +138,7 @@ function! s:system.BufferSetKeymaps(buffer, mode, keymaps) abort
                 throw 'vim-cmake-system-buffer-not-displayed'
             endif
             call s:BufferExecute(a:buffer, [
-                \ printf('nnoremap <buffer> <silent> %s %s', l:lhs, l:rhs)
+                \ printf('nnoremap <buffer> <silent> %s %s', lhs, rhs)
                 \ ])
         endif
     endfor
@@ -169,10 +169,10 @@ function! s:system.BufferSetAutocmds(buffer, group, autocmds) abort
     if bufwinid(a:buffer) == -1
         throw 'vim-cmake-system-buffer-not-displayed'
     endif
-    for [l:event, l:Function] in items(a:autocmds)
+    for [event, Function] in items(a:autocmds)
         call s:BufferExecute(a:buffer, [
             \ 'augroup ' . a:group,
-            \ printf('autocmd %s <buffer> call %s()', l:event, l:Function),
+            \ printf('autocmd %s <buffer> call %s()', event, Function),
             \ 'augroup END',
             \ ])
     endfor
@@ -232,9 +232,9 @@ function! s:system.BufferScrollToEnd(buffer) abort
     if !has('nvim')
         return
     endif
-    let l:win_id = bufwinid(a:buffer)
-    let l:buffer_length = nvim_buf_line_count(a:buffer)
-    call nvim_win_set_cursor(l:win_id, [l:buffer_length, 0])
+    let win_id = bufwinid(a:buffer)
+    let buffer_length = nvim_buf_line_count(a:buffer)
+    call nvim_win_set_cursor(win_id, [buffer_length, 0])
 endfunction
 
 " Create window split.
@@ -252,16 +252,16 @@ endfunction
 "         ID of the new window
 "
 function! s:system.WindowCreate(position, size, options) abort
-    let l:original_win_id = win_getid()
+    let original_win_id = win_getid()
     execute join([a:position, a:size . 'split'])
-    let l:new_win_id = win_getid()
-    for l:option in a:options
-        execute join(['setlocal', l:option])
+    let new_win_id = win_getid()
+    for option in a:options
+        execute join(['setlocal', option])
     endfor
-    if l:original_win_id != l:new_win_id
-        call win_gotoid(l:original_win_id)
+    if original_win_id != new_win_id
+        call win_gotoid(original_win_id)
     endif
-    return l:new_win_id
+    return new_win_id
 endfunction
 
 " Close window.
@@ -291,16 +291,16 @@ endfunction
 "         v:false if buffer of window do not exist, otherwise v:true
 "
 function! s:system.WindowSetBuffer(window, buffer) abort
-    let l:original_win_id = win_getid()
+    let original_win_id = win_getid()
     if !bufexists(a:buffer) || getwininfo(a:window) == []
         return v:false
     endif
-    if l:original_win_id != a:window
+    if original_win_id != a:window
         noautocmd call win_gotoid(a:window)
     endif
     execute 'b ' . a:buffer
-    if l:original_win_id != a:window
-        noautocmd call win_gotoid(l:original_win_id)
+    if original_win_id != a:window
+        noautocmd call win_gotoid(original_win_id)
     endif
     return v:true
 endfunction
@@ -314,13 +314,13 @@ endfunction
 "         dictionary of {name, value} pairs
 "
 function! s:system.WindowSetOptions(window, options) abort
-    for [l:name, l:value] in items(a:options)
+    for [name, value] in items(a:options)
         if has('nvim')
-            call nvim_win_set_option(a:window, l:name, l:value)
+            call nvim_win_set_option(a:window, name, value)
         else
-            let l:window = a:window != 0 ? a:window : win_getid()
-            let l:command = 'setlocal ' . s:OptPairToString(l:name, l:value)
-            call win_execute(l:window, l:command)
+            let window = a:window != 0 ? a:window : win_getid()
+            let command = 'setlocal ' . s:OptPairToString(name, value)
+            call win_execute(window, command)
         endif
     endfor
 endfunction
@@ -339,15 +339,15 @@ endfunction
 "         the object returned by the function passed as an argument
 "
 function! s:system.WindowRun(window, function) abort
-    let l:original_win_id = win_getid()
-    if l:original_win_id != a:window
+    let original_win_id = win_getid()
+    if original_win_id != a:window
         noautocmd call win_gotoid(a:window)
     endif
-    let l:return = a:function()
-    if l:original_win_id != a:window
-        noautocmd call win_gotoid(l:original_win_id)
+    let return = a:function()
+    if original_win_id != a:window
+        noautocmd call win_gotoid(original_win_id)
     endif
-    return l:return
+    return return
 endfunction
 
 " Get width of a window.
@@ -397,30 +397,30 @@ endfunction
 "         escaped path string with appropriate path separators
 "
 function! s:system.Path(components, relative) abort
-    let l:components = a:components
-    let l:separator = has('win32') ? '\' : '/'
+    let components = a:components
+    let separator = has('win32') ? '\' : '/'
     " Join path components and get absolute path.
-    let l:path = join(l:components, l:separator)
-    let l:path = simplify(l:path)
-    let l:path = fnamemodify(l:path, ':p')
+    let path = join(components, separator)
+    let path = simplify(path)
+    let path = fnamemodify(path, ':p')
     " If path ends with separator, remove separator from path.
-    if match(l:path, '\m\C\' . l:separator . '$') != -1
-        let l:path = fnamemodify(l:path, ':h')
+    if match(path, '\m\C\' . separator . '$') != -1
+        let path = fnamemodify(path, ':h')
     endif
     " Reduce to relative path if requested.
     if a:relative
         " For some reason, reducing the path to relative returns an empty string
         " if the path happens to be the same as CWD. Thus, only reduce the path
         " to relative when it is not CWD, otherwise just return '.'.
-        if l:path ==# getcwd()
-            let l:path = '.'
+        if path ==# getcwd()
+            let path = '.'
         else
-            let l:path = fnamemodify(l:path, ':.')
+            let path = fnamemodify(path, ':.')
         endif
     endif
     " Simplify path.
-    let l:path = simplify(l:path)
-    return l:path
+    let path = simplify(path)
+    return path
 endfunction
 
 " Get absolute path to plugin data directory.
@@ -431,22 +431,22 @@ endfunction
 "
 function! s:system.GetDataDir() abort
     if has('nvim')
-        let l:editor_data_dir = stdpath('cache')
+        let editor_data_dir = stdpath('cache')
     else
         " In Neovim, stdpath('cache') resolves to:
         " - on MS-Windows: $TEMP/nvim
         " - on Unix: $XDG_CACHE_HOME/nvim
         if has('win32')
-            let l:cache_dir = getenv('TEMP')
+            let cache_dir = getenv('TEMP')
         else
-            let l:cache_dir = getenv('XDG_CACHE_HOME')
-            if l:cache_dir == v:null
-                let l:cache_dir = l:self.Path([$HOME, '.cache'], v:false)
+            let cache_dir = getenv('XDG_CACHE_HOME')
+            if cache_dir == v:null
+                let cache_dir = self.Path([$HOME, '.cache'], v:false)
             endif
         endif
-        let l:editor_data_dir = l:self.Path([l:cache_dir, 'vim'], v:false)
+        let editor_data_dir = self.Path([cache_dir, 'vim'], v:false)
     endif
-    return l:self.Path([l:editor_data_dir, 'cmake'], v:false)
+    return self.Path([editor_data_dir, 'cmake'], v:false)
 endfunction
 
 " Run arbitrary job in the background.
@@ -482,55 +482,55 @@ endfunction
 "         job id
 "
 function! s:system.JobRun(command, wait, options) abort
-    let l:command = s:ManipulateCommand(a:command)
-    let l:job_options = {}
-    let l:job_options.pty = get(a:options, 'pty', v:false)
-    let l:job_options.env = get(a:options, 'env', {})
+    let command = s:ManipulateCommand(a:command)
+    let job_options = {}
+    let job_options.pty = get(a:options, 'pty', v:false)
+    let job_options.env = get(a:options, 'env', {})
     if has('nvim')
         if has_key(a:options, 'stdout_cb')
-            let l:job_options.on_stdout = a:options.stdout_cb
+            let job_options.on_stdout = a:options.stdout_cb
         endif
         if has_key(a:options, 'exit_cb')
-            let l:job_options.on_exit = a:options.exit_cb
+            let job_options.on_exit = a:options.exit_cb
         endif
         if has_key(a:options, 'width')
-            let l:job_options.width = a:options.width
+            let job_options.width = a:options.width
         endif
         if has_key(a:options, 'height')
-            let l:job_options.height = a:options.height
+            let job_options.height = a:options.height
         endif
         " Start job.
-        let l:job_id = jobstart(l:command, l:job_options)
+        let job_id = jobstart(command, job_options)
     else
         if has_key(a:options, 'stdout_cb')
-            let l:job_options.out_cb = a:options.stdout_cb
+            let job_options.out_cb = a:options.stdout_cb
         endif
         if has_key(a:options, 'exit_cb')
-            let l:job_options.exit_cb = a:options.exit_cb
+            let job_options.exit_cb = a:options.exit_cb
         endif
         " NOTE: currently, this doesn't seem to work in Vim
         " (https://github.com/cdelledonne/vim-cmake/issues/75).
         if has_key(a:options, 'width')
-            let l:job_options.env.COLUMNS = a:options.width
+            let job_options.env.COLUMNS = a:options.width
         endif
-        if l:job_options.pty
+        if job_options.pty
             " When allocating a PTY, we need to use 'raw' stdout mode in Vim, so
             " that the stdout stream is not buffered, and thus we don't have to
             " wait for NL characters to receive outout.
-            let l:job_options.out_mode = 'raw'
+            let job_options.out_mode = 'raw'
             " Moreover, we need to pass the 'TERM' environment variable
             " explicitly, otherwise Vim sets it to 'dumb', which prevents some
             " programs from producing some ANSI sequences.
-            let l:job_options.env.TERM = getenv('TERM')
+            let job_options.env.TERM = getenv('TERM')
         endif
         " Start job.
-        let l:job_id = job_start(l:command, l:job_options)
+        let job_id = job_start(command, job_options)
     endif
     " Wait for job to complete, if requested.
     if a:wait
-        call l:self.JobWait(l:job_id)
+        call self.JobWait(job_id)
     endif
-    return l:job_id
+    return job_id
 endfunction
 
 " Open job-less terminal to echo data to. This terminal can be used to properly
@@ -541,16 +541,16 @@ endfunction
 "         ID of the terminal, can be used to send data to this terminal
 "
 function! s:system.EchoTermOpen() abort
-    let l:options = {}
+    let options = {}
     if has('nvim')
-        let l:term_id = nvim_open_term(bufnr(''), l:options)
+        let term_id = nvim_open_term(bufnr(''), options)
     else
-        let l:options.curwin = v:true
-        let l:term = term_start('NONE', l:options)
-        let l:term_id = term_gettty(l:term, 1)
-        call term_setkill(l:term, 'term')
+        let options.curwin = v:true
+        let term = term_start('NONE', options)
+        let term_id = term_gettty(term, 1)
+        call term_setkill(term, 'term')
     endif
-    return l:term_id
+    return term_id
 endfunction
 
 " Run arbitrary job in a terminal.
@@ -572,24 +572,24 @@ endfunction
 "         job id
 "
 function! s:system.TermRun(command, options, window) abort
-    let l:command = s:ManipulateCommand(a:command)
-    let l:window = a:window != 0 ? a:window : win_getid()
-    let l:job_options = {}
+    let command = s:ManipulateCommand(a:command)
+    let window = a:window != 0 ? a:window : win_getid()
+    let job_options = {}
     if has('nvim')
         if has_key(a:options, 'exit_cb')
-            let l:job_options.on_exit = a:options.exit_cb
+            let job_options.on_exit = a:options.exit_cb
         endif
-        let l:Function = function('termopen', [l:command, l:job_options])
+        let Function = function('termopen', [command, job_options])
     else
         if has_key(a:options, 'exit_cb')
-            let l:job_options.exit_cb = a:options.exit_cb
+            let job_options.exit_cb = a:options.exit_cb
         endif
-        let l:job_options.curwin = v:true
-        let l:Function = function('term_start', [l:command, l:job_options])
+        let job_options.curwin = v:true
+        let Function = function('term_start', [command, job_options])
     endif
     " Start terminal job.
-    let l:job_id = l:self.WindowRun(l:window, l:Function)
-    return l:job_id
+    let job_id = self.WindowRun(window, Function)
+    return job_id
 endfunction
 
 " Echo data to terminal.
@@ -680,8 +680,8 @@ endfunction
 function! s:system.ChannelWait(job_id) abort
     " Only makes sense in Vim currently.
     if !has('nvim')
-        let l:chan_id = job_getchannel(a:job_id)
-        while ch_status(l:chan_id, {'part': 'out'}) !=# 'closed'
+        let chan_id = job_getchannel(a:job_id)
+        while ch_status(chan_id, {'part': 'out'}) !=# 'closed'
             execute 'sleep 5m'
         endwhile
     endif
@@ -719,53 +719,53 @@ endfunction
 "             only full stdout lines, useful for post-processing
 "
 function! s:system.ExtractStdoutCallbackData(cb_arglist) abort
-    let l:channel = a:cb_arglist[0]
-    let l:data = a:cb_arglist[1]
+    let channel = a:cb_arglist[0]
+    let data = a:cb_arglist[1]
     if has('nvim')
-        let l:raw_lines = l:data
-        let l:full_lines = []
+        let raw_lines = data
+        let full_lines = []
         " A list only containing an empty string signals the EOF.
-        let l:eof = (l:data == [''])
+        let eof = (data == [''])
         " The first and the last lines may be partial lines, thus they need to
         " be joined on consecutive iterations. See :help channel-lines.
         " When this function is called for the first time for a particular
         " channel, allocate an empty partial line buffer for that channel.
-        if !has_key(s:stdout_partial_line, l:channel)
-            let s:stdout_partial_line[l:channel] = ''
+        if !has_key(s:stdout_partial_line, channel)
+            let s:stdout_partial_line[channel] = ''
         endif
         " Copy first entry of output data list to partial line buffer.
-        let s:stdout_partial_line[l:channel] .= l:data[0]
+        let s:stdout_partial_line[channel] .= data[0]
         " If output data list contains more entries, the remaining entries are
         " all complete lines, except for the last entry. The saved parial line
         " (which is now complete), as well as all the other complete lines, can
         " be added to the list of full lines. The last entry of the data list is
         " saved to the partial line buffer.
-        if len(l:data) > 1
-            call add(l:full_lines, s:stdout_partial_line[l:channel])
-            call extend(l:full_lines, l:data[1:-2])
-            let s:stdout_partial_line[l:channel] = l:data[-1]
+        if len(data) > 1
+            call add(full_lines, s:stdout_partial_line[channel])
+            call extend(full_lines, data[1:-2])
+            let s:stdout_partial_line[channel] = data[-1]
         endif
         " At the end of the stream of a channel, "flush" any leftover partial
         " line, and remove the dictionary entry for that channel. Leftover
         " partial lines at the end of the stream occur when the job's command
         " does not append a newline at the end of the stream.
-        if l:eof
-            if len(s:stdout_partial_line[l:channel]) > 0
-                call add(l:full_lines, s:stdout_partial_line[l:channel])
+        if eof
+            if len(s:stdout_partial_line[channel]) > 0
+                call add(full_lines, s:stdout_partial_line[channel])
             endif
-            call remove(s:stdout_partial_line, l:channel)
+            call remove(s:stdout_partial_line, channel)
         endif
     else
         " In Vim, data is a string, so we transform it to a list. Also, there
         " aren't any such thing as non-full lines in Vim, however raw lines can
         " contain NL characters, which we use to delimit full lines.
-        let l:raw_lines = [l:data]
-        let l:full_lines = split(l:data, '\n')
+        let raw_lines = [data]
+        let full_lines = split(data, '\n')
     endif
-    let l:lines = {}
-    let l:lines.raw_lines = l:raw_lines
-    let l:lines.full_lines = l:full_lines
-    return l:lines
+    let lines = {}
+    let lines.raw_lines = raw_lines
+    let lines.full_lines = full_lines
+    return lines
 endfunction
 
 " Extract data from a system's exit callback.

@@ -16,13 +16,13 @@ let s:reply_path = s:api_path + ['reply']
 
 let s:query_version = 1
 let s:query = {
-            \     'requests': [
-            \         { 'kind': 'codemodel' , 'version': 2 },
-            \     ],
-            \     'client': {
-            \         'query': { 'version': s:query_version },
-            \     },
-            \ }
+    \ 'requests': [
+    \     { 'kind': 'codemodel' , 'version': 2 },
+    \ ],
+    \ 'client': {
+    \     'query': { 'version': s:query_version },
+    \ },
+    \ }
 
 let s:const = cmake#const#Get()
 let s:logger = cmake#logger#Get()
@@ -43,12 +43,12 @@ let s:system = cmake#system#Get()
 "         path to response index file or empty string if none is found
 "
 function! s:FindIndexFile(build_dir) abort
-    let l:glob = s:system.Path([a:build_dir] + s:reply_path + ['index'], v:false) . '-*.json'
-    let l:indices = glob(l:glob, v:true, v:true)
-    if len(l:indices) == 0
+    let glob = s:system.Path([a:build_dir] + s:reply_path + ['index'], v:false) . '-*.json'
+    let indices = glob(glob, v:true, v:true)
+    if len(indices) == 0
         return ''
     else
-        return l:indices[-1]
+        return indices[-1]
     endif
 endfunction
 
@@ -69,28 +69,28 @@ endfunction
 "         mapping from query kind to corresponding response file path
 "
 function! s:ParseIndex(build_dir) abort
-    let l:index_path = s:FindIndexFile(a:build_dir)
-    if l:index_path ==# ''
+    let index_path = s:FindIndexFile(a:build_dir)
+    if index_path ==# ''
         " TODO: only throw this with an existing build tree without api files
         " and when CMake version new enough
         throw 'vim-cmake-fileapi-noindex'
-    elseif l:index_path ==# s:fileapi.last_index_name
+    elseif index_path ==# s:fileapi.last_index_name
         return v:null
     endif
-    let s:fileapi.last_index_name = l:index_path
+    let s:fileapi.last_index_name = index_path
 
-    let l:index = json_decode(join(readfile(l:index_path)))
-    let l:reply = l:index.reply['client-' . s:client_name]['query.json']
-    if l:reply.client.query.version != s:query_version
+    let index = json_decode(join(readfile(index_path)))
+    let reply = index.reply['client-' . s:client_name]['query.json']
+    if reply.client.query.version != s:query_version
         throw 'vim-cmake-fileapi-oldindex'
     endif
-    let l:response_files = {}
+    let response_files = {}
     " Update response references
-    for l:response in l:reply.responses
-        let l:path = [a:build_dir] + s:reply_path + [l:response.jsonFile]
-        let l:response_files[l:response.kind] = s:system.Path(l:path, v:false)
+    for response in reply.responses
+        let path = [a:build_dir] + s:reply_path + [response.jsonFile]
+        let response_files[response.kind] = s:system.Path(path, v:false)
     endfor
-    return l:response_files
+    return response_files
 endfunction
 
 " Parse codemodel api response.
@@ -102,26 +102,26 @@ endfunction
 "         the path to the codemodel response file
 "
 function! s:ParseCodemodel(build_dir, codemodel) abort
-    let l:targets = {}
+    let targets = {}
     " Parse codemodel file to find targets.
-    let l:codemodel = json_decode(join(readfile(a:codemodel)))
+    let codemodel = json_decode(join(readfile(a:codemodel)))
     " Extract target name and executable path, if available, from target info
-    for l:target in l:codemodel.configurations[0].targets
-        let l:path_list = [a:build_dir] + s:reply_path + [l:target.jsonFile]
-        let l:target_path = s:system.Path(l:path_list, v:false)
-        let l:target_info = json_decode(join(readfile(l:target_path)))
-        if l:target_info.type ==# 'EXECUTABLE'
-            let l:targets[l:target.name] = s:system.Path(
-                \ [a:build_dir, l:target_info.artifacts[0].path], v:true)
+    for target in codemodel.configurations[0].targets
+        let path_list = [a:build_dir] + s:reply_path + [target.jsonFile]
+        let target_path = s:system.Path(path_list, v:false)
+        let target_info = json_decode(join(readfile(target_path)))
+        if target_info.type ==# 'EXECUTABLE'
+            let targets[target.name] = s:system.Path(
+                \ [a:build_dir, target_info.artifacts[0].path], v:true)
         else
-            let l:targets[l:target.name] = ''
+            let targets[target.name] = ''
         endif
     endfor
     " Build targets is a list of all target names
-    let s:fileapi.build_targets = keys(l:targets)
+    let s:fileapi.build_targets = keys(targets)
     " Executable targets is a dictionary of target names and executable paths -
     " a target is executable only if it has an executable path
-    let s:fileapi.exec_targets = filter(l:targets, 'v:val !=# ""')
+    let s:fileapi.exec_targets = filter(targets, 'v:val !=# ""')
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -142,23 +142,23 @@ endfunction
 "         whether the passed CMake version is supported by fileapi
 "
 function! s:fileapi.CheckCMakeVersion(cmake_version) abort
-    let l:cmake_version_comparable =
-                \ a:cmake_version.major * 100 + a:cmake_version.minor
-    let l:self.cmake_version_supported = l:cmake_version_comparable >= 314
-    if !l:self.cmake_version_supported
+    let cmake_version_comparable =
+        \ a:cmake_version.major * 100 + a:cmake_version.minor
+    let self.cmake_version_supported = cmake_version_comparable >= 314
+    if !self.cmake_version_supported
         call s:logger.EchoWarn(s:const.errors['FILEAPI_VERSION'])
         call s:logger.LogWarn(s:const.errors['FILEAPI_VERSION'])
     endif
 
-    return l:self.cmake_version_supported
+    return self.cmake_version_supported
 endfunction
 
 " Reset all fileapi state.
 "
 function! s:fileapi.Reset() abort
-    let l:self.last_index_name = 'unset' " won't compare true
-    let l:self.build_targets = []
-    let l:self.exec_targets = {}
+    let self.last_index_name = 'unset' " won't compare true
+    let self.build_targets = []
+    let self.exec_targets = {}
 endfunction
 
 " Set or update the query file.
@@ -168,10 +168,10 @@ endfunction
 "         path to current build configuration
 "
 function! s:fileapi.UpdateQueries(build_dir) abort
-    let l:query_path = s:system.Path([a:build_dir] + s:query_path, v:false)
+    let query_path = s:system.Path([a:build_dir] + s:query_path, v:false)
     " FIX: this creates the build_dir and queries even if not in a CMake project
-    call mkdir(fnamemodify(l:query_path, ':h'), 'p')
-    call writefile([json_encode(s:query)], l:query_path)
+    call mkdir(fnamemodify(query_path, ':h'), 'p')
+    call writefile([json_encode(s:query)], query_path)
 endfunction
 
 " Parse the CMake responses if necessary.
@@ -185,13 +185,13 @@ endfunction
 "         no index file could be found
 "
 function! s:fileapi.Parse(build_dir) abort
-    if !l:self.cmake_version_supported
+    if !self.cmake_version_supported
         return
     endif
 
-    let l:response_files = v:null
+    let response_files = v:null
     try
-        let l:response_files = s:ParseIndex(a:build_dir)
+        let response_files = s:ParseIndex(a:build_dir)
     catch /vim-cmake-fileapi-oldindex/
         " TODO: Regenerate to update queries or bail
         " bail for now
@@ -199,8 +199,8 @@ function! s:fileapi.Parse(build_dir) abort
         call s:logger.LogWarn(s:const.errors['FILEAPI_RERUN'])
     endtry
 
-    if l:response_files isnot v:null
-        call s:ParseCodemodel(a:build_dir, l:response_files.codemodel)
+    if response_files isnot v:null
+        call s:ParseCodemodel(a:build_dir, response_files.codemodel)
     endif
 endfunction
 
@@ -211,7 +211,7 @@ endfunction
 "         CMake build target names
 "
 function! s:fileapi.GetBuildTargets() abort
-    return l:self.build_targets
+    return self.build_targets
 endfunction
 
 " Get List of executable targets.
@@ -221,7 +221,7 @@ endfunction
 "         executable targets, a dictionary of {name, path} pairs
 "
 function! s:fileapi.GetExecTargets() abort
-    return l:self.exec_targets
+    return self.exec_targets
 endfunction
 
 " Get fileapi 'object'.
