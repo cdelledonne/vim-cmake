@@ -63,7 +63,9 @@ etc.), build specific targets and control build options, and fix errors using
 Vim's quickfix feature.  For a detailed explanation of commands, mappings and
 functionalities run `:help cmake`.  A quick overview follows.
 
-### Commands and `<Plug>` mappings
+<!--=========================================================================-->
+
+## Commands and `<Plug>` mappings
 
 | Command                   | `<Plug>` mapping      | Description                           |
 |:--------------------------|:----------------------|:--------------------------------------|
@@ -80,13 +82,17 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeCloseOverlay`      | `(CMakeCloseOverlay)` | Close overlay window                  |
 | `:CMakeStop`              | `(CMakeStop)`         | Stop running command                  |
 
-### Additional `<Plug>` mappings
+<!--=========================================================================-->
+
+## Additional `<Plug>` mappings
 
 | `<Plug>` mapping     | Behaves as                                            |
 |:---------------------|:------------------------------------------------------|
 | `(CMakeBuildTarget)` | `(CMakeBuild)`, but leaves cursor in the command line |
 
-### Key mappings
+<!--=========================================================================-->
+
+## Key mappings
 
 Mappings in the CMake console window:
 
@@ -105,7 +111,9 @@ Mappings in the overlay window:
 |:------------|:---------------------------|
 | `cq`        | Run `:CMakeCloseOverlay`   |
 
-### Events
+<!--=========================================================================-->
+
+## Events
 
 Vim-CMake provides a set of custom events to trigger further actions.  Run
 `:help cmake` for full documentation on all configuration options and examples.
@@ -117,7 +125,9 @@ Vim-CMake provides a set of custom events to trigger further actions.  Run
 | `User CMakeBuildSucceeded` | Triggered after a successful `:CMakeBuild` |
 | `User CMakeBuildFailed`    | Triggered after a failed `:CMakeBuild`     |
 
-### Quickfix list
+<!--=========================================================================-->
+
+## Quickfix list
 
 After each build (e.g. run with `:CMakeBuild`), Vim-CMake populates a quickfix
 list to speedup the edit-compile-run cycle, similarly to when running `:make` in
