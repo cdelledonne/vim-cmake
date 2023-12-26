@@ -81,9 +81,10 @@ let s:fatal_error_signals = {
     \ }
 
 let s:const = cmake#const#Get()
-let s:logger = cmake#logger#Get()
+let s:logger = libs#logger#Get(s:const.plugin_name)
+let s:error = libs#error#Get(s:const.plugin_name, s:logger)
 let s:statusline = cmake#statusline#Get()
-let s:system = cmake#system#Get()
+let s:system = libs#system#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ANSI sequence filters
@@ -187,9 +188,9 @@ function! s:OverlayCmdExitCb(...) abort
         if has_key(s:fatal_error_signals, signal)
             let signame = s:fatal_error_signals[signal]
             call s:logger.EchoWarn(
-                \ 'Executable was interrupted with fatal signa %s', signame)
+                \ 'Executable was interrupted with fatal signal %s', signame)
             call s:logger.LogWarn(
-                \ 'Executable was interrupted with fatal signa %s', signame)
+                \ 'Executable was interrupted with fatal signal %s', signame)
         endif
     endif
 endfunction
@@ -359,7 +360,9 @@ endfunction
 "         ID of the created buffer
 "
 function! s:CreateBuffer(window, echo_term) abort
-    let ids = s:system.BufferCreate(a:window, a:echo_term)
+    let Function = funcref(
+        \ 's:system.BufferCreate', [a:echo_term, 'Vim-CMake'], s:system)
+    let ids = s:system.WindowRun(a:window, Function)
     let buffer_id = ids['buffer_id']
     if a:echo_term
         let s:terminal.term_id = ids['term_id']
@@ -379,7 +382,7 @@ function! s:CreateBuffer(window, echo_term) abort
     endif
     let type = a:echo_term ? 'console' : 'overlay'
     call s:logger.LogDebug('Created %s buffer', type)
-    return ids['buffer_id']
+    return buffer_id
 endfunction
 
 " Delete Vim-CMake console buffer.
@@ -387,8 +390,7 @@ endfunction
 function! s:DeleteConsoleBuffer() abort
     if s:system.BufferExists(s:terminal.console_buffer)
         if s:terminal.console_cmd.running
-            call s:logger.EchoError(s:const.errors['CANT_STOP_CONSOLE_JOB'])
-            call s:logger.LogError(s:const.errors['CANT_STOP_CONSOLE_JOB'])
+            call s:error.Throw('CANT_STOP_CONSOLE_JOB')
             return
         endif
         call s:system.BufferDelete(s:terminal.console_buffer)
@@ -401,8 +403,7 @@ endfunction
 function! s:DeleteOverlayBuffer() abort
     if s:system.BufferExists(s:terminal.overlay_buffer)
         if s:terminal.overlay_cmd.running
-            call s:logger.EchoError(s:const.errors['CANT_STOP_OVERLAY_JOB'])
-            call s:logger.LogError(s:const.errors['CANT_STOP_OVERLAY_JOB'])
+            call s:error.Throw('CANT_STOP_OVERLAY_JOB')
             return
         endif
         call s:system.BufferDelete(s:terminal.overlay_buffer)
@@ -588,8 +589,7 @@ function! s:terminal.Run(command, tag, options) abort
     call assert_notequal(index(keys(self.console_cmd_info), a:tag), -1)
     " Prevent executing this function when a command is already running
     if self.console_cmd.running
-        call s:logger.EchoError(s:const.errors['COMMAND_RUNNING'])
-        call s:logger.LogError(s:const.errors['COMMAND_RUNNING'])
+        call s:error.Throw('COMMAND_RUNNING')
         return
     endif
     let self.console_cmd.callbacks_succ = get(a:options, 'callbacks_succ', [])
@@ -637,8 +637,7 @@ function! s:terminal.RunOverlay(command) abort
     call s:logger.LogDebug('Invoked: terminal.RunOverlay(%s)', a:command)
     " Prevent executing this function when a command is already running
     if self.overlay_cmd.running
-        call s:logger.EchoError(s:const.errors['COMMAND_RUNNING_OVERLAY'])
-        call s:logger.LogError(s:const.errors['COMMAND_RUNNING_OVERLAY'])
+        call s:error.Throw('COMMAND_RUNNING_OVERLAY')
         return
     endif
     " Open overlay window.

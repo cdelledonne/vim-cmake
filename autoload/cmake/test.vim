@@ -6,8 +6,9 @@
 let s:test = {}
 
 let s:buildsys = cmake#buildsys#Get()
-let s:logger = cmake#logger#Get()
-let s:system = cmake#system#Get()
+let s:const = cmake#const#Get()
+let s:logger = libs#logger#Get(s:const.plugin_name)
+let s:system = libs#system#Get()
 let s:terminal = cmake#terminal#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

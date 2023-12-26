@@ -25,8 +25,8 @@ let s:query = {
     \ }
 
 let s:const = cmake#const#Get()
-let s:logger = cmake#logger#Get()
-let s:system = cmake#system#Get()
+let s:logger = libs#logger#Get(s:const.plugin_name)
+let s:system = libs#system#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Private functions

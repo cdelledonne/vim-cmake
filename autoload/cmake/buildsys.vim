@@ -15,10 +15,11 @@ let s:refresh_tests_output = []
 
 let s:const = cmake#const#Get()
 let s:fileapi = cmake#fileapi#Get()
-let s:logger = cmake#logger#Get()
-let s:state = cmake#state#Get()
+let s:logger = libs#logger#Get(s:const.plugin_name)
+let s:error = libs#error#Get(s:const.plugin_name, s:logger)
+let s:state = libs#state#Get()
 let s:statusline = cmake#statusline#Get()
-let s:system = cmake#system#Get()
+let s:system = libs#system#Get()
 let s:terminal = cmake#terminal#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -362,7 +363,8 @@ function! s:SetCurrentConfig(config) abort
     let state = {}
     let state.config = a:config
     let state.build_dir = path
-    call s:state.WriteProjectState(s:buildsys.project_root, state)
+    call s:state.WriteProjectState(
+        \ s:const.plugin_name, s:buildsys.project_root, state)
 endfunction
 
 " Link compile commands from source directory to build directory.
@@ -396,7 +398,8 @@ function! s:buildsys.Init() abort
 
     if g:cmake_restore_state
         call s:SetCurrentConfig(get(
-            \ s:state.ReadProjectState(s:buildsys.project_root),
+            \ s:state.ReadProjectState(
+            \     s:const.plugin_name, s:buildsys.project_root),
             \ 'config',
             \ g:cmake_default_config))
     else
@@ -471,8 +474,7 @@ function! s:buildsys.Switch(config) abort
     call s:logger.LogDebug('Invoked: buildsys.Switch(%s)', a:config)
     " Check that config exists.
     if !s:ConfigExists(a:config)
-        call s:logger.EchoError(s:const.errors['NO_CONFIG'], a:config, a:config)
-        call s:logger.LogError(s:const.errors['NO_CONFIG'], a:config, a:config)
+        call s:error.Throw('NO_CONFIG', a:config, a:config)
         return
     endif
     call s:SetCurrentConfig(a:config)
@@ -494,20 +496,17 @@ function! s:buildsys.Run(target, args) abort
     let exec_targets = s:fileapi.GetExecTargets()
     " Check that target exists.
     if !has_key(exec_targets, a:target)
-        call s:logger.EchoError(s:const.errors['NO_EXEC_TARGET'], a:target)
-        call s:logger.LogError(s:const.errors['NO_EXEC_TARGET'], a:target)
+        call s:error.Throw('NO_EXEC_TARGET', a:target)
         return
     endif
     " Also check that actual executable file exists.
     let exec_path = exec_targets[a:target]
     if !filereadable(exec_path)
-        call s:logger.EchoError(s:const.errors['NO_EXEC_PATH'], exec_path)
-        call s:logger.LogError(s:const.errors['NO_EXEC_PATH'], exec_path)
+        call s:error.Throw('NO_EXEC_PATH', exec_path)
         return
     endif
     if !executable(exec_path)
-        call s:logger.EchoError(s:const.errors['NOT_EXECUTABLE'], exec_path)
-        call s:logger.LogError(s:const.errors['NOT_EXECUTABLE'], exec_path)
+        call s:error.Throw('NOT_EXECUTABLE', exec_path)
         return
     endif
     " Run executable.

@@ -3,16 +3,20 @@
 " Description: API functions and global data for Vim-CMake
 " ==============================================================================
 
-let s:buildsys = cmake#buildsys#Get()
 let s:build = cmake#build#Get()
-let s:test = cmake#test#Get()
+let s:buildsys = cmake#buildsys#Get()
 let s:const = cmake#const#Get()
-let s:logger = cmake#logger#Get()
-let s:terminal = cmake#terminal#Get()
 let s:fileapi = cmake#fileapi#Get()
+let s:logger = libs#logger#Get(s:const.plugin_name)
+let s:terminal = cmake#terminal#Get()
+let s:test = cmake#test#Get()
 
 " Print news of new Vim-CMake versions.
-call cmake#util#PrintNews(s:const.plugin_version, s:const.plugin_news)
+let s:news_items = libs#util#FilterNews(
+    \ s:const.plugin_name, s:const.plugin_version, s:const.plugin_news)
+for s:news_item in s:news_items
+    call s:logger.EchoInfo(s:news_item)
+endfor
 
 " Log config options.
 call s:logger.LogInfo('Configuration options:')

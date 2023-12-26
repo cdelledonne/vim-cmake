@@ -5,7 +5,10 @@
 
 let s:const = {}
 
+let s:const.plugin_name = 'cmake'
 let s:const.plugin_version = '0.15.1'
+
+let s:const.echo_prefix = '[Vim-CMake] '
 
 let s:const.plugin_news = {
     \ '0.2.0': ['Vim-CMake has a new feature, run `:help cmake-switch`'],
@@ -29,22 +32,38 @@ let s:const.plugin_news = {
     \ }
 
 let s:const.errors = {
-    \ 'CANT_STOP_CONSOLE_JOB': 'Cannot stop the CMake console job while a command is running',
-    \ 'CANT_STOP_OVERLAY_JOB': 'Cannot stop the CMake overlay job while a command is running',
-    \ 'COMMAND_RUNNING': 'Another CMake command is already running',
-    \ 'COMMAND_RUNNING_OVERLAY': 'Another command is already running',
-    \ 'FILEAPI_NORESP': 'fileapi: Response from cmake-file-api(7) missing. Target completion will not work. Run :CMakeGenerate',
-    \ 'FILEAPI_RERUN': 'fileapi: Response from cmake-file-api(7) out of date. Some functionality may not work correctly. Run :CMakeGenerate',
-    \ 'FILEAPI_VERSION': 'fileapi: CMake version not supported. Certain functionality will not work correctly. (Minimum supported is CMake 3.14)',
-    \ 'NOT_EXECUTABLE': 'File ''%s'' is not executable',
-    \ 'NO_CMAKE': 'CMake binary ''%s'' not found in PATH',
-    \ 'NO_CONFIG': 'Build configuration ''%s'' not found, run '':CMakeGenerate %s''',
-    \ 'NO_CTEST': 'CTest binary ''%s'' not found in PATH',
-    \ 'NO_EXEC_PATH': 'Executable ''%s'' does not exist, try building project',
-    \ 'NO_EXEC_TARGET': 'Target ''%s'' does not exist or is not an executable target',
-    \ 'NO_TERMINAL': 'Must run Neovim, or Vim with +terminal',
-    \ 'OLD_NEOVIM': 'Only Neovim versions >= 0.5 are supported',
-    \ 'VIM_WINDOWS': 'Under Windows, only Neovim is supported at the moment',
+    \ 'CANT_STOP_CONSOLE_JOB':
+    \     'Cannot stop the CMake console job while a command is running',
+    \ 'CANT_STOP_OVERLAY_JOB':
+    \     'Cannot stop the CMake overlay job while a command is running',
+    \ 'COMMAND_RUNNING':
+    \     'Another CMake command is already running',
+    \ 'COMMAND_RUNNING_OVERLAY':
+    \     'Another command is already running',
+    \ 'FILEAPI_NORESP':
+    \     'fileapi: Response from cmake-file-api(7) missing. Target completion will not work. Run :CMakeGenerate',
+    \ 'FILEAPI_RERUN':
+    \     'fileapi: Response from cmake-file-api(7) out of date. Some functionality may not work correctly. Run :CMakeGenerate',
+    \ 'FILEAPI_VERSION':
+    \     'fileapi: CMake version not supported. Certain functionality will not work correctly. (Minimum supported is CMake 3.14)',
+    \ 'NOT_EXECUTABLE':
+    \     'File ''%s'' is not executable',
+    \ 'NO_CMAKE':
+    \     'CMake binary ''%s'' not found in PATH',
+    \ 'NO_CONFIG':
+    \     'Build configuration ''%s'' not found, run '':CMakeGenerate %s''',
+    \ 'NO_CTEST':
+    \     'CTest binary ''%s'' not found in PATH',
+    \ 'NO_EXEC_PATH':
+    \     'Executable ''%s'' does not exist, try building project',
+    \ 'NO_EXEC_TARGET':
+    \     'Target ''%s'' does not exist or is not an executable target',
+    \ 'NO_TERMINAL':
+    \     'Must run Neovim, or Vim with +terminal',
+    \ 'OLD_NEOVIM':
+    \     'Only Neovim versions >= 0.5 are supported',
+    \ 'VIM_WINDOWS':
+    \     'Under Windows, only Neovim is supported at the moment',
     \ }
 
 let s:const.config_vars = {}

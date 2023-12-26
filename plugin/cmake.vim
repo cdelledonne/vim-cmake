@@ -20,24 +20,31 @@ for s:cvar in items(s:const.config_vars)
     endif
 endfor
 
-let s:logger = cmake#logger#Get()
+" Configure logger.
+let s:logger = libs#logger#Get(
+    \ s:const.plugin_name,
+    \ s:const.echo_prefix,
+    \ g:cmake_log_file,
+    \ g:cmake_log_level
+    \ )
+
+" Configure error reporter.
+let s:error = libs#error#Get(s:const.plugin_name, s:logger)
+call s:error.ExtendDatabase(s:const.errors)
 
 " Check required features.
 if has('nvim')
     if !has('nvim-0.5.0')
-        call s:logger.EchoError(s:const.errors['OLD_NEOVIM'])
-        call s:logger.LogError(s:const.errors['OLD_NEOVIM'])
+        call s:error.Throw('OLD_NEOVIM')
         finish
     endif
 else
     if has('win32')
-        call s:logger.EchoError(s:const.errors['VIM_WINDOWS'])
-        call s:logger.LogError(s:const.errors['VIM_WINDOWS'])
+        call s:error.Throw('VIM_WINDOWS')
         finish
     endif
     if !has('terminal')
-        call s:logger.EchoError(s:const.errors['NO_TERMINAL'])
-        call s:logger.LogError(s:const.errors['NO_TERMINAL'])
+        call s:error.Throw('NO_TERMINAL')
         finish
     endif
 endif
@@ -46,15 +53,13 @@ call s:logger.LogInfo('Loading Vim-CMake')
 
 " Check if CMake executable exists.
 if !executable(g:cmake_command)
-    call s:logger.EchoError(s:const.errors['NO_CMAKE'], g:cmake_command)
-    call s:logger.LogError(s:const.errors['NO_CMAKE'], g:cmake_command)
+    call s:error.Throw('NO_CMAKE', g:cmake_command)
     finish
 endif
 
 " Check if CTest executable exists.
 if !executable(g:cmake_test_command)
-    call s:logger.EchoError(s:const.errors['NO_CTEST'], g:cmake_test_command)
-    call s:logger.LogError(s:const.errors['NO_CTEST'], g:cmake_test_command)
+    call s:error.Throw('NO_CTEST', g:cmake_test_command)
     finish
 endif
 

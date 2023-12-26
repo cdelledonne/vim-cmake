@@ -4,12 +4,14 @@
 " ==============================================================================
 
 let s:build = {}
+let s:build.qflist_id = -1
 
 let s:buildsys = cmake#buildsys#Get()
+let s:const = cmake#const#Get()
 let s:fileapi = cmake#fileapi#Get()
-let s:logger = cmake#logger#Get()
-let s:quickfix = cmake#quickfix#Get()
-let s:system = cmake#system#Get()
+let s:logger = libs#logger#Get(s:const.plugin_name)
+let s:quickfix = libs#quickfix#Get()
+let s:system = libs#system#Get()
 let s:terminal = cmake#terminal#Get()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -68,7 +70,8 @@ endfunction
 " Generate quickfix list after running build command.
 "
 function! s:GenerateQuickfix() abort
-    call s:quickfix.Generate(s:terminal.GetOutput())
+    let s:build.qflist_id = s:quickfix.Generate(
+        \ s:terminal.GetOutput(), s:build.qflist_id, 'Vim-CMake')
 endfunction
 
 " Refresh list of available CMake build targets.

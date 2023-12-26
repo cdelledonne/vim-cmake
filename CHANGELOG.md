@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Changed
 * Remove local variable prefix `:l`.
+* Use external libraries `vim-libs`.
 
 <!--=========================================================================-->
 
