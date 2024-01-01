@@ -6,7 +6,7 @@
 let s:const = {}
 
 let s:const.plugin_name = 'cmake'
-let s:const.plugin_version = '0.15.1'
+let s:const.plugin_version = '0.15.2'
 
 let s:const.echo_prefix = '[Vim-CMake] '
 

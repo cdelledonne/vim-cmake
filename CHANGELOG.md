@@ -7,9 +7,17 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 <!-- ## Unreleased -->
 
+<!--=========================================================================-->
+
+## 0.15.2 &ndash; 2024-01-01
+
 ### Changed
 * Remove local variable prefix `:l`.
 * Use external libraries `vim-libs`.
+
+### Fixed
+* Use relative path in .gitmodules ([#96][#96]) to avoid forcing git pull
+  protocol.
 
 <!--=========================================================================-->
 
@@ -24,7 +32,7 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ### Added
 * Echo and log warning if the executable run with `:CMakeRun` quits unexpectedly
-with an fatal error ([#90][#90]).
+  with an fatal error ([#90][#90]).
 
 ### Changed
 * Fixed behavior of `s:terminal.CloseOverlay()`.
@@ -60,7 +68,7 @@ with an fatal error ([#90][#90]).
 
 ### Added
 * `:CMakeToggle` command, and `<Plug>(CMakeToggle)` mapping, to toggle the
-Vim-CMake window ([#83][#83]).
+  Vim-CMake window ([#83][#83]).
 
 <!--=========================================================================-->
 
@@ -331,5 +339,6 @@ First version.
 [#83]: https://github.com/cdelledonne/vim-cmake/issues/83
 [#86]: https://github.com/cdelledonne/vim-cmake/issues/86
 [#90]: https://github.com/cdelledonne/vim-cmake/issues/90
+[#96]: https://github.com/cdelledonne/vim-cmake/issues/96
 [format]: https://keepachangelog.com/en/1.0.0/
 [semver]: https://semver.org/spec/v2.0.0.html
