@@ -1,3 +1,3 @@
 [submodule "autoload/libs"]
 	path = autoload/libs
-	url = git@github.com:cdelledonne/vim-libs.git
+	url = ../../cdelledonne/vim-libs.git
