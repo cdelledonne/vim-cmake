@@ -44,7 +44,7 @@ or Vim's native package manager:
 ```sh
 mkdir -p ~/.vim/pack/plug/start
 cd ~/.vim/pack/plug/start
-git clone https://github.com/cdelledonne/vim-cmake.git
+git clone --recurse-submodules https://github.com/cdelledonne/vim-cmake.git
 ```
 
 <!--=========================================================================-->
