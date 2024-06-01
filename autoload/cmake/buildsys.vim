@@ -526,12 +526,16 @@ endfunction
 
 " Get list of available test names.
 "
+" Params:
+"     refresh : Boolean
+"         force refreshing list of tests
+"
 " Returns:
 "     List
 "         list of available test names
 "
-function! s:buildsys.GetTests() abort
-    if len(self.tests) == 0
+function! s:buildsys.GetTests(refresh) abort
+    if len(self.tests) == 0 || a:refresh
         call s:RefreshTests()
     endif
     return self.tests

@@ -201,7 +201,7 @@ endfunction
 "         available tests, one per line
 "
 function! cmake#GetTests(arg_lead, cmd_line, cursor_pos) abort
-    return join(s:buildsys.GetTests(), "\n")
+    return join(s:buildsys.GetTests(v:false), "\n")
 endfunction
 
 " API function for :CMakeStop.

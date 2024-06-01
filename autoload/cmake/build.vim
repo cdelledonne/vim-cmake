@@ -83,6 +83,12 @@ function! s:RefreshTargets() abort
     endtry
 endfunction
 
+" Refresh list of available CTest tests.
+"
+function! s:RefreshTests() abort
+    call s:buildsys.GetTests(v:true)
+endfunction
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Public functions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -125,6 +131,7 @@ function! s:build.Build(clean, args) abort
     let run_options.callbacks_succ = [
         \ function('s:GenerateQuickfix'),
         \ function('s:RefreshTargets'),
+        \ function('s:RefreshTests'),
         \ ]
     let run_options.callbacks_err = [
         \ function('s:GenerateQuickfix'),

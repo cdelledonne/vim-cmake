@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Fixed
+* List of CTest tests is also refreshed after a successful build.
 
 <!--=========================================================================-->
 

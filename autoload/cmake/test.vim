@@ -39,7 +39,7 @@ function! s:GetTestArgs(args) abort
     let arglist = deepcopy(a:args)
     " Search arguments for those that match the name of a test.
     let test_names = []
-    for t in s:buildsys.GetTests()
+    for t in s:buildsys.GetTests(v:false)
         let match_res = match(arglist, '\m\C^' . t)
         if match_res != -1
             " If found, get test name and remove from list of arguments.
