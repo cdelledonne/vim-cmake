@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][format], and this project adheres to
 [Semantic Versioning][semver].
 
-## Unreleased
+<!-- ## Unreleased -->
+
+<!--=========================================================================-->
+
+## 0.16.0 &ndash; 2024-06-01
 
 ### Added
 * Dictionary returned by public API `cmake#GetInfo()` now includes a `configs`
