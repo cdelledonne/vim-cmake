@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog][format], and this project adheres to
 
 ## Unreleased
 
+### Added
+* Dictionary returned by public API `cmake#GetInfo()` now includes a `configs`
+  entry (list of configuration directories).
+
 ### Fixed
 * List of CTest tests is also refreshed after a successful build.
 

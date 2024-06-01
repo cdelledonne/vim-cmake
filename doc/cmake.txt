@@ -461,7 +461,9 @@ cmake#GetInfo()
 			status : String
 				current CMake status (e.g. Building...)
 			config : String
-				name of the set CMake configuration
+				name of the current CMake configuration
+			config : String
+				list of existing configuration directories
 			cmake_version : Dictionary
 				major : Number
 					CMake major version

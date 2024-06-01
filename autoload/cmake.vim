@@ -248,7 +248,9 @@ endfunction
 "         status : String
 "             current CMake status (e.g. Building...)
 "         config : String
-"             name of the set CMake configuration
+"             name of the current CMake configuration
+"         configs : List
+"             list of existing configuration directories
 "         cmake_version : Dictionary
 "             major : Number
 "                 CMake major version
@@ -268,6 +270,7 @@ function! cmake#GetInfo() abort
     let info.version = s:const.plugin_version
     let info.status = s:terminal.GetCmdInfo()
     let info.config = s:buildsys.GetCurrentConfig()
+    let info.configs = s:buildsys.GetConfigs()
     let info.cmake_version = s:buildsys.GetCMakeVersion()
     let info.project_dir = s:buildsys.GetSourceDir()
     let info.build_dir = s:buildsys.GetPathToCurrentConfig()
