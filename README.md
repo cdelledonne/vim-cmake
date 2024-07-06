@@ -195,7 +195,7 @@ write a feature request, post an issue or submit a pull request.
 ## License
 
 Vim-CMake is licensed under the [MIT license][license].  Copyright (c)
-2020&ndash;2023 Carlo Delle Donne.
+2020&ndash;2024 Carlo Delle Donne.
 
 <!--=========================================================================-->
 
