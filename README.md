@@ -14,6 +14,7 @@ nice visual feedback.
 
 * Visual experience, shows CMake output in a console-like window
 * Slick management of build configurations
+* CMake Presets support for configuration
 * Autocompletion for build targets, configurations, executables and tests
 * Quickfix list population after each build
 * Airline/statusline status information, including current build configuration
@@ -28,6 +29,7 @@ nice visual feedback.
   later
 * Running executables also requires the `cmake-file-api(7)`, and thus CMake 3.14
   or later
+* CMake Presets support requires CMake 3.15 or later
 
 <!--=========================================================================-->
 
@@ -76,6 +78,9 @@ functionalities run `:help cmake`.  A quick overview follows.
 | `:CMakeRun <target>`      | `(CMakeRun)`          | Run executable target                 |
 | `:CMakeTest`              | `(CMakeTest)`         | Run CMake-generated tests with CTest  |
 | `:CMakeSwitch <config>`   | `(CMakeSwitch)`       | Switch to another build configuration |
+| `:CMakePreset [name]`    | -                    | Select or list CMake preset |
+| `:CMakePresetClear`      | -                    | Exit preset mode |
+| `:CMakePresets`          | -                    | List available CMake presets |
 | `:CMakeOpen`              | `(CMakeOpen)`         | Open CMake console window             |
 | `:CMakeClose[!]`          | `(CMakeClose)`        | Close CMake console window            |
 | `:CMakeToggle`            | `(CMakeToggle)`       | Toggle CMake console window           |
@@ -166,6 +171,7 @@ follows.
 | `g:cmake_statusline`            | `0`                |
 | `g:cmake_restore_state`         | `1`                |
 | `g:cmake_reinit_on_dir_changed` | `1`                |
+| `g:cmake_preset`             | `''`               | Default preset to use (empty = normal mode) |
 
 <!--=========================================================================-->
 
@@ -179,6 +185,10 @@ extensive information run `:help cmake-api`.
 To show the CMake version in your statusline you could do:
 ```vim
 set statusline=%{cmake#GetInfo().cmake_version.string}
+```
+To show the current preset:
+```vim
+set statusline=%{cmake#GetInfo().preset}
 ```
 or integrate this as a component in your preferred statusline plugin.
 
