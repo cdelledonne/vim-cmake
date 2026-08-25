@@ -64,6 +64,14 @@ let s:const.errors = {
     \     'Only Neovim versions >= 0.5 are supported',
     \ 'VIM_WINDOWS':
     \     'Under Windows, only Neovim is supported at the moment',
+    \ 'NO_PRESET':
+    \     'Preset ''%s'' not found in CMakePresets.json',
+    \ 'PRESET_NO_BUILD_DIR':
+    \     'Preset ''%s'' does not define a buildDirectory',
+    \ 'PRESET_MODE_ACTIVE':
+    \     'Cannot switch config in preset mode. Exit preset mode first with :CMakePresetClear',
+    \ 'CMAKE_VERSION_PRESET':
+    \     'CMake version %s does not support --preset (requires CMake 3.15+)',
     \ }
 
 let s:const.config_vars = {}
@@ -88,6 +96,7 @@ let s:const.config_vars.cmake_log_level             = 'INFO'
 let s:const.config_vars.cmake_statusline            = 0
 let s:const.config_vars.cmake_restore_state         = 1
 let s:const.config_vars.cmake_reinit_on_dir_changed = 1
+let s:const.config_vars.cmake_preset = ''
 
 " Get const 'object'.
 "

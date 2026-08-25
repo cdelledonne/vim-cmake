@@ -10,6 +10,8 @@ let s:buildsys.current_config = ''
 let s:buildsys.path_to_current_config = ''
 let s:buildsys.configs = []
 let s:buildsys.tests = []
+let s:buildsys.current_preset = ''
+let s:buildsys.presets = []
 
 let s:refresh_tests_output = []
 
@@ -346,6 +348,107 @@ function! s:ConfigExists(config) abort
     return index(s:buildsys.configs, a:config) >= 0
 endfunction
 
+" Parse CMakePresets.json and extract configure preset information.
+"
+" Returns:
+"     List
+"         list of dictionaries with preset info: name, buildDirectory, buildType
+"
+function! s:ParsePresetsJson() abort
+    let preset_file = s:system.Path([s:buildsys.project_root, 'CMakePresets.json'], v:true)
+    if !filereadable(preset_file)
+        call s:logger.LogDebug('CMakePresets.json not found at %s', preset_file)
+        return []
+    endif
+    let json_content = readfile(preset_file, '', 0x400)
+    if empty(json_content)
+        call s:logger.LogDebug('CMakePresets.json is empty')
+        return []
+    endif
+    let data = json_decode(join(json_content))
+    if type(data) != type({})
+        call s:logger.LogDebug('CMakePresets.json has invalid format')
+        return []
+    endif
+    let presets = []
+    let configure_presets = get(data, 'configurePresets', [])
+    if type(configure_presets) != type([])
+        return []
+    endif
+    for preset in configure_presets
+        if type(preset) != type({})
+            continue
+        endif
+        let preset_info = {}
+        let preset_info.name = get(preset, 'name', '')
+        let preset_info.buildDirectory = get(preset, 'buildDirectory', '')
+        let preset_info.displayName = get(preset, 'displayName', preset_info.name)
+        let cache_vars = get(preset, 'cacheVariables', {})
+        let preset_info.buildType = get(cache_vars, 'CMAKE_BUILD_TYPE', '')
+        if !empty(preset_info.name)
+            call add(presets, preset_info)
+        endif
+    endfor
+    return presets
+endfunction
+
+" Refresh list of available CMake presets.
+"
+function! s:RefreshPresets() abort
+    let s:buildsys.presets = s:ParsePresetsJson()
+    call s:logger.LogDebug('Presets: %s', map(copy(s:buildsys.presets), {_, p -> p.name}))
+endfunction
+
+" Check if a preset exists.
+"
+" Params:
+"     preset_name : String
+"         preset name to check
+"
+" Returns:
+"     Boolean
+"         v:true if the preset exists, v:false otherwise
+"
+function! s:PresetExists(preset_name) abort
+    let presets = s:buildsys.presets
+    for preset in presets
+        if preset.name ==# a:preset_name
+            return v:true
+        endif
+    endfor
+    return v:false
+endfunction
+
+" Get preset info by name.
+"
+" Params:
+"     preset_name : String
+"         preset name to find
+"
+" Returns:
+"     Dictionary
+"         preset info dict, or empty dict if not found
+"
+function! s:GetPresetInfo(preset_name) abort
+    let presets = s:buildsys.presets
+    for preset in presets
+        if preset.name ==# a:preset_name
+            return preset
+        endif
+    endfor
+    return {}
+endfunction
+
+" Check if currently in preset mode.
+"
+" Returns:
+"     Boolean
+"         v:true if in preset mode, v:false otherwise
+"
+function! s:IsPresetMode() abort
+    return s:buildsys.current_preset !=# ''
+endfunction
+
 " Set current build configuration.
 "
 " Params:
@@ -363,6 +466,56 @@ function! s:SetCurrentConfig(config) abort
     let state = {}
     let state.config = a:config
     let state.build_dir = path
+    let state.preset = s:buildsys.current_preset
+    call s:state.WriteProjectState(
+        \ s:const.plugin_name, s:buildsys.project_root, state)
+endfunction
+
+" Enter preset mode with the specified preset.
+"
+" Params:
+"     preset_name : String
+"         name of the preset to enter
+"
+function! s:EnterPresetMode(preset_name) abort
+    if !s:PresetExists(a:preset_name)
+        call s:error.Throw('NO_PRESET', a:preset_name)
+        return
+    endif
+    let preset = s:GetPresetInfo(a:preset_name)
+    if empty(preset.buildDirectory)
+        call s:error.Throw('PRESET_NO_BUILD_DIR', a:preset_name)
+        return
+    endif
+    let s:buildsys.current_preset = a:preset_name
+    " Use preset's build directory
+    let build_dir = s:system.Path([s:buildsys.project_root, preset.buildDirectory], v:false)
+    let s:buildsys.path_to_current_config = build_dir
+    " Use preset's build type if available, otherwise keep current
+    if !empty(preset.buildType)
+        let s:buildsys.current_config = preset.buildType
+    endif
+    call s:logger.LogInfo('Entered preset mode: %s (build dir: %s, config: %s)',
+        \ a:preset_name, build_dir, s:buildsys.current_config)
+    " Save state
+    let state = {}
+    let state.config = s:buildsys.current_config
+    let state.build_dir = build_dir
+    let state.preset = a:preset_name
+    call s:state.WriteProjectState(
+        \ s:const.plugin_name, s:buildsys.project_root, state)
+endfunction
+
+" Exit preset mode and return to normal mode.
+"
+function! s:ExitPresetMode() abort
+    let s:buildsys.current_preset = ''
+    call s:logger.LogInfo('Exited preset mode')
+    " Save state
+    let state = {}
+    let state.config = s:buildsys.current_config
+    let state.build_dir = s:buildsys.path_to_current_config
+    let state.preset = ''
     call s:state.WriteProjectState(
         \ s:const.plugin_name, s:buildsys.project_root, state)
 endfunction
@@ -396,18 +549,38 @@ function! s:buildsys.Init() abort
     let s:buildsys.project_root = s:system.Path([s:FindProjectRoot()], v:false)
     call s:logger.LogInfo('Project root: %s', s:buildsys.project_root)
 
+    " Restore preset state if configured
     if g:cmake_restore_state
-        call s:SetCurrentConfig(get(
-            \ s:state.ReadProjectState(
-            \     s:const.plugin_name, s:buildsys.project_root),
-            \ 'config',
-            \ g:cmake_default_config))
+        let state = s:state.ReadProjectState(
+            \ s:const.plugin_name, s:buildsys.project_root)
+        let saved_preset = get(state, 'preset', '')
+        if !empty(saved_preset)
+            call s:RefreshPresets()
+            if s:PresetExists(saved_preset)
+                call s:EnterPresetMode(saved_preset)
+            else
+                call s:logger.LogWarn('Saved preset ''%s'' not found, falling back to normal mode', saved_preset)
+            endif
+        else
+            call s:SetCurrentConfig(get(state, 'config', g:cmake_default_config))
+        endif
     else
         call s:SetCurrentConfig(g:cmake_default_config)
     endif
 
+    " Also check if g:cmake_preset is set on startup
+    if !empty(g:cmake_preset) && !s:IsPresetMode()
+        call s:RefreshPresets()
+        if s:PresetExists(g:cmake_preset)
+            call s:EnterPresetMode(g:cmake_preset)
+        else
+            call s:logger.LogWarn('Configured preset ''%s'' not found', g:cmake_preset)
+        endif
+    endif
+
     call s:RefreshConfigs()
     call s:RefreshTargets()
+    call s:RefreshPresets()
 endfunction
 
 " Generate a buildsystem for the project using CMake.
@@ -422,24 +595,42 @@ function! s:buildsys.Generate(clean, args) abort
     call s:logger.LogDebug('Invoked: buildsys.Generate(%s, %s)',
         \ a:clean, string(a:args))
     let command = [g:cmake_command]
-    let optdict = s:ProcessArgString(a:args)
-    " Construct command.
-    call extend(command, g:cmake_generate_options)
-    call extend(command, optdict.opts)
-    let cmake_version_comparable =
-        \ self.cmake_version.major * 100 + self.cmake_version.minor
-    if cmake_version_comparable < 313
-        call add(command, '-H' . optdict.source_dir)
-        call add(command, '-B' . optdict.build_dir)
+    
+    " Check if in preset mode
+    if s:IsPresetMode()
+        " Check CMake version supports --preset (3.15+)
+        let cmake_version_comparable =
+            \ self.cmake_version.major * 100 + self.cmake_version.minor
+        if cmake_version_comparable < 315
+            call s:error.Throw('CMAKE_VERSION_PRESET', self.cmake_version.string)
+            return
+        endif
+        " Use --preset flag in preset mode
+        call extend(command, g:cmake_generate_options)
+        call add(command, '--preset=' . s:buildsys.current_preset)
+        let build_dir = s:buildsys.path_to_current_config
+        call s:fileapi.UpdateQueries(build_dir)
     else
-        call add(command, '-S ' . optdict.source_dir)
-        call add(command, '-B ' . optdict.build_dir)
+        " Normal mode: use existing logic
+        let optdict = s:ProcessArgString(a:args)
+        " Construct command.
+        call extend(command, g:cmake_generate_options)
+        call extend(command, optdict.opts)
+        let cmake_version_comparable =
+            \ self.cmake_version.major * 100 + self.cmake_version.minor
+        if cmake_version_comparable < 313
+            call add(command, '-H' . optdict.source_dir)
+            call add(command, '-B' . optdict.build_dir)
+        else
+            call add(command, '-S ' . optdict.source_dir)
+            call add(command, '-B ' . optdict.build_dir)
+        endif
+        call s:fileapi.UpdateQueries(optdict.build_dir)
     endif
     " Clean project buildsystem, if requested.
     if a:clean
         call self.Clean()
     endif
-    call s:fileapi.UpdateQueries(optdict.build_dir)
     " Run generate command.
     let run_options = {}
     let run_options.callbacks_succ = [
@@ -472,6 +663,11 @@ endfunction
 "
 function! s:buildsys.Switch(config) abort
     call s:logger.LogDebug('Invoked: buildsys.Switch(%s)', a:config)
+    " Cannot switch config in preset mode
+    if s:IsPresetMode()
+        call s:error.Throw('PRESET_MODE_ACTIVE')
+        return
+    endif
     " Check that config exists.
     if !s:ConfigExists(a:config)
         call s:error.Throw('NO_CONFIG', a:config, a:config)
@@ -586,6 +782,29 @@ endfunction
 "
 function! s:buildsys.GetPathToCurrentConfig() abort
     return self.path_to_current_config
+endfunction
+
+" Get current preset name.
+"
+" Returns:
+"     String
+"         current preset name, or empty string if not in preset mode
+"
+function! s:buildsys.GetCurrentPreset() abort
+    return self.current_preset
+endfunction
+
+" Get list of available preset names.
+"
+" Returns:
+"     List
+"         list of available preset names
+"
+function! s:buildsys.GetPresets() abort
+    if empty(self.presets)
+        call s:RefreshPresets()
+    endif
+    return map(copy(self.presets), {_, p -> p.name})
 endfunction
 
 " Get buildsys 'object'.

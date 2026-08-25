@@ -71,6 +71,10 @@ command -nargs=? -bang CMakeGenerate call cmake#Generate(<bang>0, <f-args>)
 command -nargs=? CMakeClean call cmake#Clean()
 command -nargs=1 -complete=custom,cmake#GetConfigs CMakeSwitch call cmake#Switch(<f-args>)
 
+command -nargs=? -complete=custom,cmake#GetPresets CMakePreset call cmake#Preset(<f-args>)
+command -nargs=0 CMakePresetClear call cmake#PresetClear()
+command -nargs=0 CMakePresets call cmake#ListPresets()
+
 command -nargs=? -bang -complete=custom,cmake#GetBuildTargets CMakeBuild call cmake#Build(<bang>0, <f-args>)
 command CMakeInstall call cmake#Install()
 

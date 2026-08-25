@@ -70,6 +70,50 @@ function! cmake#Switch(...) abort
     call s:buildsys.Switch(a:1)
 endfunction
 
+" API function for :CMakePreset.
+"
+" Params:
+"     preset_name : String
+"         preset name to activate
+"
+function! cmake#Preset(preset_name) abort
+    if empty(a:preset_name)
+        " If no preset name provided, list available presets
+        call cmake#ListPresets()
+        return
+    endif
+    call s:logger.LogDebug('API invoked: cmake#Preset(%s)', a:preset_name)
+    call s:buildsys.EnterPresetMode(a:preset_name)
+endfunction
+
+" API function for :CMakePresetClear.
+"
+function! cmake#PresetClear() abort
+    call s:logger.LogDebug('API invoked: cmake#PresetClear()')
+    call s:buildsys.ExitPresetMode()
+endfunction
+
+" API function for :CMakePresets (list presets).
+"
+function! cmake#ListPresets() abort
+    call s:logger.LogDebug('API invoked: cmake#ListPresets()')
+    let presets = s:buildsys.GetPresets()
+    if empty(presets)
+        call s:logger.EchoInfo('No CMake presets found')
+        return
+    endif
+    call s:logger.EchoInfo('Available CMake presets:')
+    for preset in presets
+        call s:logger.EchoInfo('  - ' . preset)
+    endfor
+endfunction
+
+" Completion function for preset names.
+"
+function! cmake#GetPresets() abort
+    return s:buildsys.GetPresets()
+endfunction
+
 " API function for :CMakeBuild and <Plug>(CMakeBuild).
 "
 " Params:
@@ -274,5 +318,7 @@ function! cmake#GetInfo() abort
     let info.cmake_version = s:buildsys.GetCMakeVersion()
     let info.project_dir = s:buildsys.GetSourceDir()
     let info.build_dir = s:buildsys.GetPathToCurrentConfig()
+    let info.preset = s:buildsys.GetCurrentPreset()
+    let info.presets = s:buildsys.GetPresets()
     return info
 endfunction
